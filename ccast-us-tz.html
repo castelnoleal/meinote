@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MEI-US Time</title>
+<style>
+body{margin:0;font-family:Segoe UI,Arial;background:linear-gradient(135deg,#081625,#143b66);color:#eef}
+header{padding:16px;text-align:center;background:#102a49}
+main{display:grid;grid-template-columns:2fr 1fr;gap:16px;padding:16px}
+#map{background:#0d2038;border-radius:16px;padding:12px}
+#info{background:#132b47;border-radius:16px;padding:18px}
+svg{width:100%;height:auto}
+.state{stroke:#fff;stroke-width:.5;transition:.2s;cursor:pointer}
+.state:hover{fill:#78d2ff;filter:drop-shadow(0 0 6px #78d2ff)}
+.clock{font-size:2.5rem;font-weight:bold}
+#myTimeBox{border-bottom:1px solid rgba(255,255,255,.2);padding-bottom:14px;margin-bottom:14px}
+#myClock{font-size:1.35rem;font-weight:700}
+#stateName{font-size:1.8rem;margin:.2rem 0}
+#tz{font-size:1.05rem;opacity:.9}
+small{opacity:.8}
+
+#info{background:rgba(255,255,255,.12)!important;backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.2)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:.9rem}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.label{font-size:13px;font-weight:800;text-anchor:middle;pointer-events:none;fill:#fff;paint-order:stroke;stroke:#08213d;stroke-width:2px;transition:.2s}
+.state{transition:fill .25s,filter .25s}
+
+
+#miniCalendar table{width:100%;border-collapse:collapse;font-size:.78rem}
+#miniCalendar th,#miniCalendar td{text-align:center;padding:3px}
+#miniCalendar .today{background:#3b82f6;border-radius:5px;font-weight:700}
+
+</style>
+
+<!---->
+
+</head>
+<body>
+<!----<header><h3>MEINOTE-CCAST USA TIME ZONES MAP</h3></header>---->
+<main>
+<div id="map"><svg viewBox="0 0 975 660"></svg></div>
+<div id="info">
+<div id="myTimeBox">
+
+<h2 id="stateName">Hover a State</h2>
+<div class="clock" id="clock">--:--:--</div>
+<p id="tz">Timezone</p>
+<p id="status"><i><small>Hover your mouse to the map to show the exact time on that specific state.</small></i></p>
+</div>
+<h3 style="margin:0">My Time</h3>
+<div id="myClock">--:--:--</div>
+<small>Based on your timezone, Eastern Time
+<br><br>
+</small>
+
+<div id="myDate" style="margin-top:8px;font-weight:600"></div>
+<div id="miniCalendar" style="margin-top:10px"></div>
+</div>
+
+</main>
+<script type="module">
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
+import {feature} from "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm";
+import us from "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-albers-10m.json/+esm";
+
+const svg=d3.select("svg");
+const states=feature(us,us.objects.states);
+const nation=feature(us,us.objects.nation);
+const path=d3.geoPath();
+
+const map={
+1:["Alabama","America/Chicago"],2:["Alaska","America/Anchorage"],4:["Arizona","America/Phoenix"],5:["Arkansas","America/Chicago"],
+6:["California","America/Los_Angeles"],8:["Colorado","America/Denver"],9:["Connecticut","America/New_York"],10:["Delaware","America/New_York"],
+11:["District of Columbia","America/New_York"],12:["Florida","America/New_York"],13:["Georgia","America/New_York"],15:["Hawaii","Pacific/Honolulu"],
+16:["Idaho","America/Denver"],17:["Illinois","America/Chicago"],18:["Indiana","America/New_York"],19:["Iowa","America/Chicago"],
+20:["Kansas","America/Chicago"],21:["Kentucky","America/New_York"],22:["Louisiana","America/Chicago"],23:["Maine","America/New_York"],
+24:["Maryland","America/New_York"],25:["Massachusetts","America/New_York"],26:["Michigan","America/New_York"],27:["Minnesota","America/Chicago"],
+28:["Mississippi","America/Chicago"],29:["Missouri","America/Chicago"],30:["Montana","America/Denver"],31:["Nebraska","America/Chicago"],
+32:["Nevada","America/Los_Angeles"],33:["New Hampshire","America/New_York"],34:["New Jersey","America/New_York"],35:["New Mexico","America/Denver"],
+36:["New York","America/New_York"],37:["North Carolina","America/New_York"],38:["North Dakota","America/Chicago"],39:["Ohio","America/New_York"],
+40:["Oklahoma","America/Chicago"],41:["Oregon","America/Los_Angeles"],42:["Pennsylvania","America/New_York"],44:["Rhode Island","America/New_York"],
+45:["South Carolina","America/New_York"],46:["South Dakota","America/Chicago"],47:["Tennessee","America/Chicago"],48:["Texas","America/Chicago"],
+49:["Utah","America/Denver"],50:["Vermont","America/New_York"],51:["Virginia","America/New_York"],53:["Washington","America/Los_Angeles"],
+54:["West Virginia","America/New_York"],55:["Wisconsin","America/Chicago"],56:["Wyoming","America/Denver"]
+};
+
+const stateInfoByName={
+"Alabama":["AL","America/Chicago"],
+"Alaska":["AK","America/Anchorage"],
+"Arizona":["AZ","America/Phoenix"],
+"Arkansas":["AR","America/Chicago"],
+"California":["CA","America/Los_Angeles"],
+"Colorado":["CO","America/Denver"],
+"Connecticut":["CT","America/New_York"],
+"Delaware":["DE","America/New_York"],
+"District of Columbia":["DC","America/New_York"],
+"Florida":["FL","America/New_York"],
+"Georgia":["GA","America/New_York"],
+"Hawaii":["HI","Pacific/Honolulu"],
+"Idaho":["ID","America/Denver"],
+"Illinois":["IL","America/Chicago"],
+"Indiana":["IN","America/New_York"],
+"Iowa":["IA","America/Chicago"],
+"Kansas":["KS","America/Chicago"],
+"Kentucky":["KY","America/New_York"],
+"Louisiana":["LA","America/Chicago"],
+"Maine":["ME","America/New_York"],
+"Maryland":["MD","America/New_York"],
+"Massachusetts":["MA","America/New_York"],
+"Michigan":["MI","America/New_York"],
+"Minnesota":["MN","America/Chicago"],
+"Mississippi":["MS","America/Chicago"],
+"Missouri":["MO","America/Chicago"],
+"Montana":["MT","America/Denver"],
+"Nebraska":["NE","America/Chicago"],
+"Nevada":["NV","America/Los_Angeles"],
+"New Hampshire":["NH","America/New_York"],
+"New Jersey":["NJ","America/New_York"],
+"New Mexico":["NM","America/Denver"],
+"New York":["NY","America/New_York"],
+"North Carolina":["NC","America/New_York"],
+"North Dakota":["ND","America/Chicago"],
+"Ohio":["OH","America/New_York"],
+"Oklahoma":["OK","America/Chicago"],
+"Oregon":["OR","America/Los_Angeles"],
+"Pennsylvania":["PA","America/New_York"],
+"Rhode Island":["RI","America/New_York"],
+"South Carolina":["SC","America/New_York"],
+"South Dakota":["SD","America/Chicago"],
+"Tennessee":["TN","America/Chicago"],
+"Texas":["TX","America/Chicago"],
+"Utah":["UT","America/Denver"],
+"Vermont":["VT","America/New_York"],
+"Virginia":["VA","America/New_York"],
+"Washington":["WA","America/Los_Angeles"],
+"West Virginia":["WV","America/New_York"],
+"Wisconsin":["WI","America/Chicago"],
+"Wyoming":["WY","America/Denver"]
+};
+const tzColors={
+"America/Los_Angeles":"#3b82f6",
+"America/Denver":"#22c55e",
+"America/Phoenix":"#22c55e",
+"America/Chicago":"#d97706",
+"America/New_York":"#ef4444",
+"America/Anchorage":"#8b5cf6",
+"Pacific/Honolulu":"#92400e"
+};
+
+
+function updateMyClock(){
+ document.getElementById("myClock").textContent=
+ new Date().toLocaleTimeString([],{
+ hour:'2-digit',minute:'2-digit',second:'2-digit'
+ });
+}
+setInterval(updateMyClock,1000);
+updateMyClock();
+
+function renderCalendar(){
+ const now=new Date();
+ document.getElementById("myDate").textContent=
+   now.toLocaleDateString([],{
+     weekday:"long",
+     year:"numeric",
+     month:"long",
+     day:"numeric"
+   });
+ const y=now.getFullYear(),m=now.getMonth(),today=now.getDate();
+ const first=new Date(y,m,1).getDay();
+ const days=new Date(y,m+1,0).getDate();
+ let t='<table><tr><th>S</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th></tr><tr>';
+ for(let i=0;i<first;i++)t+='<td></td>';
+ for(let d=1;d<=days;d++){
+   let col=(first+d-1)%7;
+   t+=d===today?'<td class="today">'+d+'</td>':'<td>'+d+'</td>';
+   if(col===6&&d<days)t+='</tr><tr>';
+ }
+ t+='</tr></table>';
+ document.getElementById("miniCalendar").innerHTML=t;
+}
+renderCalendar();
+setInterval(renderCalendar,60000);
+
+
+const friendlyTZ={
+"America/Los_Angeles":"Pacific Time",
+"America/Denver":"Mountain Time",
+"America/Phoenix":"Mountain Time (Arizona)",
+"America/Chicago":"Central Time",
+"America/New_York":"Eastern Time",
+"America/Anchorage":"Alaska Time",
+"Pacific/Honolulu":"Hawaii Time"
+};
+
+let tz="America/New_York";
+function tick(){
+ const d=new Date();
+ clock.textContent=d.toLocaleTimeString([],{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tick,1000);tick();
+
+svg.append("path").datum(nation).attr("fill","#223f61").attr("transform","translate(0,30)").attr("d",path);
+
+svg.append("g")
+.attr("class","tzTitles")
+.selectAll("text")
+.data([
+{x:120,y:24,t:"PACIFIC",c:"#3b82f6"},
+{x:320,y:24,t:"MOUNTAIN",c:"#22c55e"},
+{x:525,y:24,t:"CENTRAL",c:"#d97706"},
+{x:770,y:24,t:"EASTERN",c:"#ef4444"},
+{x:55,y:610,t:"ALASKA",c:"#8b5cf6"},
+{x:200,y:610,t:"HAWAII",c:"#92400e"}
+])
+.enter()
+.append("text")
+.attr("x",d=>d.x)
+.attr("y",d=>d.y)
+.attr("text-anchor","middle")
+.attr("font-size",18)
+.attr("font-weight",700)
+.attr("fill",d=>d.c)
+.text(d=>d.t);
+
+svg.selectAll("path.state")
+.data(states.features)
+.enter().append("path")
+.attr("class","state")
+.attr("transform","translate(0,30)")
+.attr("d",path)
+.on("mouseenter",(e,d)=>{
+ const info=stateInfoByName[d.properties.name];
+ if(!info)return;
+ stateName.textContent=d.properties.name;
+ tz=info[1];
+ document.getElementById("tz").textContent=friendlyTZ[info[1]]||info[1];
+ tick();
+});
+
+const abbr={AL:"Alabama"};
+const abbrev={
+1:"AL",2:"AK",4:"AZ",5:"AR",6:"CA",8:"CO",9:"CT",10:"DE",11:"DC",12:"FL",13:"GA",15:"HI",16:"ID",17:"IL",18:"IN",19:"IA",20:"KS",21:"KY",22:"LA",23:"ME",24:"MD",25:"MA",26:"MI",27:"MN",28:"MS",29:"MO",30:"MT",31:"NE",32:"NV",33:"NH",34:"NJ",35:"NM",36:"NY",37:"NC",38:"ND",39:"OH",40:"OK",41:"OR",42:"PA",44:"RI",45:"SC",46:"SD",47:"TN",48:"TX",49:"UT",50:"VT",51:"VA",53:"WA",54:"WV",55:"WI",56:"WY"};
+const colors={"America/Los_Angeles":"#3b82f6","America/Denver":"#22c55e","America/Chicago":"#d97706","America/New_York":"#ef4444","America/Anchorage":"#8b5cf6","Pacific/Honolulu":"#92400e"};
+let locked=null;
+svg.selectAll("path.state")
+.style("fill",d=>{
+ const info=stateInfoByName[d.properties.name];
+ return info?tzColors[info[1]]:"#9ca3af";
+})
+.on("mouseover",function(e,d){
+ if(locked&&locked!==this)return;
+ d3.select(this).style("filter","brightness(1.25)");
+})
+.on("mouseout",function(){
+ if(locked===this)return;
+ d3.select(this).style("filter",null);
+})
+.on("click",function(){
+ if(locked)d3.select(locked).style("filter",null);
+ locked=this;
+ d3.select(this).style("filter","brightness(1.25)");
+});
+const labels=svg.selectAll("text.label").data(states.features).enter().append("text")
+.attr("class","label")
+.attr("transform",d=>{const c=path.centroid(d);return "translate("+c[0]+","+(c[1]+30)+")";})
+.style("font-size",d=>{const a=path.area(d);if(a<80)return "8px";if(a<180)return "10px";if(a<500)return "12px";return "15px";}).text(d=>(stateInfoByName[d.properties.name]?.[0])||"");
+svg.select("g.stateNames")?.remove?.();
+svg.append("g").attr("class","stateNames")
+.selectAll("text.fullname")
+.data(states.features)
+.enter()
+.append("text")
+.attr("class","label")
+.style("font-size","4.5px")
+.style("fill","#e5e7eb")
+.attr("transform",d=>{
+ const c=path.centroid(d);
+ return "translate("+c[0]+","+(c[1]+37)+")";
+})
+.text(d=>d.properties.name);
+
+
+status.textContent="Map loaded.";
+</script>
+</body>
+</html>

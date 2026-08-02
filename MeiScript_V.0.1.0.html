@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeiScript V.0.1.0</title>
+<style>
+/* =========================
+   STYLES
+   ========================= */
+:root{
+  --accent:#3b82f6;
+  --bg:#0f172a;
+  --panel:#111827;
+  --text:#e5e7eb;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;color:var(--text);background:linear-gradient(135deg,#0f172a,#1e3a8a)}
+.app{display:flex;min-height:100vh}
+.sidebar{width:280px;padding:20px;background:rgba(0,0,0,.25);backdrop-filter:blur(16px)}
+.main{flex:1;padding:20px}
+.search{width:100%;padding:12px;border:none;border-radius:12px}
+.nav-btn{width:100%;margin:8px 0;padding:14px;border:none;border-radius:12px;background:#1f2937;color:white;text-align:left;cursor:pointer}
+.nav-btn.active,.nav-btn:hover{background:var(--accent)}
+.hero{background:rgba(255,255,255,.08);padding:18px;border-radius:18px;margin-bottom:16px}
+.group{background:rgba(255,255,255,.08);border-radius:16px;margin-bottom:12px;overflow:hidden}
+.group-title{background:var(--accent);padding:14px;cursor:pointer;font-weight:bold}
+.group-content{display:none;padding:12px}
+.link-btn{display:inline-block;margin:6px;padding:12px 14px;background:var(--accent);color:white;text-decoration:none;border-radius:12px}
+@media(max-width:900px){.app{flex-direction:column}.sidebar{width:100%}.link-btn{display:block}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sidebar">
+  <h2>MeiScript KB V.0.1.0</h2><h5>By Castel Noleal</h5>
+  <input id="search" class="search" placeholder="Search...">
+  <button class="nav-btn active" onclick="showCategory('CasTools',this)">🔧 CasTools</button>
+  <button class="nav-btn" onclick="showCategory('Disclosures',this)">⚖️ Disclosures</button>
+  <button class="nav-btn" onclick="showCategory('Scripts',this)">📋 Scripts</button>
+  <button class="nav-btn" onclick="showCategory('Rebuttals',this)">🎯 Rebuttals</button>
+  <button class="nav-btn" onclick="showCategory('Empathy',this)">🥰 Empathy</button>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <h1 id="pageTitle">CasTools</h1>
+    <div id="stats"></div>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+</div>
+
+<script>
+/* =====================================================
+   Castel Noleal. Project Empower. Eperformax Cebu
+   ===================================================== */
+
+const DATA = {
+
+  CasTools: {
+
+    "Contact Informations": [
+      {
+        label: "<b>NDR</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=National%20Debt%20Relief,York%2C%20NY%2010038"
+      },
+      {
+        label: "<b>LORG</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=Law%20Offices%20of,York%2C%20NY%2010038"
+      },
+      {
+        label: "<b>Global Holdings</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=Global%20Holdings,myaccount.ghllc.com/"
+      },
+      {
+        label: "<b>BetrLink</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=BetrLink,EST%2C%20Monday%20%2D%C2%A0Friday"
+      },
+      {
+        label: "<b>Creditor Hotline [NDR]</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CAppendix%7C_____12#:~:text=Creditor%20Hotline%3A%20347%2D394%2D2675"
+      },
+      {
+        label: "<b>Creditor Hotline [LORG]</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CAppendix%7C_____12#:~:text=Creditor%20Hotline%3A%20646%2D480%2D0909"
+      }
+    ],
+
+    "In-Depth Instructions/Walkthroughs": [
+      {
+        label: "Online Notarization [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/CE%20CS/Notary%20Process.htm#Walkthrough"
+      },
+{
+        label: "Not Enrolled in GLS",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm#for-gls-clients:~:text=Disclosure%20Statements,a%20later%20time.%22"
+      }
+    ]
+  },
+
+
+  Disclosures: {
+
+    "Deposit Change Disclosures": [
+      {
+        label: "<b>DCID</b> (Formerly 90DD)",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm?Highlight=deposit%20waterfall#:~:text=Deposit%20Change%20Impact%20Disclosure%0A(If,the%20program%20back%20on%20track.%E2%80%9D"
+      },
+      {
+        label: "<b>ISD</b>",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm?Highlight=deposit%20waterfall#:~:text=Impacted%20Settlement%20Disclosure,settlement%20in%20place%3F%22"
+      }
+    ],
+
+    "Account/Creditor Removal": [
+      {
+        label: "Enrolled in GLS",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CClient%20Requests%7C_____6#:~:text=Disclosure%20Statements,under%20GLS%20.%22"
+      },
+{
+        label: "Not Enrolled in GLS",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm#for-gls-clients:~:text=Disclosure%20Statements,a%20later%20time.%22"
+      }
+    ]
+  },
+
+  Scripts: {
+
+    "Deposit Scripts": [
+      {
+        label: "Deposit Waterfall [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm#DepositWaterfall"
+      },
+      {
+        label: "NSF Waterfall [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Maintenance/Non-Sufficient%20Funds.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CDeposits%7CNon%20Sufficient%20Funds%7C_____1#:~:text=If%20the%20NSF%20status%20is%20%E2%80%9CInsufficient%20Funds%E2%80%9D%20or%20%E2%80%9CUncollected%E2%80%9D"
+      }
+    ],
+
+    "Settlement Scripts (SIF)": [
+      {
+        label: "Settlements (SIF) [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Settlements%20in%20Full/Settlement%20(SIF)%20Script.htm#1AddressAnyExistingClientNeeds"
+      },
+      {
+        label: "SIF Adjustment Waterfall [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/SIF%20Adjustment%20Procedure/SIF%20Adjustment%20Procedure%20Waterfall.htm#1Askclienttoaddfullamount"
+      }
+    ],
+
+    "Voicemail Scripts": [
+      {
+        label: "NDR Clients [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/Voicemail%20Scripts%20for%20NDR%20Clients.htm#VoicemailScriptsforNDRClients"
+      },
+      {
+        label: "LORG Clients [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/Voicemail%20Scripts%20for%20LORG%20Clients.htm#VoicemailScriptsforLORGClients"
+      }
+    ],
+
+    "FAQ (Frequently Asked Questions)": [
+      {
+        label: "NDR Top FAQs",
+        link: "https://www.nationaldebtrelief.com/resources/debt-relief-settlement/top-faqs-debt-relief/"
+      }
+    ],
+
+    "gwrhwwrh": [
+      {
+        label: "NDR Top FAQs",
+        link: "https://www.nationaldebtrelief.com/resources/debt-relief-settlement/top-faqs-debt-relief/"
+      }
+    ]
+  },
+
+  Rebuttals: {
+    "General Rebuttals": [
+      {
+        label: "General CS Rebuttals [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/General%20CS%20Rebuttals.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CClient%20Success%20Common%20Talking%20Points%20and%20Suggested%20Responses%7C_____1"
+      },
+{
+        label: "Bad Reviews [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Bad%20Reviews%20Rebuttals.htm#Purpose"
+      },
+{
+        label: "Can't Wait [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20cannot%20wait%204%2D6%20months."
+      },
+{
+        label: "Maybe I Can't Afford [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=What%20happens%20if%20I%20can%27t%20afford%20a%20payment%20while%20in%20your%20program%3F"
+      }
+    ],
+
+    "Creditor Calls": [
+      {
+        label: "Creditor Harassing [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Creditor%20Calls.htm?Highlight=rebuttals#:~:text=State%20the%20following,to%20avoid%20bankruptcy.%22"
+      },
+
+      {
+        label: "Creditor Harassing (2) [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20don%27t%20want%20creditors%20harassing%20me."
+      },
+
+      {
+        label: "Threat of Suing [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%27m%20afraid%20of%20getting%20sued."
+      },
+{
+        label: "When We Will Contact Creditors [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=When%20will%20you%20contact%20my%20creditors%3F"
+      }
+     ],
+
+"Credit Score - Related": [
+      {
+        label: "Credit Score Ruination [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20don%27t%20want%20to%20ruin%20my%20credit."
+      },
+{
+        label: "Credit Repair/Recovery Tips (Graduated Clients) [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Credit%20Repair%20for%20Graduated%20Clients/Credit%20Repair%20Resources%20and%20Tips%20for%20Graduated%20Clients.htm#CreditRepairResourcesandTipsforGraduatedClients"
+      }
+     ],
+
+"Settlement (SIF) - Related": [
+      {
+        label: "Additional Funds Needed [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Settlements%20in%20Full/Settlement%20(SIF)%20Script.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CSettlements%20in%20Full%7C_____3#:~:text=Add%20Fund%20item.-,If%20additional%20funds%20are%20needed,-If%20no%20additional"
+      }
+     ],
+
+
+"Situation Specific": [
+     {
+        label: "Bankrupty [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Bankruptcy%20Rebuttals.htm#Procedure"
+      },
+{
+        label: "Situation-Based [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm#CancellationRebuttals"
+      },
+{
+        label: "Can't Afford [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Can't%20Afford%20Rebuttal.htm#CantAffordRebuttal"
+      },
+{
+        label: "Credit Counseling [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Credit%20Counseling%20Rebuttal.htm#CreditCounselingRebuttal"
+      },
+{
+        label: "Wants to Settle Specific Creditor [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Client%20Wants%20to%20Settle%20a%20Specific%20Account%20First%20Rebuttal.htm#ClientWantstoSettleaSpecificAccountFirstRebuttal"
+      },
+{
+        label: "Credit Score (Deep) [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Credit%20Score%20Rebuttals.htm#Procedure"
+      },
+{
+        label: "C will Negotiate Herself [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/DIY%20Negotiating%20Without%20Creditors.htm#DIYNegotiatingWithCreditorsRebuttal"
+      },
+{
+        label: "There is Money, Why not Pay Creditors [KB]",
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=There%20is%20enough%20money%20to%20pay%20off%20others%2C%20why%20not%20pay%20off%20the%20smaller%20ones%3F"
+      }    ]
+},
+
+  Empathy: {
+    "Hardship": [
+      {
+        label: "Job Loss",
+        link: "#"
+      }
+    ]
+  }
+};
+
+/* =====================================================
+   Project Empower's MeiScript V0.1.0 by Castel Noleal
+   ===================================================== */
+
+let currentCategory = 'CasTools';
+
+function renderCategory(category){
+  currentCategory = category;
+
+  let groups = 0;
+  let buttons = 0;
+  let html = '';
+
+  for(const groupName in DATA[category]){
+    groups++;
+
+    html += `<div class="group">
+      <div class="group-title" onclick="toggleGroup(this)">${groupName}</div>
+      <div class="group-content">`;
+
+    DATA[category][groupName].forEach(item => {
+      buttons++;
+      html += `<a class="link-btn" href="${item.link}" target="_blank">${item.label}</a>`;
+    });
+
+    html += `</div></div>`;
+  }
+
+  pageTitle.textContent = category;
+  stats.textContent = `${groups} Groups • ${buttons} Buttons`;
+  content.innerHTML = html;
+}
+
+function toggleGroup(element){
+  const panel = element.nextElementSibling;
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
+
+function showCategory(category, button){
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  button.classList.add('active');
+  renderCategory(category);
+}
+
+search.addEventListener('input', function(){
+  const query = this.value.toLowerCase().trim();
+
+  if(!query){
+    renderCategory(currentCategory);
+    return;
+  }
+
+  let results = '';
+
+  for(const category in DATA){
+    for(const group in DATA[category]){
+      DATA[category][group].forEach(item => {
+        if((category + group + item.label).toLowerCase().includes(query)){
+          results += `<a class="link-btn" href="${item.link}" target="_blank">
+            ${category} › ${group} › ${item.label}
+          </a>`;
+        }
+      });
+    }
+  }
+
+  pageTitle.textContent = 'Search Results';
+  stats.textContent = '';
+  content.innerHTML = results || '<p>No results found.</p>';
+});
+
+renderCategory('CasTools');
+</script>
+</body>
+</html>
