@@ -1,0 +1,4281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeiNote V.3.1.0</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>tailwind.config = { darkMode:'class' }</script>
+
+<style>
+body { font-family: Inter, sans-serif; }
+.inp {
+  width:100%;
+  background:#f8fafc;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  padding:6px 10px;
+  font-size:14px;
+  margin-bottom:6px;
+}
+.dark .inp { background:#334155; border-color:#475569; color:white; }
+.lbl {
+  font-size:10px;
+  font-weight:bold;
+  text-transform:uppercase;
+  color:#64748b;
+}
+.dark .lbl { color:#94a3b8; }
+.grid-3 {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px 12px;
+}
+
+.articleBtn{
+width:100%;
+text-align:left;
+padding:10px;
+border-radius:6px;
+background:#f1f5f9;
+}
+
+.articleBtn:hover{
+background:#e2e8f0;
+}
+
+
+#scheduleTable {border-collapse:collapse;width:100%;}
+#scheduleTable th,#scheduleTable td{
+border:1px solid #ccc;
+padding:4px;
+font-size:12px;
+vertical-align:top;
+}
+#creditorSummaryPanel{
+margin-top:8px;
+padding:6px;
+border:1px solid #ccc;
+background:#fafafa;
+font-size:12px;
+white-space:pre-line;
+}
+
+
+#summaryContainer{
+margin-bottom:10px;
+padding:6px;
+border:1px solid #bbb;
+background:#f8f8f8;
+font-size:12px;
+white-space:pre-line;
+}
+#scheduleTable{
+border-collapse:collapse;
+width:100%;
+}
+#scheduleTable th,#scheduleTable td{
+border:1px solid #ccc;
+padding:4px;
+font-size:12px;
+}
+
+
+/* Sticky header for analyzer table */
+#scheduleTable thead th{
+position: sticky;
+top: 0;
+background: #f2f2f2;
+z-index: 2;
+}
+
+/* Ensure header row exists visually */
+#scheduleTable th{
+background:#f2f2f2;
+}
+
+
+/* Sticky header for analyzer table */
+#scheduleTable thead th{
+position: sticky;
+top: 0;
+background: #f2f2f2;
+z-index: 3;
+}
+
+</style>
+
+<style>
+/* Summary layout balanced left-right */
+#summaryTop{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:10px;
+}
+
+#creditorSummaryPanel, #scheduleSummary{
+border:1px solid #bbb;
+padding:8px;
+border-radius:6px;
+font-size:12px;
+white-space:pre-line;
+}
+
+/* Light mode */
+#creditorSummaryPanel, #scheduleSummary{
+background:#f7f7f7;
+color:#000;
+}
+
+/* Dark mode support */
+body.dark #creditorSummaryPanel,
+body.dark #scheduleSummary{
+background:#2b2b2b;
+color:#eee;
+border-color:#555;
+}
+
+/* Table container so it doesn't get cut */
+#scheduleTable{
+width:100%;
+border-collapse:collapse;
+table-layout:auto;
+}
+
+/* Sticky header */
+#scheduleTable th{
+position:sticky;
+top:0;
+background:#e9e9e9;
+z-index:5;
+}
+
+body.dark #scheduleTable th{
+background:#333;
+color:#eee;
+}
+
+/* Grid lines */
+#scheduleTable td,#scheduleTable th{
+border:1px solid #ccc;
+padding:4px;
+font-size:12px;
+}
+
+body.dark #scheduleTable td,
+body.dark #scheduleTable th{
+border-color:#555;
+}
+
+/* Prevent horizontal cutting */
+#scheduleTable td{
+word-break:break-word;
+}
+</style>
+
+
+<style>
+/* ---------- SUMMARY LAYOUT FIX ---------- */
+#summaryTop{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-bottom:12px;
+position:relative;
+z-index:1; /* prevent overlap with other UI */
+}
+
+#creditorSummaryPanel,
+#scheduleSummary{
+border:1px solid #888;
+border-radius:6px;
+padding:10px;
+font-size:12px;
+line-height:1.4;
+white-space:pre-line;
+background:#f5f5f5;
+color:#000;
+}
+
+/* ---------- TABLE CONTAINER FIX ---------- */
+#scheduleTable{
+width:100%;
+border-collapse:collapse;
+table-layout:auto;
+margin-top:4px;
+}
+
+/* grid lines */
+#scheduleTable td,
+#scheduleTable th{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+vertical-align:top;
+}
+
+/* header styling */
+#scheduleTable th{
+position:sticky;
+top:0;
+background:#e8e8e8;
+z-index:2;
+}
+
+/* prevent label overlap */
+#scheduleTable th,
+#scheduleTable td{
+word-break:break-word;
+}
+
+/* ---------- DARK MODE SUPPORT ---------- */
+body.dark #creditorSummaryPanel,
+body.dark #scheduleSummary{
+background:#2a2a2a;
+color:#e8e8e8;
+border-color:#555;
+}
+
+body.dark #scheduleTable{
+background:#1f1f1f;
+color:#e8e8e8;
+}
+
+body.dark #scheduleTable th{
+background:#333;
+color:#f0f0f0;
+border-color:#555;
+}
+
+body.dark #scheduleTable td{
+border-color:#555;
+}
+
+/* keep summary visible above table in dark mode */
+body.dark #summaryTop{
+background:transparent;
+}
+</style>
+
+
+<style>
+/* ----- Ensure summary always above table ----- */
+#summaryTop{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin-bottom:12px;
+position:relative;
+z-index:10;
+}
+
+/* ----- Table wrapper ----- */
+#scheduleTable{
+width:100%;
+border-collapse:collapse;
+table-layout:auto;
+background:#ffffff;
+color:#000;
+}
+
+/* header row only sticky inside table */
+#scheduleTable thead th{
+position:sticky;
+top:0;
+background:#e6e6e6;
+z-index:2;
+}
+
+/* grid lines */
+#scheduleTable td,#scheduleTable th{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+vertical-align:top;
+}
+
+/* prevent header overlap */
+#scheduleTable thead{
+z-index:1;
+}
+
+/* checkbox visibility */
+#scheduleTable input[type=checkbox]{
+transform:scale(1.05);
+}
+
+/* ----- Dark mode fixes ----- */
+body.dark #scheduleTable{
+background:#1e1e1e;
+color:#e8e8e8;
+}
+
+body.dark #scheduleTable td,
+body.dark #scheduleTable th{
+border-color:#555;
+}
+
+body.dark #scheduleTable thead th{
+background:#333;
+color:#f0f0f0;
+}
+
+body.dark #scheduleTable input[type=checkbox]{
+filter:invert(1);
+}
+
+/* summary dark mode */
+body.dark #creditorSummaryPanel,
+body.dark #scheduleSummary{
+background:#2a2a2a;
+color:#f0f0f0;
+border-color:#555;
+}
+</style>
+
+
+<style>
+/* --- Force summary and table to be separate blocks --- */
+#summaryTop{
+display:block;
+width:100%;
+margin-bottom:16px;
+clear:both;
+position:relative;
+z-index:5;
+}
+
+/* keep panels side-by-side but contained */
+#creditorSummaryPanel,
+#scheduleSummary{
+display:inline-block;
+width:48%;
+vertical-align:top;
+margin-right:1%;
+box-sizing:border-box;
+}
+
+/* --- Table must start below summary --- */
+#scheduleTable{
+display:table;
+width:100%;
+margin-top:10px;
+clear:both;
+}
+
+/* ensure header belongs only to table */
+#scheduleTable th{
+position:sticky;
+top:0;
+background:#e6e6e6;
+z-index:1;
+}
+
+/* prevent header text overlapping summary */
+#scheduleTable thead{
+position:relative;
+z-index:1;
+}
+
+/* grid */
+#scheduleTable td,#scheduleTable th{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+/* dark mode compatibility */
+body.dark #scheduleTable{
+background:#1e1e1e;
+color:#eee;
+}
+
+body.dark #scheduleTable th{
+background:#333;
+}
+
+body.dark #scheduleTable td,
+body.dark #scheduleTable th{
+border-color:#555;
+}
+</style>
+
+
+<style>
+/* ---- SUMMARY AREA ---- */
+#summaryTop{
+display:flex;
+gap:12px;
+width:100%;
+margin-bottom:20px;
+clear:both;
+}
+
+#creditorSummaryPanel,
+#scheduleSummary{
+flex:1;
+box-sizing:border-box;
+}
+
+/* ---- TABLE AREA ---- */
+#scheduleTable{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+clear:both;
+display:table;
+}
+
+/* ensure header stays inside table only */
+#scheduleTable thead{
+position:relative;
+z-index:1;
+}
+
+/* sticky header but not overlapping summary */
+#scheduleTable thead th{
+position:sticky;
+top:0;
+background:#e6e6e6;
+z-index:2;
+}
+
+/* grid */
+#scheduleTable th,
+#scheduleTable td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+/* prevent floating header text */
+#scheduleTable th{
+white-space:nowrap;
+}
+
+/* dark mode */
+body.dark #scheduleTable{
+background:#1e1e1e;
+color:#eee;
+}
+
+body.dark #scheduleTable th{
+background:#333;
+}
+
+body.dark #scheduleTable td,
+body.dark #scheduleTable th{
+border-color:#555;
+}
+</style>
+
+
+<style>
+/* Ensure summary and table are separate blocks */
+#summaryTop{
+display:flex;
+gap:12px;
+margin-bottom:20px;
+}
+
+#scheduleTable{
+display:table;
+width:100%;
+clear:both;
+margin-top:10px;
+}
+
+/* Table styling */
+#scheduleTable th,#scheduleTable td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+#scheduleTable thead th{
+position:sticky;
+top:0;
+background:#e6e6e6;
+z-index:2;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+
+const table=document.getElementById("scheduleTable");
+const summary=document.getElementById("scheduleSummary");
+const panel=document.getElementById("creditorSummaryPanel");
+let wrapper=document.getElementById("summaryTop");
+
+if(table && summary){
+
+ if(!wrapper){
+   wrapper=document.createElement("div");
+   wrapper.id="summaryTop";
+   table.parentNode.insertBefore(wrapper,table);
+ }
+
+ if(panel && panel.parentNode!==wrapper){
+   wrapper.appendChild(panel);
+ }
+
+ if(summary.parentNode!==wrapper){
+   wrapper.appendChild(summary);
+ }
+
+}
+
+});
+</script>
+
+
+<style>
+/* ---- FORCE SUMMARY FULL WIDTH ABOVE TABLE ---- */
+#summaryTop{
+display:flex !important;
+flex-wrap:wrap;
+width:100%;
+gap:12px;
+margin-bottom:16px;
+}
+
+/* panels take half width */
+#creditorSummaryPanel,
+#scheduleSummary{
+flex:1 1 48%;
+box-sizing:border-box;
+}
+
+/* ---- TABLE ALWAYS BELOW SUMMARY ---- */
+#scheduleTable{
+display:block;
+width:100%;
+clear:both;
+margin-top:10px;
+}
+
+/* table inner layout */
+#scheduleTable table{
+width:100%;
+border-collapse:collapse;
+}
+
+/* headers */
+#scheduleTable th{
+background:#e6e6e6;
+position:sticky;
+top:0;
+z-index:2;
+}
+
+/* cells */
+#scheduleTable th,#scheduleTable td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+/* ---- PREVENT HEADER FLOATING BESIDE SUMMARY ---- */
+#scheduleTable thead{
+display:table-header-group;
+width:100%;
+}
+
+/* ---- DARK MODE ---- */
+body.dark #scheduleTable{
+background:#1e1e1e;
+color:#eee;
+}
+
+body.dark #scheduleTable th{
+background:#333;
+}
+
+body.dark #scheduleTable td,
+body.dark #scheduleTable th{
+border-color:#555;
+}
+</style>
+
+
+<style>
+#scheduleTable{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+#scheduleTable td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+body.dark #scheduleTable{
+background:#1e1e1e;
+color:#eee;
+}
+
+body.dark #scheduleTable td{
+border-color:#555;
+}
+</style>
+
+
+<style id="uiEnhancements">button{transition:transform .15s,box-shadow .2s}button:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(59,130,246,.18)}button:active{transform:scale(.97)}.inp,select,textarea{transition:.2s}.inp:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 4px rgba(59,130,246,.18)}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fade-enter{animation:fadeIn .35s}.ripple{position:relative;overflow:hidden}.ripplefx{position:absolute;border-radius:50%;transform:scale(0);animation:rip .55s linear;background:rgba(255,255,255,.35)}@keyframes rip{to{transform:scale(4);opacity:0}}</style>
+<style id="proTheme">
+body{background:linear-gradient(135deg,#e8eefc,#dfe9f7)}
+.bg-white.dark\:bg-slate-800{border-radius:18px!important;box-shadow:0 25px 60px rgba(15,23,42,.25)!important}
+.bg-blue-900{background:linear-gradient(135deg,#0f172a,#2563eb)!important}
+button{border-radius:12px!important;font-weight:600}
+.inp,#outputArea{border-radius:12px!important}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#fields>*{animation:fadeUp .25s}
+.toast{position:fixed;bottom:24px;right:24px;background:#2563eb;color:#fff;padding:10px 16px;border-radius:10px;z-index:99999}
+</style>
+<style>
+.mei-toast{
+position:fixed;bottom:25px;right:25px;padding:12px 18px;border-radius:12px;
+color:#fff;font-size:14px;font-weight:600;
+box-shadow:0 10px 25px rgba(0,0,0,.25);
+z-index:999999;
+animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
+}
+.toast-success{background:#16a34a;}
+.toast-danger{background:#dc2626;}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(20px)}}
+</style>
+
+
+<style>
+#htmlViewerPanel{transition:opacity .2s ease}
+#htmlViewerWindow{transition:transform .2s ease;resize:both;overflow:hidden;min-width:600px;min-height:400px}
+#htmlViewerPanel.hidden{opacity:0;pointer-events:none}
+#htmlViewerPanel:not(.hidden){opacity:1}
+</style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen flex justify-center p-4">
+
+<div class="bg-white dark:bg-slate-800 w-full max-w-6xl rounded-xl shadow-2xl overflow-hidden">
+
+<!-- HEADER -->
+<div class="bg-blue-900 px-6 py-4 flex justify-between items-center">
+<div class="flex flex-col">
+
+<h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
+<span class="font-semibold text-blue-300">MeiNote</span> Closers V.3.1.0
+</h1>
+
+<span class="text-[10px] text-blue-200 tracking-wider">
+Multi Entry Interface for Notation, Organization & Task Execution | by Castel Noleal
+</span>
+
+</div>
+
+<div class="flex flex-col items-center">
+  <div id="workCountdown" class="text-white text-lg font-mono font-bold">
+    --:--:--
+  </div><center>
+  <div id="liveDate" class="text-[11px] text-blue-100 mt-3 font-medium w-full"></div></center>
+</div>
+
+<div class="flex items-center gap-4">
+
+<div class="flex flex-col items-center">
+
+<div id="timerDisplay" class="text-blue-200 text-3xl font-bold font-mono leading-none">
+00:00
+</div>
+
+<div id="timerBar" class="w-24 h-1.5 bg-slate-600 rounded mt-1 overflow-hidden">
+<div id="timerProgress" class="h-full bg-blue-400 w-full"></div>
+</div>
+
+</div>
+
+
+
+<button id="quickTimerBtn" class="text-blue-200 hover:text-white text-xl mx-2" title="Start 2 Minute Timer">⚡</button>
+<button onclick="toggleTimerPanel()" class="text-blue-200 hover:text-white text-xl" title="Open Timer Settings">
+<i class="fas fa-stopwatch"></i>
+</button>
+
+<button onclick="openUSMapFull()"
+class="text-blue-200 hover:text-white text-xl"
+title="Open US Timezone Map">
+<i class="fas fa-map"></i>
+</button>
+
+<button onclick="toggleHtmlViewer()"
+class="text-blue-200 hover:text-white text-xl"
+title="Open CasTools KB Navigator">
+<i class="fas fa-compass"></i>
+</button>
+
+<button onclick="toggleCalendar()" class="text-blue-200 hover:text-white text-xl" title="Open Calendar">
+<i class="fas fa-calendar"></i>
+</button>
+
+<button onclick="openMissedInteraction()" 
+class="text-blue-200 hover:text-white text-xl"
+title="Open Missed Interaction Tracker">
+<i class="fas fa-exclamation-circle"></i>
+</button>
+
+
+<button onclick="toggleCalculator()" class="text-blue-200 hover:text-white text-xl" title="Open Calculator">
+<i class="fas fa-calculator"></i>
+</button>
+
+<button onclick="toggleSchedulePanel()" class="text-blue-200 hover:text-white text-xl" title="Open Payment Schedule Analyzer">
+<i class="fas fa-table"></i>
+</button>
+
+<button onclick="toggleHelpPanel()" class="text-blue-200 hover:text-white text-xl">
+<i class="fas fa-book"></i>
+</button>
+
+<button onclick="toggleDarkMode()" class="text-blue-200 text-xl" title="Turn NightMode On/Off">
+<i class="fas fa-moon dark:hidden"></i>
+<i class="fas fa-sun hidden dark:block text-yellow-300"></i>
+</button>
+
+</div>
+</div>
+
+<div class="flex flex-col lg:flex-row">
+
+<!-- LEFT PANEL -->
+<div class="w-full lg:w-3/5 p-5 border-r border-slate-200 dark:border-slate-700">
+
+<label class="lbl">Choose Note / Request Template to initiate</label>
+<select id="template" class="inp" onchange="switchTemplate()">
+<option value="">Cast...</option>
+
+
+<optgroup label="BASIC NOTES">
+<option>General</option>
+<option>Required Items</option>
+</optgroup>
+
+<optgroup label="DEPOSIT NOTES">
+<option>Move Deposit</option>
+<option>Lower Deposit</option>
+<option>Skip Deposit</option>
+<option>NSF Deposit</option>
+<option>Update Banking Info</option>
+<option>Refund</option>
+</optgroup>
+
+<optgroup label="SIF NOTES">
+<option>No Funds Needed</option>
+<option>Added Funds</option>
+<option>Rejected</option>
+<option>Moved Fees</option>
+</optgroup>
+
+<optgroup label="REQUESTS">
+<option>Advance Request</option>
+<option>Add Debt Request</option>
+<option>PS Refresh</option>
+<option>Escalations/Manager Request</option>
+<option>Expedited Negotiations Request</option>
+<option>Remove Deposit (Multiple)</option>
+<option>Lump Sum Request</option>
+<option>Expedite Graduation</option>
+</optgroup>
+
+<optgroup label="INTERNAL CASES">
+<option>Bank Update</option>
+<option>Force Refund</option>
+<option>Internal NSF</option>
+</optgroup>
+
+<optgroup label="DEPARTAMENTAL SPECIAL REQUESTS">
+<option>Consult</option>
+<option>NSF Exception</option>
+<option>OTP Override</option>
+<option>Void SIF and Remove Creditor</option>
+<option>CS Operations Request</option>
+<option>CS Correspondence</option>
+<option>Report an Agent</option>
+<option>File Salary Dispute</option>
+</optgroup>
+
+</select>
+
+<div id="fields"></div>
+
+<button onclick="generateNote()" class="mt-3 w-full bg-blue-700 hover:bg-blue-800 text-white rounded-lg py-2">
+Generate
+</button>
+
+
+<button onclick="toggleTemplateOnly(this)" 
+class="mt-2 w-full bg-slate-200 hover:bg-slate-300 text-sm rounded-lg py-2">
+Template Mode: OFF
+</button>
+
+
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="w-full lg:w-2/5 p-5 bg-slate-50 dark:bg-slate-900">
+
+<label class="lbl">Generated Output</label>
+<textarea id="outputArea" readonly class="inp h-96 font-mono"></textarea>
+
+<div class="grid grid-cols-2 gap-2">
+<button onclick="copyToClipboard()" class="bg-blue-50 border rounded py-2 text-sm"><i class="far fa-copy text-xs"></i> Copy</button>
+<button onclick="clearOutput()" class="bg-white border rounded py-2 text-sm"><i class="fas fa-eraser text-xs"></i> Clear</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+/* ===============================
+MEI BALANCE SHEET ANALYZER
+=============================== */
+
+let scheduleData=[]
+
+function toggleSchedulePanel(){
+
+const panel=document.getElementById("schedulePanel")
+
+panel.classList.toggle("hidden")
+
+}
+
+function parseSchedule(){
+
+const text=document.getElementById("scheduleInput").value
+
+const lines=text.split("\n")
+
+scheduleData=[]
+
+lines.forEach((line,i)=>{
+
+// repair messy spacing
+const clean=line.replace(/\s{2,}/g," ").trim()
+
+// detect date
+const dateMatch=clean.match(/\d{2}[-\/]\d{2}[-\/]\d{4}/)
+
+// detect all money values
+const moneyMatches=(clean.match(/\$\d+(?:,\d{3})*(?:\.\d{2})?/g)||[])
+
+// detect status
+const statusMatch=clean.match(/Cleared|Pending|Failed/i)
+
+if(moneyMatches){
+
+moneyMatches.forEach((val,idx)=>{
+
+const amount=parseFloat(val.replace(/[$,]/g,""))
+
+if(!isNaN(amount) && amount>0){
+
+let desc = clean;
+
+// second $ in the row = bank fee
+if(idx===1){
+desc = clean + " bank fee";
+}
+
+scheduleData.push({
+
+id:scheduleData.length,
+date:dateMatch?dateMatch[0]:"",
+amount:amount,
+description:desc,
+status:statusMatch?statusMatch[0]:"",
+enabled:true
+
+})
+
+}
+
+})
+
+}
+
+})
+
+renderSchedule()
+
+}
+
+
+function detectDateFromText(text){
+if(!text) return ""
+let patterns=[
+/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b/,
+/\b\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}\b/,
+/\b\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4}\b/
+]
+for(let p of patterns){
+let m=text.match(p)
+if(m) return m[0]
+}
+return ""
+}
+
+
+
+function detectDate(text){
+ if(!text) return "";
+ const patterns=[
+  /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/,
+  /\b\d{1,2}-\d{1,2}-\d{2,4}\b/,
+  /\b\d{4}-\d{1,2}-\d{1,2}\b/
+ ];
+ for(let p of patterns){
+   let m=text.match(p);
+   if(m) return m[0];
+ }
+ return "";
+}
+
+
+function renderSchedule(){
+
+const table=document.getElementById("scheduleTable")
+
+table.innerHTML=""
+
+scheduleData.forEach(row=>{
+
+const tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>
+<input type="checkbox" ${row.enabled?"checked":""}
+onchange="toggleScheduleRow(${row.id})">
+</td>
+
+<td>${row.date || detectDate(row.description)}</td>
+
+<td style="text-align:right">$${row.amount.toFixed(2)}</td>
+
+<td>${row.description}</td>
+
+<td>${row.status}</td>
+`
+
+table.appendChild(tr)
+
+})
+
+updateScheduleTotals()
+
+}
+
+
+function toggleScheduleRow(id){
+let row=scheduleData.find(r=>r.id===id)
+if(!row) return
+row.enabled=!row.enabled
+updateScheduleTotals()
+}
+
+function updateScheduleTotals(){
+
+let total=0
+let categories={}
+
+let queuedTotal = 0
+let clearedTotal = 0
+let creditors = {}
+let creditorCleared={}
+let creditorQueued={}
+let feeQueued={pb:0,bank:0,legal:0}
+
+
+scheduleData.forEach(r=>{
+
+if(!r.enabled) return
+
+total+=r.amount
+
+let label="Other"
+
+const line=r.description.toLowerCase()
+
+if(line.includes("pb fee")) label="PB Fees"
+else if(line.includes("bank fee")) label="Bank Fees"
+else if(line.includes("legal")) label="Legal Fees"
+else if(line.includes("creditor")) label="Creditor Payments"
+else if(line.includes("deposit")) label="Deposits"
+
+if(!categories[label]) categories[label]=0
+
+categories[label]+=r.amount
+
+// queued / cleared totals
+let statusText=(r.status||"").toLowerCase()
+if(statusText.includes("cleared")){
+    clearedTotal+=r.amount
+}else{
+    queuedTotal+=r.amount
+}
+if(line.includes("pb fee")) feeQueued.pb+=r.amount
+
+if(line.includes("bank fee")){
+    feeQueued.bank+=r.amount
+}
+
+if(line.includes("legal")) feeQueued.legal+=r.amount
+// removed duplicate cleared accumulation
+
+// creditor detection
+let credMatch = r.description ? r.description.match(/[A-Z\/\-]+\([^\)]+\)/) : null
+if(credMatch){
+let bankFeeLine = line.includes("bank fee");
+
+let name = credMatch[0]
+if(!creditors[name]) creditors[name]=0
+creditors[name]+=r.amount
+if((r.status||"").toLowerCase().includes("queued")||(r.description||"").toLowerCase().includes("queued")){
+if(!creditorQueued[name]) creditorQueued[name]=0
+creditorQueued[name]+=r.amount
+}else{
+if(!creditorCleared[name]) creditorCleared[name]=0
+creditorCleared[name]+=r.amount
+}
+
+let bankClearedPerCreditor={}
+let bankQueuedPerCreditor={}
+
+scheduleData.forEach(r=>{
+ if(!r.enabled) return
+ const line=(r.description||"").toLowerCase()
+ if(!line.includes("bank fee")) return
+ let credMatch = r.description ? r.description.match(/[A-Z\/\- ]+\(\d+\)/) : null
+ if(!credMatch) return
+ let c=credMatch[0]
+ if(!bankClearedPerCreditor[c]) bankClearedPerCreditor[c]=0
+ if(!bankQueuedPerCreditor[c]) bankQueuedPerCreditor[c]=0
+ if((r.status||"").toLowerCase().includes("queued") || line.includes("queued")){
+     bankQueuedPerCreditor[c]+=r.amount
+ }else{
+     bankClearedPerCreditor[c]+=r.amount
+ }
+})
+
+let creditorPanel="CREDITOR SUMMARY\n\n"
+Object.keys(creditorCleared).sort().forEach(c=>{
+let cleared=(creditorCleared[c]||0)
+let queued=(creditorQueued[c]||0)
+
+creditorPanel+=c+"\n"
+creditorPanel+="Cleared: $"+cleared.toFixed(2)+"\n"
+creditorPanel+="Queued: $"+queued.toFixed(2)+"\n"
+creditorPanel+="Total bank fees cleared: $"+(bankClearedPerCreditor[c]||0).toFixed(2)+"\n"
+creditorPanel+="Total bank fees queued: $"+(bankQueuedPerCreditor[c]||0).toFixed(2)+"\n\n"
+})
+
+creditorPanel+="QUEUED\n"
+creditorPanel+="Creditor Fees: $"+feeQueued.pb.toFixed(2)+"\n"
+creditorPanel+="Creditor Payments: $"+queuedTotal.toFixed(2)+"\n"
+creditorPanel+="Legal Fees: $"+feeQueued.legal.toFixed(2)+"\n"
+
+let panel=document.getElementById("creditorSummaryPanel")
+if(panel) panel.innerText=creditorPanel
+
+}
+
+
+})
+
+document.getElementById("scheduleTotal").innerText=
+"Total Selected: $" + total.toFixed(2)
+
+let summary=""
+
+Object.keys(categories).forEach(c=>{
+summary+=c+": $"+categories[c].toFixed(2)+"\n"
+})
+
+
+let fullSummary="OVERALL TOTALS\n"
+Object.keys(categories).forEach(c=>{
+fullSummary+=c+": $"+categories[c].toFixed(2)+"\n"
+})
+
+fullSummary+="\nCLEARED TOTAL\n$"+clearedTotal.toFixed(2)+"\n"
+fullSummary+="\nQUEUED TOTAL\n$"+queuedTotal.toFixed(2)+"\n"
+
+fullSummary+="\nPER-CREDITOR TOTALS\n"
+Object.keys(creditors).sort().forEach(c=>{
+fullSummary+=c+": $"+creditors[c].toFixed(2)+"\n"
+})
+
+document.getElementById("scheduleSummary").innerText=fullSummary
+
+
+}
+
+/* ===============================
+   CALCULATOR MODULE
+================================ */
+
+let calculatorOpen = false;
+
+function toggleCalculator(){
+
+document.getElementById("calendarPanel")?.classList.add("hidden");
+document.getElementById("timerPanel")?.classList.add("hidden");
+document.getElementById("helpPanel")?.classList.add("hidden");
+
+const panel = document.getElementById("calculatorPanel");
+
+panel.classList.toggle("hidden");
+
+calculatorOpen = !panel.classList.contains("hidden");
+
+}
+
+function calcPress(v){
+
+const display = document.getElementById("calcDisplay");
+
+display.value += v;
+
+}
+
+function calcClear(){
+
+document.getElementById("calcDisplay").value = "";
+
+}
+
+function calcEquals(){
+
+const display = document.getElementById("calcDisplay");
+
+try{
+display.value = eval(display.value);
+}catch{
+display.value = "Error";
+}
+
+}
+
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
+let timerInterval = null;
+let remainingTime = 0;
+let totalTime = 0;
+
+function toggleCalendar(){
+
+// close other panels
+document.getElementById("timerPanel")?.classList.add("hidden");
+document.getElementById("helpPanel")?.classList.add("hidden");
+
+const panel = document.getElementById("calendarPanel");
+
+panel.classList.toggle("hidden");
+
+if(!panel.classList.contains("hidden")){
+renderCalendar();
+}
+
+}
+
+function changeMonth(step){
+
+currentMonth += step;
+
+if(currentMonth < 0){
+currentMonth = 11;
+currentYear--;
+}
+
+if(currentMonth > 11){
+currentMonth = 0;
+currentYear++;
+}
+
+renderCalendar();
+
+}
+
+function renderCalendar(){
+
+const grid = document.getElementById("calendarGrid");
+const title = document.getElementById("calendarTitle");
+
+grid.innerHTML = "";
+
+const today = new Date();
+
+const firstDay = new Date(currentYear,currentMonth,1).getDay();
+const daysInMonth = new Date(currentYear,currentMonth+1,0).getDate();
+
+const monthNames = [
+"January","February","March","April","May","June",
+"July","August","September","October","November","December"
+];
+
+title.textContent = monthNames[currentMonth] + " " + currentYear;
+
+// day headers
+["S","M","T","W","T","F","S"].forEach(d=>{
+const el = document.createElement("div");
+el.textContent = d;
+el.className = "font-bold text-slate-500";
+grid.appendChild(el);
+});
+
+// empty start cells
+for(let i=0;i<firstDay;i++){
+const empty = document.createElement("div");
+grid.appendChild(empty);
+}
+
+// days
+for(let d=1; d<=daysInMonth; d++){
+
+const cell = document.createElement("div");
+
+cell.textContent = d;
+
+cell.className = "p-1 rounded";
+
+if(
+d === today.getDate() &&
+currentMonth === today.getMonth() &&
+currentYear === today.getFullYear()
+){
+cell.className += " bg-blue-500 text-white";
+}
+
+grid.appendChild(cell);
+
+}
+
+}
+
+
+function toggleTimerPanel(){
+
+// close other panels
+document.getElementById("calendarPanel")?.classList.add("hidden");
+document.getElementById("helpPanel")?.classList.add("hidden");
+
+document.getElementById("timerPanel").classList.toggle("hidden");
+
+}
+
+
+function startTimer(seconds){
+
+stopTimer();
+
+remainingTime = seconds;
+totalTime = seconds;
+
+updateTimerDisplay();
+
+timerInterval = setInterval(()=>{
+
+remainingTime--;
+
+updateTimerDisplay();
+
+if(remainingTime <= 0){
+
+clearInterval(timerInterval);
+
+playBeep();
+
+setTimeout(()=>{
+stopTimer();
+},2000);
+
+}
+
+},1000);
+
+}
+
+function startCustomTimer(){
+
+const mins = parseFloat(document.getElementById("customMinutes").value);
+
+if(!mins || mins <= 0){
+alert("Enter valid minutes");
+return;
+}
+
+startTimer(mins * 60);
+
+}
+
+function stopTimer(){
+
+if(timerInterval){
+clearInterval(timerInterval);
+timerInterval = null;
+}
+
+remainingTime = 0;
+updateTimerDisplay();
+
+}
+
+function updateTimerDisplay(){
+
+const display = document.getElementById("timerDisplay");
+const progress = document.getElementById("timerProgress");
+
+if(!display || !progress) return;
+
+const minutes = Math.floor(remainingTime / 60);
+const seconds = remainingTime % 60;
+
+const timeText =
+String(minutes).padStart(2,'0') + ":" +
+String(seconds).padStart(2,'0');
+
+display.textContent = timeText;
+
+if(remainingTime > 0){
+
+if(remainingTime <= 20){
+document.title = "⚠ " + timeText + " • RETURN";
+}else{
+document.title = timeText + " • ON HOLD";
+}
+
+}else{
+document.title = "Mei Note V.3.1.0";
+}
+
+if(totalTime > 0){
+const percent = (remainingTime / totalTime) * 100;
+progress.style.width = percent + "%";
+}
+
+if(remainingTime <= 30 && remainingTime > 0){
+display.style.color = "#ef4444";
+progress.style.background = "#ef4444";
+}else{
+display.style.color = "";
+progress.style.background = "";
+}
+
+}
+
+function clearSchedule(){
+
+scheduleData=[]
+
+document.getElementById("scheduleInput").value=""
+document.getElementById("scheduleTable").innerHTML=""
+document.getElementById("scheduleTotal").innerText=""
+document.getElementById("scheduleSummary").innerText=""
+
+}
+
+function playBeep(){
+
+const audio = new Audio(
+"data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+);
+
+audio.play();
+
+}
+
+
+function toggleHtmlViewer(url){
+document.getElementById("calendarPanel")?.classList.add("hidden");
+document.getElementById("calculatorPanel")?.classList.add("hidden");
+document.getElementById("timerPanel")?.classList.add("hidden");
+document.getElementById("helpPanel")?.classList.add("hidden");
+document.getElementById("schedulePanel")?.classList.add("hidden");
+const p=document.getElementById("htmlViewerPanel");
+const f=document.getElementById("htmlFrame");
+const opening=p.classList.contains("hidden");
+p.classList.toggle("hidden");
+if(opening){
+ f.src=url||"https://castelmei.com/MeiScript_V.0.1.0";
+ document.getElementById("htmlViewerWindow").style.transform="scale(1)";
+}else{
+ localStorage.setItem("meiViewerLastUrl",f.src);
+ f.src="about:blank";
+}
+}
+
+document.addEventListener("DOMContentLoaded",function(){
+const panel=document.getElementById("htmlViewerPanel");
+const win=document.getElementById("htmlViewerWindow");
+const frame=document.getElementById("htmlFrame");
+if(panel && win){
+panel.addEventListener("click",function(e){
+if(!win.contains(e.target)){
+panel.classList.add("hidden");
+if(frame) frame.src="about:blank";
+}
+});
+}
+});
+
+
+
+
+document.addEventListener("keydown",function(e){
+ if(e.key==="Escape"){
+  const p=document.getElementById("htmlViewerPanel");
+  if(p && !p.classList.contains("hidden")) toggleHtmlViewer();
+ }
+});
+document.addEventListener("DOMContentLoaded",function(){
+ const win=document.getElementById("htmlViewerWindow");
+ if(!win) return;
+ const bar=win.firstElementChild;
+ let drag=false,ox=0,oy=0;
+ bar.style.cursor="move";
+ bar.addEventListener("mousedown",e=>{drag=true;const r=win.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;win.style.position="fixed";});
+ document.addEventListener("mousemove",e=>{if(!drag)return;win.style.left=(e.clientX-ox)+"px";win.style.top=(e.clientY-oy)+"px";});
+ document.addEventListener("mouseup",()=>drag=false);
+});
+
+const memory = {};
+let currentTemplate = '';
+let templateOnly = false;
+
+function toggleTemplateOnly(btn){
+templateOnly = !templateOnly;
+btn.textContent = `Template Only Mode: ${templateOnly ? "ON" : "OFF"}`;
+}
+
+function dd(id, opts){
+return `<select id="${id}" class="inp">
+<option value="">Select...</option>
+${opts.map(o=>`<option>${o}</option>`).join('')}
+</select>`;
+}
+
+function val(id){
+const el=document.getElementById(id);
+return el?el.value:'';
+}
+
+function saveMemory(){
+if(!currentTemplate) return;
+memory[currentTemplate]={};
+document.querySelectorAll('#fields input, #fields select, #fields textarea')
+.forEach(el=>memory[currentTemplate][el.id]=el.value);
+}
+
+function restoreMemory(t){
+if(!memory[t]) return;
+Object.entries(memory[t]).forEach(([id,v])=>{
+const el=document.getElementById(id);
+if(el) el.value=v;
+});
+}
+
+function switchTemplate(){
+
+const selected = document.getElementById("template").value;
+
+//If CS Operations selected → open link
+if(selected === "CS Operations Request"){
+
+window.open("https://forms.office.com/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBWhscJSZQatNsdBOl5ePLPVUMUdTTFY5TUUyVVVJNFZHVzJSTVVQODNaUi4u", "_blank");
+
+// Reset dropdown
+document.getElementById("template").selectedIndex = 0;
+
+return; // Stop function here
+}
+
+//If Report an Agent selected → open link
+if(selected === "Report an Agent"){
+
+window.open("https://forms.office.com/Pages/ResponsePage.aspx?id=YzvnuFr0hEm5fvk7hG6uBbVQtm6I3VdGpIef04Hhe-JUNjNWNVdVMk9JVDI4R0Y0SU1NS04yUFQyQi4u", "_blank");
+
+// Reset dropdown
+document.getElementById("template").selectedIndex = 0;
+
+return; // Stop function here
+}
+
+//If File Salary Dispute selected → open link
+if(selected === "File Salary Dispute"){
+
+window.open("https://forms.cloud.microsoft/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBatITmSR0eZIggAn14YvX7VUOUNQTkxRTlYxVjlBQkpMQjFTTVRBVTAzUy4u&route=shorturl", "_blank");
+
+// Reset dropdown
+document.getElementById("template").selectedIndex = 0;
+
+return; // Stop function here
+}
+
+//CS Correspondence
+if(selected === "CS Correspondence"){
+
+window.open("https://forms.office.com/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBVQfHGMOnGVDsKJc-hKTjx9UM0ZaMkpXNDBCUU9LRlpNRUNBNDhTRUFIQy4u&web=1&wdLOR=c07DA3D6B-D2B7-4852-B124-9ADB1B1EE8AA.com", "_blank");
+document.getElementById("template").selectedIndex = 0;
+return;
+}
+
+// Normal behavior
+saveMemory();
+currentTemplate = selected;
+renderTemplate();
+setTimeout(()=>restoreMemory(currentTemplate),50);
+
+}
+
+function renderTemplate(){
+const f=document.getElementById('fields');
+const t=currentTemplate;
+if(!t){ f.innerHTML=''; return; }
+
+/* ✅ BASIC NOTES */
+if(t==="General"){
+f.innerHTML=`
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+
+/* ✅ Expedited Graduation Request */
+if(t==="Expedite Graduation"){
+f.innerHTML=`
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div><label class="lbl">Current Status equals (Active)</label>${dd("details",["Y","N"])}</div>
+<div><label class="lbl">Total Active debt equals 0:</label>${dd("name4",["Y","N"])}</div>
+<div><label class="lbl">PS Committed Unpaid Creditors equals 0</label>${dd("balances",["Y","N"])}</div>
+<div><label class="lbl">PS Committed Unbilled Fees equals 0</label>${dd("verbal",["Y","N"])}</div>
+<div><label class="lbl">Savings Balance greater than or equal to 0</label>${dd("payment",["Y","N"])}</div>
+<div><label class="lbl">Scheduled Advance Repayments equals 0</label>${dd("method",["Y","N"])}</div>
+<div><label class="lbl">The client has NO Pending Deposits</label>${dd("nofunds",["Y","N"])}</div>
+<div><label class="lbl">All creditor payments have posted</label>${dd("approved",["Y","N"])}</div>
+<div><label class="lbl">DS Number</label>
+<input id="vc" class="inp"></div>
+ <div> <label class="lbl">DS Link</label>
+<input id="vc2" class="inp"></div>
+`;
+}
+
+/* ✅ Void SIF and Remove Creditor */
+if(t==="Void SIF and Remove Creditor"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">Reason:</label>
+<textarea id="notes2" class="inp"></textarea>
+</div>
+<div>
+<label class="lbl">Program Type:</label>
+<input id="main4" class="inp" placeholder="Input Progrm Type (NDR or Gitmeid Law)">
+</div>
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main5" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">CC Number:</label>
+<input id="main6" class="inp" placeholder="Input CC Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main7" class="inp" placeholder="Input DS Link">
+</div>
+<div>
+<label class="lbl">Additional Notes:</label>
+<input id="main8" class="inp" placeholder="Input All Additonal Notes">
+</div>
+
+`;
+}
+
+/* ✅ Consult */
+if(t==="Consult"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">Concern:</label>
+<textarea id="notes2" class="inp"></textarea>
+</div>
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main4" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main5" class="inp" placeholder="Input DS link">
+</div>
+<div>
+<label class="lbl">CC Number:</label>
+<input id="main6" class="inp" placeholder="Input CC Number">
+</div>
+<div>
+<label class="lbl">CC Link:</label>
+<input id="main7" class="inp" placeholder="Input CC Link">
+</div>
+<div>
+<label class="lbl">Cases:</label>
+<input id="main8" class="inp" placeholder="Input All Cases">
+</div>
+
+`;
+}
+
+/* ✅ NSF Exception */
+if(t==="NSF Exception"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div><label class="lbl">Reason</label>${dd("reason",["Prenote","C Scheduled on Client Portal","Prev Agent already resched"])}</div>
+<div>
+<label class="lbl">Concern:</label>
+<textarea id="notes2" class="inp"></textarea>
+</div>
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main4" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main5" class="inp" placeholder="Input DS link">
+</div>
+<div>
+<label class="lbl">CC Number:</label>
+<input id="main6" class="inp" placeholder="Input CC Number">
+</div>
+<div>
+<label class="lbl">CC Link:</label>
+<input id="main7" class="inp" placeholder="Input CC Link">
+</div>
+<div>
+<label class="lbl">Cases:</label>
+<input id="main8" class="inp" placeholder="Input All Cases">
+</div>
+
+`;
+}
+
+/* ✅ Remove Deposit (Multiple) */
+if(t==="Remove Deposit (Multiple)"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">Reason:</label>
+<textarea id="notes2" class="inp"></textarea>
+</div>
+<div>
+<label class="lbl">Number of Deposits:</label>
+<input id="main4" class="inp" placeholder="Input the Nuber of Deposits">
+</div>
+<div>
+<label class="lbl">Amount:</label>
+<input id="main5" class="inp" placeholder="Input Amount">
+</div>
+<div>
+<label class="lbl">Start Date:</label>
+<input id="main6" class="inp" placeholder="Input Start Date">
+</div>
+<div>
+<label class="lbl">End Date:</label>
+<input id="main7" class="inp" placeholder="Input End Date">
+</div>
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main8" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main9" class="inp" placeholder="Input DS Link">
+</div>
+
+`;
+}
+
+/* ✅ Bank Update */
+if(t==="Bank Update"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main3" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main4" class="inp" placeholder="Input DS Link">
+</div>
+<div>
+<label class="lbl">Pending Deposit Date & Amount:</label>
+<input id="main5" class="inp" placeholder="Input Date and Amount">
+</div>
+<div>
+<label class="lbl">EST Post date + 1BD:</label>
+<input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
+</div>
+<div>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<input id="main7" class="inp" placeholder="Input Type">
+</div>
+<div><label class="lbl">Will the deposit clear?</label>${dd("depoc",["Y","N"])}</div>
+<div>
+
+<label class="lbl">EST Post Date</label>
+<input id="main8" class="inp" placeholder="Input Est Post Date">
+</div>
+<div><label class="lbl">Do they want it to clear?</label>${dd("clear",["Y","N"])}</div>
+
+<div><label class="lbl">C wants to use new bank after deposit?</label>${dd("dep",["Y","N"])}</div>
+
+<div><label class="lbl">ATD Signed?</label>${dd("atd",["Y","N"])}</div>
+<div>
+<div><label class="lbl">Validation Completed?</label>${dd("val",["Y","N"])}</div></div>
+<div> 
+<label class="lbl">Account Number</label>
+<input id="main9" class="inp" placeholder="Input Account Number">
+</div><div>
+<label class="lbl">Routing Number</label>
+<input id="main0" class="inp" placeholder="Input Routing Number">
+</div>
+<div><label class="lbl">Checking or Savings?</label>${dd("check",["Checking","Savings"])}</div></div>
+<div> 
+ <div><label class="lbl">Did C requested Callback?</label>${dd("call",["Y","N"])}</div></div>
+</div>
+
+<label class="lbl">Notes/Additional Info</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+
+/* ✅ Force Refund */
+if(t==="Force Refund"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main3" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main4" class="inp" placeholder="Input DS Link">
+</div>
+<div>
+<label class="lbl">Pending Deposit Date & Amount:</label>
+<input id="main5" class="inp" placeholder="Input Date and Amount">
+</div>
+<div>
+<label class="lbl">EST Post date + 1BD:</label>
+<input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
+</div>
+<div>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<input id="main7" class="inp" placeholder="Input Type">
+</div>
+<div><label class="lbl">Funds will clear?</label>${dd("depoc",["Y","N"])}</div>
+
+<div><label class="lbl">Adv about the timeframe?</label>${dd("clear",["Y","N"])}</div>
+
+<div><label class="lbl">Authentication (OTP/KBA)</label>${dd("dep",["Y","N"])}</div>
+
+ <div><label class="lbl">Did C requested Callback?</label>${dd("call",["Y","N"])}</div></div>
+</div>
+
+<label class="lbl">Notes/Additional Info</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+/* ✅ Internal NSF */
+if(t==="Internal NSF"){
+f.innerHTML=`
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">DS Number:</label>
+<input id="main3" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link:</label>
+<input id="main4" class="inp" placeholder="Input DS Link">
+</div>
+<div>
+<label class="lbl">Pending Deposit Date & Amount:</label>
+<input id="main5" class="inp" placeholder="Input Date and Amount">
+</div>
+<div>
+<label class="lbl">EST Post date + 1BD:</label>
+<input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
+</div>
+<div>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<input id="main7" class="inp" placeholder="Input Type">
+</div>
+<div><label class="lbl">NSF Waterfall Completed?</label>${dd("depoc",["Y","N"])}</div>
+<div>
+<label class="lbl">What date & amount were rescheduled (if applicable):</label>
+<input id="main44" class="inp" placeholder="Input Date and Amount">
+</div>
+<div><label class="lbl">Exp set that if pending deposit clear, resch amt will still pull?</label>${dd("clear",["Y","N"])}</div>
+
+<div><label class="lbl">Is the C req the deposit (NSF) to be skipped?</label>${dd("dep",["Y","N"])}</div>
+
+ <div><label class="lbl">Did client specifically request a callback?</label>${dd("call",["Y","N"])}</div></div>
+</div>
+
+<label class="lbl">Reason for callback:</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+
+/* ✅ REQUIRED ITEMS */
+if(t==="Required Items"){
+f.innerHTML=`
+<label class="lbl">Required Item</label>
+<input id="main" class="inp" placeholder="Required Item">
+
+<label class="lbl">RI current status/For:</label>
+<input id="spec" class="inp" placeholder="enter specifics">
+<div class="grid-3">
+<div><label class="lbl">Adv C to ret doc within 24h</label>${dd("24h",["Y","NA"])}</div>
+<div><label class="lbl">Closed/Hold RI for:</label>${dd("closed RI",["closed","hold for 1D","hold for 2D","hold for 3D","hold for 4D","hold for 5D","hold for 6D","hold for 7D"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ OTP OVERRIDE */
+if(t==="OTP Override"){
+f.innerHTML=`
+
+
+<label class="lbl">Client Full Name</label>
+<input id="main2" class="inp" placeholder="C's name as it appears in the account">
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="lbl">DS Number</label>
+<input id="main3" class="inp" placeholder="Input DS Number">
+</div><div>
+<label class="lbl">DS Link</label>
+<input id="main31" class="inp" placeholder="Input DS Link">
+</div><div>
+<div><label class="lbl">DS Link verification Done </label>${dd("24h",["Y","N"])}</div></div>
+<div>
+<label class="lbl">Client Current #</label>
+<input id="main4" class="inp" placeholder="Input Old #">
+</div><div>
+<label class="lbl">Client Updated #</label>
+<input id="main5" class="inp" placeholder="Input New#">
+</div><div>
+<label class="lbl">Client Old Email</label>
+<input id="main6" class="inp" placeholder="Input Old Email">
+</div><div>
+<label class="lbl">Client Updated Email</label>
+<input id="main7" class="inp" placeholder="Input New Email">
+</div>
+
+
+
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+/* ✅ Advance Request */
+if(t==="Advance Request"){
+f.innerHTML=`
+
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="lbl">CC Number</label>
+<input id="main3" class="inp" placeholder="Input CC Number">
+</div>
+
+<div><label class="lbl">Legal</label>${dd("legal",["Y","N"])}</div>
+<div>
+
+<div><label class="lbl">Judgement</label>${dd("jaj",["Y","N"])}</div></div>
+<div>
+
+<div><label class="lbl">Good Deposit Schedule</label>${dd("dep",["Y","N"])}</div></div>
+<div>
+
+<div><label class="lbl">First/Last Account</label>${dd("1st",["Y","N"])}</div></div>
+<div>
+
+ <div><label class="lbl">B/H Updated</label>${dd("b/h",["Y","N"])}</div></div>
+<div> 
+
+ <div><label class="lbl">Unemployed</label>${dd("jobless",["Y","N"])}</div></div>
+<div> 
+
+ <div><label class="lbl">Committed to Deposits</label>${dd("deposit",["Y","N"])}</div></div>
+
+<div> 
+<label class="lbl">Total Fees Cleared</label>
+<input id="main31" class="inp" placeholder="Total Fees Cleared">
+</div>
+<div>
+<label class="lbl">Amount Needed</label>
+<input id="main5" class="inp" placeholder="Amount Needed">
+</div>
+<div>
+<label class="lbl">Recoup Time</label>
+<input id="main6" class="inp" placeholder="MM/DD/YY">
+</div>
+<div>
+<label class="lbl">DS Link</label>
+<input id="main7" class="inp" placeholder="Input DS LINK - https://...">
+</div>
+
+
+
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+/* ✅ ADD DEBT REQUEST */
+if(t==="Add Debt Request"){
+f.innerHTML=`
+
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="lbl">Creditor Name</label>
+<input id="main333" class="inp" placeholder="Input Creditor Name">
+</div>
+<div>
+<label class="lbl">CC Number</label>
+<input id="main3" class="inp" placeholder="Input CC Number">
+</div>
+<div> 
+<label class="lbl">Account Balance</label>
+<input id="main31" class="inp" placeholder="Input Account Balance">
+</div>
+
+<div>
+<label class="lbl">Account Number</label>
+<input id="main51" class="inp" placeholder="Input Account Number">
+</div>
+
+<div>
+<label class="lbl">Case Number</label>
+<input id="main5" class="inp" placeholder="Input Case Number">
+</div>
+
+<div><label class="lbl">Debt Not Enrolled?</label>${dd("legal",["Y","N"])}</div>
+
+<div><label class="lbl">Debt Acceptable?</label>${dd("dep",["Y","N"])}</div>
+
+<div><label class="lbl">Debt not in Legal Status?</label>${dd("1st",["Y","N"])}</div>
+
+
+<div><label class="lbl">Debt is Unsecured?</label>${dd("b/h",["Y","N"])}</div>
+
+<div><label class="lbl">Verified Debt Amount?</label>${dd("jobless",["Y","N"])}</div>
+<div><label class="lbl">Need PS Refresh?</label>${dd("deposit",["Y","N"])}</div>
+<div>
+
+ <div><label class="lbl">Creditor Loan/Debt Statement Sent</label>${dd("state",["Y","N"])}</div>
+</div></div>
+
+<label class="lbl">DS Link</label>
+<input id="main7" class="inp" placeholder="https://...">
+
+
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+/* ✅ ESCALATIONS */
+if(t==="Escalations/Manager Request"){
+f.innerHTML=`
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">Coach/Team Leader</label>
+<input id="main2" class="inp" placeholder="Coach Name/Nickname">
+</div>
+
+<div>
+<label class="lbl">DS Number</label>
+<input id="main333" class="inp" placeholder="Input DS Number">
+</div>
+<div>
+<label class="lbl">DS Link</label>
+<input id="link" class="inp" placeholder="Input DS Link">
+</div>
+<div>
+<label class="lbl">Call Back Time</label>
+<input id="main51" class="inp" placeholder="Input C's Preferred Call Back Time">
+</div>
+<div>
+<label class="lbl">C's PTN/Contact Number to Call</label>
+<input id="main5" class="inp" placeholder="Client's Preferred Number to Call">
+</div>
+</div>
+<div> 
+<label class="lbl">Issue</label>
+<textarea id="main3" class="inp" placeholder="Input Issue"></textarea>
+</div>
+
+<div>
+<label class="lbl">Resolution Provided</label>
+<textarea id="Resolution" class="inp" placeholder="Resolution"></textarea>
+</div>
+
+<div>
+<label class="lbl">Help Needed</label>
+<textarea id="main31" class="inp" placeholder="Input Help Needed"></textarea>
+</div>
+
+
+`;
+}
+
+/* ✅ EXPEDITED NEGOTIATIONS REQUEST */
+if(t==="Expedited Negotiations Request"){
+f.innerHTML=`
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">Creditor Name(s)</label>
+<input id="main2" class="inp" placeholder="Input Creditor Name(s)">
+</div>
+
+<div>
+<label class="lbl">CC Number(s)</label>
+<input id="main333" class="inp" placeholder="Input CC #(s)">
+</div>
+
+<div>
+<label class="lbl">CC Number(s) Link</label>
+<input id="main51" class="inp" placeholder="Input CC Links">
+</div>
+
+<div>
+<div><label class="lbl">Request Type</label>${dd("req",["Expedite Negotiation","Expedite Negotiation/Last Account","Expedite Negotiation/Rework Creditor"])}</div>
+</div> 
+</div>
+<div>
+<div><label class="lbl">Does the client have at least 25% of the OB (original balance) in their savings account?</label>${dd("jobless",["Y","N"])}</div>
+</div> 
+
+<div>
+<div><label class="lbl">Bulk Creditor</label>${dd("24h",["Y","N"])}</div>
+</div>
+
+<div>
+<label class="lbl">Provide Creditor Bulk Name (Otherwise, put "NA")</label>
+<input id="main69" class="inp" placeholder="Creditor Bulk Name, if applicable">
+</div>
+
+<div>
+<label class="lbl">Please provide more details on the urgency of this request</label>
+<textarea id="main31" class="inp" placeholder="Provide more information"></textarea>
+</div>
+
+
+`;
+}
+
+/* ✅ LUMP SUM REQUEST */
+if(t==="Lump Sum Request"){
+f.innerHTML=`
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="lbl">DS Number(s)</label>
+<input id="main2" class="inp" placeholder="Input Creditor(s) DS Number">
+</div>
+
+<div>
+<label class="lbl">DS Link(s)</label>
+<input id="main333" class="inp" placeholder="https://...">
+</div>
+
+<div>
+<label class="lbl">CC Number(s)</label>
+<input id="main51" class="inp" placeholder="Input CC Number">
+</div>
+
+<div>
+<div><label class="lbl">Request Type</label>${dd("req",["Expedite LS for Creditor","Expedite LS/Last Account","Expedite Lump Sum (All)"])}</div>
+</div> 
+</div>
+
+
+<div>
+<label class="lbl">Reason for Expedited Request</label>
+<textarea id="main31" class="inp" placeholder="Provide more information"></textarea>
+</div>
+
+
+`;
+}
+
+/* ✅ PS REFRESH */
+if(t==="PS Refresh"){
+f.innerHTML=`
+
+
+<label class="lbl">Agent Full Name</label>
+<input id="main2" class="inp" placeholder="Agent Full Name">
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="lbl">DS NUMBER</label>
+<input id="main333" class="inp" placeholder="Input DS Nmber">
+</div>
+<div>
+<label class="lbl">TOTAL ENROLLED DEBT</label>
+<input id="main3" class="inp" placeholder="Input Total Enrolled Debt">
+</div>
+<div> 
+<label class="lbl">CURRENT TERM</label>
+<input id="main31" class="inp" placeholder="Input Current Term">
+</div>
+
+<div>
+<label class="lbl">TOTAL ENROLLED MONTHS</label>
+<input id="main51" class="inp" placeholder="Input Total Enrolled Months">
+</div>
+
+<div>
+<label class="lbl">OLD DEPOSIT AMOUNT</label>
+<input id="main5" class="inp" placeholder="Input Old Deposit Amount">
+</div>
+
+<div>
+<label class="lbl">NEW DEPOSIT AMOUNT</label>
+<input id="main55" class="inp" placeholder="Input New Deposit Amount">
+</div>
+
+<div><label class="lbl">OLD FREQUENCY</label>${dd("legal",["Monthly","Semi - Monthly","Bi - Weekly"])}</div>
+
+<div><label class="lbl">NEW FREQUENCY</label>${dd("dep",["Monthly","Semi - Monthly","Bi - Weekly"])}</div>
+</div>
+
+<label class="lbl">DS LINK</label>
+<input id="main7" class="inp" placeholder="https://...">
+<label class="lbl">REASON</label>
+<textarea id="notes" class="inp"></textarea>
+
+`;
+}
+
+/* ✅ MOVE DEPOSIT */
+if(t==="Move Deposit"){
+f.innerHTML=`
+<label class="lbl">Move Deposit</label>
+<input id="main" class="inp" placeholder="Date and amount">
+
+<div class="grid-3">
+<div><label class="lbl">Rev hardship</label>${dd("hardship",["Y","NA"])}</div>
+<div><label class="lbl">Rev account/runner</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">Rev Waterfall</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
+<div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
+<div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ SKIP DEPOSIT */
+if(t==="Skip Deposit"){
+f.innerHTML=`
+<label class="lbl">Skip Deposit</label>
+<input id="main" class="inp" placeholder="Date and amount">
+
+<div class="grid-3">
+<div><label class="lbl">Rev hardship</label>${dd("hardship",["Y","NA"])}</div>
+<div><label class="lbl">Rev account/runner</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">Rev Waterfall</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
+<div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
+<div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ LOWER DEPOSIT */
+if(t==="Lower Deposit"){
+f.innerHTML=`
+<label class="lbl">Lower Deposit</label>
+<input id="main" class="inp" placeholder="Date and amount → amount">
+
+<div class="grid-3">
+<div><label class="lbl">Rev hardship</label>${dd("hardship",["Y","NA"])}</div>
+<div><label class="lbl">Rev account/runner</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">Rev Waterfall</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
+<div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
+<div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ NSF DEPOSIT*/
+if(t==="NSF Deposit"){
+f.innerHTML=`
+<label class="lbl">NSF Deposit</label>
+<input id="main" class="inp" placeholder="Date and amount">
+
+<div class="grid-3">
+<div><label class="lbl">Rev hardship</label>${dd("hardship",["Y","NA"])}</div>
+<div><label class="lbl">Rev account/runner</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">Rev Waterfall</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">C requested to</label>${dd("requested to",["Resch full amount","Resch partial amount" ,"Skip"])}</div>
+
+<div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
+<div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
+<div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ UPDATE BANKING INFO*/
+if(t==="Update Banking Info"){
+f.innerHTML=`
+
+<div class="grid-3">
+<div><label class="lbl">Ver no pending deposits</label>${dd("deposit",["Y","NA"])}</div>
+<div><label class="lbl">Reviewed if deposits in 5 bd</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">ADVISED Bank Disc</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">Verified Acnt/Rout</label>${dd("acnt",["Y","NA"])}</div>
+
+<div><label class="lbl">Sent ATD</label>${dd("ATD",["Y","NA"])}</div>
+<div><label class="lbl">C signed on the line</label>${dd("sign",["Y","NA"])}</div>
+<div><label class="lbl">Adv should take 5 bd to update</label>${dd("draft",["Y","NA"])}</div>
+  <div><label class="lbl">Rev next deposit</label>${dd("depo",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ REFUND*/
+if(t==="Refund"){
+f.innerHTML=`
+
+<label class="lbl">Refund</label>
+<input id="main" class="inp" placeholder="Amount">
+
+<div class="grid-3">
+<div><label class="lbl">Rev hardship</label>${dd("hardship",["Y","NA"])}</div>
+<div><label class="lbl">Rev DSA Balance</label>${dd("runner",["Y","NA"])}</div>
+<div><label class="lbl">Rev Waterfall</label>${dd("waterfall",["Y","NA"])}</div>
+<div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","delete"])}</div>
+<div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
+<div><label class="lbl">Sent contact info email</label>${dd("draft",["Y","NA"])}</div>
+</div>
+  <div><label class="lbl">Adv refund verbiage</label>${dd("verb",["Y","NA"])}</div>
+</div>
+
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ NO FUNDS NEEDED SIF */
+if(t==="No Funds Needed"){
+f.innerHTML=`
+<label class="lbl">Settlement for</label>
+<input id="creditor" class="inp">
+
+<div class="grid-3">
+<div><label class="lbl">Reviewed SIF Details</label>${dd("details",["Y","NA"])}</div>
+<div><label class="lbl">Name, Last 4</label>${dd("name4",["Y","NA"])}</div>
+<div><label class="lbl">Orig. Bal, Curr. Bal, Sif Bal</label>${dd("balances",["Y","NA"])}</div>
+<div><label class="lbl">Verbal/Written</label>${dd("verbal",["Y","NA"])}</div>
+<div><label class="lbl">Payment amount/date ranges</label>${dd("payment",["Y","NA"])}</div>
+<div><label class="lbl">Payment method</label>${dd("method",["Y","NA"])}</div>
+<div><label class="lbl">Adv no additional funds needed</label>${dd("nofunds",["Y","NA"])}</div>
+<div><label class="lbl">Client approved</label>${dd("approved",["Y","NA"])}</div>
+<div><label class="lbl">Rev Approval Disc</label>${dd("disc",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ ADDED FUNDS */
+if(t==="Added Funds"){
+f.innerHTML=`
+<label class="lbl">Settlement for</label>
+<input id="creditor" class="inp">
+<label class="lbl">Scheduled</label>
+<input id="schedule" class="inp">
+<div class="grid-3">
+<div><label class="lbl">Reviewed SIF Details</label>${dd("details",["Y","NA"])}</div>
+<div><label class="lbl">Name, Last 4</label>${dd("name4",["Y","NA"])}</div>
+<div><label class="lbl">Orig. Bal, Curr. Bal, Sif Bal</label>${dd("balances",["Y","NA"])}</div>
+<div><label class="lbl">Verbal/Written</label>${dd("verbal",["verbal","written"])}</div>
+<div><label class="lbl">Payment amount/date ranges</label>${dd("payment",["Y","NA"])}</div>
+<div><label class="lbl">Payment method</label>${dd("method",["Y","NA"])}</div>
+<div><label class="lbl">Reviewed funds needed</label>${dd("withfunds",["Y","NA"])}</div> 
+<div><label class="lbl">Client approved of SIF</label>${dd("app",["Y","N","NA"])}</div>
+  <div><label class="lbl">Rev Approval Disc</label>${dd("rev",["Y","NA"])}</div>
+<div><label class="lbl">Sent Draft</label>${dd("approved",["Y","NA"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ REJECTED */
+if(t==="Rejected"){
+f.innerHTML=`
+<label class="lbl">Settlement for</label>
+<input id="creditor" class="inp">
+<label class="lbl">Scheduled funds</label>
+<input id="schedule" class="inp">
+<div class="grid-3">
+<div><label class="lbl">Reviewed SIF Details</label>${dd("details",["Y","NA"])}</div>
+<div><label class="lbl">Name, Last 4</label>${dd("name4",["Y","NA"])}</div>
+<div><label class="lbl">Orig. Bal, Curr. Bal, Sif Bal</label>${dd("balances",["Y","NA"])}</div>
+<div><label class="lbl">Verbal/Written</label>${dd("verbal",["verbal","written"])}</div>
+<div><label class="lbl">Payment amount/date ranges</label>${dd("payment",["Y","NA"])}</div>
+<div><label class="lbl">Payment method</label>${dd("method",["Y","NA"])}</div>
+<div><label class="lbl">Reviewed funds needed</label>${dd("withfunds",["Y","NA"])}</div> 
+<div><label class="lbl">C unable to amount needed</label>${dd("app",["Y","NA"])}</div>
+<div><label class="lbl">Rev if we can add less</label>${dd("less",["Y","NA"])}</div>
+<div><label class="lbl">Rev Approval Disc</label>${dd("rev",["Y","NA"])}</div>
+<div><label class="lbl">Sent Draft</label>${dd("approved",["Y","NA"])}</div>
+<div><label class="lbl">Addtl funds still needed</label>${dd("addtl",["Y","NA"])}</div>
+
+<div><label class="lbl">Advance rev/approved</label>${dd("adv",["Y","NA"])}</div>
+<div><label class="lbl">Advance rej disc.</label>${dd("rej",["Y","N"])}</div>
+
+<div><label class="lbl">Advance rejected</label>${dd("r",["Y","N"])}</div>
+
+</div><div><label class="lbl">C approved reject offer</label>${dd("rj",["Y","N"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ MOVED FEES */
+if(t==="Moved Fees"){
+f.innerHTML=`
+<label class="lbl">Settlement for</label>
+<input id="creditor" class="inp">
+<label class="lbl">Scheduled funds</label>
+<input id="schedule" class="inp">
+<div class="grid-3">
+<div><label class="lbl">Reviewed SIF Details</label>${dd("details",["Y","NA"])}</div>
+<div><label class="lbl">Name, Last 4</label>${dd("name4",["Y","NA"])}</div>
+<div><label class="lbl">Orig. Bal, Curr. Bal, Sif Bal</label>${dd("balances",["Y","NA"])}</div>
+<div><label class="lbl">Verbal/Written</label>${dd("verbal",["verbal","written"])}</div>
+<div><label class="lbl">Payment amount/date ranges</label>${dd("payment",["Y","NA"])}</div>
+<div><label class="lbl">Payment method</label>${dd("method",["Y","NA"])}</div>
+<div><label class="lbl">Reviewed funds needed</label>${dd("withfunds",["Y","NA"])}</div> 
+<div><label class="lbl">C unable to amount needed</label>${dd("app",["Y","NA"])}</div>
+<div><label class="lbl">Rev if we can add less</label>${dd("less",["Y","NA"])}</div>
+<div><label class="lbl">Rev Approval Disc</label>${dd("rev",["Y","NA"])}</div>
+<div><label class="lbl">Sent Draft</label>${dd("approved",["Y","NA"])}</div>
+<div><label class="lbl">Addtl funds still needed</label>${dd("addtl",["Y","NA"])}</div>
+
+<div><label class="lbl">Ver no needed funds</label>${dd("noaddtl",["Y","N"])}</div>
+
+</div><div><label class="lbl">C approved SIF</label>${dd("rj",["Y","N"])}</div>
+</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ LEGAL INTAKE */
+if(t==="Legal Intake"){
+f.innerHTML=`
+<label class="lbl">C informed us they received a summons for:</label>
+<input id="main" class="inp" placeholder="Creditor Name">
+
+<div class="grid-3">
+<div><label class="lbl">Completed legal intake</label>${dd("li",["Y","N"])}</div>
+</div>
+<label class="lbl">(1) What date were you served?</label>
+<input id="date" class="inp" placeholder="Date">
+  <label class="lbl">(2)In what manner were you served?</label>
+<input id="manner" class="inp" placeholder="Via mail, sheriff, etc.">
+  <label class="lbl">(3)What state was the summons filed in?</label>
+<input id="state" class="inp" placeholder="State">
+  <label class="lbl">(4)Who is listed as the
+Plaintiff:</label>
+<input id="plaintiff" class="inp" placeholder="Plaintiff name">
+  <label class="lbl">Defendant</label>
+<input id="defend" class="inp" placeholder="List all names">
+  <label class="lbl">Attorney for Plaintiff:</label>
+<input id="atty" class="inp" placeholder="List all names">
+  <label class="lbl">(5)What is the docket or case number listed on
+the summons?</label>
+<input id="docket" class="inp" placeholder="Docket/Case Number">
+    <label class="lbl">(6)How many days do you have to respond?</label>
+<input id="days" class="inp" placeholder="How many days">
+    <label class="lbl">(7)When is the response or answer to the summons
+due?</label>
+<input id="respo" class="inp" placeholder="Response Due">
+    <label class="lbl">(8)Please review the summons carefully - Do you
+have a court appearance or hearing scheduled?
+If so when?</label>
+<input id="court" class="inp" placeholder="Hearing Schedule">
+<div><label class="lbl">(9)Do you or anyone listed on the summons receive any form of government income? If they say yes, pls request to send us proof in
+the next 24 hrs</label>${dd("rip",["Y","N"])}</div>
+
+  <div><label class="lbl">Set up RI for summons needed/created urgency
+to send it to us</label>${dd("gi",["Y","N"])}</div>
+
+<div><label class="lbl">Filled in lawsuit info box</label>${dd("law",["Y","N"])}</div>
+
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+/* ✅ Pro Se */
+if(t==="Pro Se"){
+f.innerHTML=`
+<label class="lbl">C informed us they received a summons for:</label>
+<input id="main" class="inp" placeholder="Creditor Name">
+
+<div class="grid-3">
+<div><label class="lbl">Completed legal intake</label>${dd("li",["Y","N"])}</div>
+</div>
+<label class="lbl">(1) What date were you served?</label>
+<input id="date" class="inp" placeholder="Date">
+  <label class="lbl">(2)In what manner were you served?</label>
+<input id="manner" class="inp" placeholder="Via mail, sheriff, etc.">
+  <label class="lbl">(3)What state was the summons filed in?</label>
+<input id="state" class="inp" placeholder="State">
+  <label class="lbl">(4)Who is listed as the
+Plaintiff:</label>
+<input id="plaintiff" class="inp" placeholder="Plaintiff name">
+  <label class="lbl">Defendant</label>
+<input id="defend" class="inp" placeholder="List all names">
+  <label class="lbl">Attorney for Plaintiff:</label>
+<input id="atty" class="inp" placeholder="List all names">
+  <label class="lbl">(5)What is the docket or case number listed on
+the summons?</label>
+<input id="docket" class="inp" placeholder="Docket/Case Number">
+    <label class="lbl">(6)How many days do you have to respond?</label>
+<input id="days" class="inp" placeholder="How many days">
+    <label class="lbl">(7)When is the response or answer to the summons
+due?</label>
+<input id="respo" class="inp" placeholder="Response Due">
+    <label class="lbl">(8)Please review the summons carefully - Do you
+have a court appearance or hearing scheduled?
+If so when?</label>
+<input id="court" class="inp" placeholder="Hearing Schedule">
+<div><label class="lbl">(9)Do you or anyone listed on the summons receive any form of government income? If they say yes, pls request to send us proof in
+the next 24 hrs</label>${dd("rip",["Y","N"])}</div>
+
+  <div><label class="lbl">Set up RI for summons needed/created urgency
+
+to send it to us</label>${dd("gi",["Y","N"])}</div>
+<div><label class="lbl">Offered option for Prose</label>${dd("prose",["C Approved","C Denied"])}</div>
+
+<div><label class="lbl">Filled in lawsuit info box</label>${dd("law",["Y","N"])}</div>
+<label class="lbl">Notes</label>
+<textarea id="notes" class="inp"></textarea>
+
+<label class="lbl">VC Link</label>
+<input id="vc" class="inp">
+`;
+}
+
+
+}
+
+function line(label,id){
+const v=val(id);
+if(!v || v==="Delete" || v==="delete") return '';
+return `${label}: ${v}\n`;
+}
+
+function generateNote(){
+if(!currentTemplate){ alert("Select template"); return; }
+
+let note="";
+
+note+=`BPO Agent
+Sw: C
+Greet, rec disc, validated: Y
+Discussed w. C:
+
+`;
+
+if(currentTemplate==="Expedite Graduation"){
+note+=`Request for Early Graduation${val("main2")}\n`;
+note+=line("Current Status equals (Active)","details");
+note+=line("Total Active debt equals 0","name4");
+note+=line("PS Committed Unpaid Creditors equals 0","balances");
+note+=line("PS Committed Unbilled Fees equals 0","verbal");
+note+=line("Savings Balance greater than or equal to 0","payment");
+note+=line("Scheduled Advance Repayments equals 0","method");
+note+=line("The client has NO Pending Deposits","nofunds");
+note+=line("All creditor payments have posted","approved");
+note+=`DS Number: ${val("vc")}\n`;
+note+=`DS Link: ${val("vc2")}\n`;
+}
+
+if(currentTemplate==="Void SIF and Remove Creditor"){
+
+note+=`Cancel SIF Request -  ${val("main2")}\n`;
+note+=`Reason: ${val("notes2")}\n`;
+
+note+=`Program Type: ${val("main4")}\n`;
+note+=`DS Number: ${val("main5")}\n`;
+note+=`CC Number: ${val("main6")}\n`;
+note+=`DS Link: ${val("main7")}\n`;
+note+=`Additonal Notes: ${val("main8")}\n`;
+}
+
+if(currentTemplate==="Consult"){
+
+note+=`Consult -  ${val("main2")}\n`;
+note+=`Concern: ${val("notes2")}\n`;
+
+note+=`DS Number: ${val("main4")}\n`;
+note+=`DS Link: ${val("main5")}\n`;
+note+=`CC Number: ${val("main6")}\n`;
+note+=`CC Link: ${val("main7")}\n`;
+note+=`Notes: ${val("main8")}\n`;
+}
+
+if(currentTemplate==="NSF Exception"){
+
+note+=`NSF Exception -  ${val("main2")}\n`;
+
+note+=line("Reason: ","reason");
+note+=`Concern: ${val("notes2")}\n`;
+note+=`DS Number: ${val("main4")}\n`;
+note+=`DS Link: ${val("main5")}\n`;
+note+=`CC Number: ${val("main6")}\n`;
+note+=`CC Link: ${val("main7")}\n`;
+note+=`Notes: ${val("main8")}\n`;
+}
+
+if(currentTemplate==="Remove Deposit (Multiple)"){
+
+note+=`Remove Deposit -  ${val("main2")}\n`;
+note+=`Reason: ${val("notes2")}\n`;
+
+note+=`Number of Deposit: ${val("main4")}\n`;
+note+=`Amount: ${val("main5")}\n`;
+note+=`Start Date: ${val("main6")}\n`;
+note+=`End Date: ${val("main7")}\n`;
+note+=`DS Number: ${val("main8")}\n`;
+note+=`DS Link: ${val("main9")}\n`;
+}
+
+if(currentTemplate==="Bank Update"){
+
+note+=`Internal Case Request -  ${val("main2")}\n`;
+note+=`DS Number: ${val("main3")}\n`;
+note+=`DS Link: ${val("main4")}\n`;
+note+=`Pending Deposit Date & Amount: ${val("main5")}\n`;
+note+=`EST Post date + 1BD: ${val("main6")}\n`;
+note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
+
+note+=`[Banking Update]
+Will the deposit clear?(Y/N) ${val("depoc")}\n`;
+note+=`EST Post Date: ${val("main8")}\n`;
+note+=line("Do they want it to clear?: ","clear");
+note+=line("C wants to use new bank after deposit?: ","dep");
+note+=line("ATD Signed?: ","atd");
+note+=line("Validation Completed?: ","val");
+note+=`Account Number: ${val("main9")}\n`;
+note+=`Routing Number: ${val("main0")}\n`;
+note+=`Checking or Savings? ${val("check")}\n`;
+note+=`Did C requested a callback? ${val("call")}\n`;
+}
+
+if(currentTemplate==="Force Refund"){
+
+note+=`Internal Case Request -  ${val("main2")}\n`;
+note+=`DS Number: ${val("main3")}\n`;
+note+=`DS Link: ${val("main4")}\n`;
+note+=`Pending Deposit Date & Amount: ${val("main5")}\n`;
+note+=`EST Post date + 1BD: ${val("main6")}\n`;
+note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
+
+note+=`Funds will clear? ${val("depoc")}\n`;
+note+=line("Adv about timeframe?: ","clear");
+note+=line("Authentication (OTP/KBA): ","dep");
+note+=`Did C requested a callback? ${val("call")}\n`;
+}
+
+if(currentTemplate==="Internal NSF"){
+
+note+=`Internal Case Request -  ${val("main2")}\n`;
+note+=`DS Number: ${val("main3")}\n`;
+note+=`DS Link: ${val("main4")}\n`;
+note+=`Pending Deposit Date & Amount: ${val("main5")}\n`;
+note+=`EST Post date + 1BD: ${val("main6")}\n`;
+note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
+
+note+=`NSF Waterfall Completed? ${val("depoc")}\n`;
+note+=`What date & amount were rescheduled (if applicable): ${val("main44")}\n`;
+note+=line("Expectations set that should pending deposit clear, rescheduled amount will also still pull??: ","clear");
+note+=line("Is the client requesting the deposit (NSF) to be skipped?: ","dep");
+note+=`Did C requested a callback? ${val("call")}\n`;
+}
+
+if(currentTemplate==="Skip Deposit"){
+note+=`Skip Deposit: ${val("main")}\n`;
+note+=line("Rev hardship","hardship");
+note+=line("Rev account/runner","runner");
+note+=line("Rev Waterfall","waterfall");
+note+=line("Rev 90DD","dd90");
+note+=line("[Checked/Rev ISD]","isd");
+note+=line("Sent draft","draft");
+}
+
+if(currentTemplate==="Basic"){
+}
+
+if(currentTemplate==="Required Items"){
+note+=`Required Item: ${val("main")}\n`;
+note+=`RI current status/For: ${val("spec")}\n`;
+note+=line("Adv C to expedite and send/return doc in within 24h","24h");
+note+=line("Closed/Hold RI for","closed RI");
+}
+
+if(currentTemplate==="OTP Override"){
+note+=`OTP OVERRIDE REQUEST${val("main")}\n`;
+note+=`Client Full Name: ${val("main2")}\n`;
+note+=`DS Number: ${val("main3")}\n`;
+note+=`DS Link: ${val("main31")}\n`;
+note+=line("DS Link verification Done:","24h");
+note+=`Client Current #: ${val("main4")}\n`;
+note+=`Client Updated #: ${val("main5")}\n`;
+note+=`Client Old Email: ${val("main6")}\n`;
+note+=`Client Updated Email: ${val("main7")}\n`;
+}
+
+if(currentTemplate==="Advance Request"){
+
+note+=`Advance Request -  ${val("main2")}\n`;
+note+=`CC Number: ${val("main3")}\n`;
+note+=line("Legal","legal");
+note+=line("Good Dep. Sched","dep");
+note+=line("First/Last Acc","1st");
+note+=line("B/H Updated","b/h");
+note+=line("Unemployed?","jobless");
+note+=line("Committed to Deposits?","deposit");
+note+=`Total Fess Cleared: ${val("main31")}\n`;
+note+=`Amount Needed: ${val("main5")}\n`;
+note+=`Recoup Time: ${val("main6")}\n`;
+note+=`DS Link: ${val("main7")}\n`;
+}
+
+if(currentTemplate==="Add Debt Request"){
+
+note+=`Add Debt Request -  ${val("main2")}\n`;
+note+=`Creditor Name: ${val("main333")}\n`;
+note+=`CC Number: ${val("main3")}\n`;
+note+=`Account Balance: ${val("main31")}\n`;
+note+=`Account Number: ${val("main51")}\n`;
+note+=`Case Number: ${val("main5")}\n`;
+note+=line("Debt Not Enrolled?","legal");
+note+=line("Debt Acceptable?","dep");
+note+=line("Debt Not in Legal Status?","1st");
+note+=line("Debt is Unsecured?","b/h");
+note+=line("Verified Debt Amount?","jobless");
+note+=line("PS Refresh Needed","deposit");
+note+=line("Creditor Statement Sent?","state");
+note+=`DS LINK: ${val("main7")}\n`;
+}
+
+if(currentTemplate==="PS Refresh"){
+
+note+=`PS Refresh Request -  ${val("main2")}\n`;
+note+=`DS Number: ${val("main333")}\n`;
+note+=`TOTAL Enrolled Debt: ${val("main3")}\n`;
+note+=`Current Term: ${val("main31")}\n`;
+note+=`Total Enrolled Months: ${val("main51")}\n`;
+note+=`Old Deposit Amount: ${val("main5")}\n`;
+note+=`New Deposit Amount: ${val("main55")}\n`;
+note+=line("Old Deposit Amount","legal");
+note+=line("New Deposit Amount","dep");
+note+=`DS Link: ${val("main7")}\n`;
+note+=`Reason: ${val("aaa")}\n`;
+}
+
+if(currentTemplate==="Escalations/Manager Request"){
+note+=`Escalation/Manager Request${val("main1")}\n`;
+note+=`${val("main0")}\n`;
+note+=`Coach: ${val("main2")}\n`;
+note+=`DS Number: ${val("main333")}\n`;
+note+=`DS Link: ${val("link")}\n`;
+note+=`Call Back Time: ${val("main51")}\n`;
+note+=`C's PTN: ${val("main5")}\n`;
+note+=`Issue: ${val("main3")}\n`;
+note+=`Resolution Provided: ${val("Resolution")}\n`;
+note+=`Help needed: ${val("main31")}\n`;
+}
+
+if(currentTemplate==="Expedited Negotiations Request"){
+note+=`Expedited Negotiations Request${val("main1")}\n`;
+note+=`${val("main0")}\n`;
+note+=`Creditor Name: ${val("main2")}\n`;
+note+=`CC Number: ${val("main333")}\n`;
+note+=`CC Number(s) Link: ${val("main51")}\n`;
+note+=line("Does the client have at least 25% of the OB (original balance) in their DSA?","jobless");
+note+=line("Buk Creditor","24h");
+note+=line("Request Type","req");
+note+=`Provide Creditor Bulk Name: ${val("main69")}\n`;
+note+=`Please provide more details on the urgency of this request: ${val("main31")}\n`;
+}
+
+if(currentTemplate==="Lump Sum Request"){
+note+=`Expedited Negotiations Request${val("main1")}\n`;
+note+=`${val("main0")}\n`;
+note+=`DS Number(s): ${val("main2")}\n`;
+note+=`DS Link(s): ${val("main333")}\n`;
+note+=`CC NUMBER(S): ${val("main51")}\n`;
+
+note+=line("Request Type: ","req");
+
+note+=`Reason for Expedited Request: ${val("main31")}\n`;
+}
+
+if(currentTemplate==="Lower Deposit"){
+note+=`Lower Deposit: ${val("main")}\n`;
+note+=line("Rev hardship","hardship");
+note+=line("Rev account/runner","runner");
+note+=line("Rev Waterfall","waterfall");
+note+=line("Rev 90DD","dd90");
+note+=line("[Checked/Rev ISD]","isd");
+note+=line("Sent draft","draft");
+}
+
+if(currentTemplate==="Move Deposit"){
+note+=`Move Deposit: ${val("main")}\n`;
+note+=line("Rev hardship","hardship");
+note+=line("Rev account/runner","runner");
+note+=line("Rev Waterfall","waterfall");
+note+=line("Rev 90DD","dd90");
+note+=line("[Checked/Rev ISD]","isd");
+note+=line("Sent draft","draft");
+}
+
+if(currentTemplate==="NSF Deposit"){
+note+=`NSF: ${val("main")}\n`;
+note+=line("Rev hardship","hardship");
+note+=line("Rev importance to resch","resch");
+note+=line("Rev account/runner","runner");
+note+=line("Rev Waterfall","waterfall");
+note+=line("Rev 90DD","dd90");
+
+note+=line("C requested to","requested to");
+note+=line("[Checked/Rev ISD]","isd");
+note+=line("Sent draft","draft");
+}
+
+if(currentTemplate==="Update Banking Info"){
+note+=`Update Banking Info: ${val("main")}\n`;
+note+=line("Ver no pending deposits","deposit");
+note+=line("Reviewed if deposits 5 bd","runner");
+note+=line("Verified Acnt/Rout","acnt");
+note+=line("Verified Bank","waterfall");
+note+=line("Sent ATD","ATD");
+
+note+=line("C signed on the line","sign");
+note+=line("Adv should take 5 bd to update","draft");
+note+=line("Rev next deposit","depo");
+}
+
+if(currentTemplate==="Refund"){
+note+=`Refund: ${val("main")}\n`;
+note+=line("Rev hardship","hardship");
+note+=line("Rev DSA Balance","runner");
+note+=line("Rev Waterfall","waterfall");
+note+=line("Rev 90DD","dd90");
+note+=line("[Checked/Rev ISD]","isd");
+note+=line("Sent contact info email","draft");
+note+=line("Adv refund verbiage","verb");
+}
+
+if(currentTemplate==="No Funds Needed"){
+note+=`Settlement for ${val("creditor")}\n`;
+note+=line("Reviewed SIF Details","details");
+note+=line("Name, Last 4","name4");
+note+=line("Orig. Bal, Curr. Bal, Sif Bal","balances");
+note+=line("Verbal/Written","verbal");
+note+=line("Payment amount/date ranges","payment");
+note+=line("Payment method","method");
+note+=line("Adv no additional funds needed","nofunds");
+note+=line("Client approved","approved");
+note+=line("Rev Approval Disc","disc");
+}
+
+if(currentTemplate==="Added Funds"){
+note+=`Settlement for ${val("creditor")}\n`;
+note+=`Scheduled funds${val("schedule")}\n`;
+note+=line("Reviewed SIF Details","details");
+note+=line("Name, Last 4","name4");
+note+=line("Orig. Bal, Curr. Bal, Sif Bal","balances");
+note+=line("Verbal/Written","verbal");
+note+=line("Payment amount/date ranges","payment");
+note+=line("Payment method","method");
+note+=line("Reviewed funds needed","withfunds");
+note+=line("Client approved SIF","app");
+note+=line("Rev Approval Disc","rev");
+note+=line("Sent Draft","approved");
+
+}
+
+if(currentTemplate==="Rejected"){
+note+=`Settlement for ${val("creditor")}\n`;
+note+=`Scheduled funds ${val("schedule")}\n`;
+note+=line("Reviewed SIF Details","details");
+note+=line("Name, Last 4","name4");
+note+=line("Orig. Bal, Curr. Bal, Sif Bal","balances");
+note+=line("Verbal/Written","verbal");
+note+=line("Payment amount/date ranges","payment");
+note+=line("Payment method","method");
+note+=line("Reviewed funds needed","withfunds");
+note+=line("C unable to amount needed","app");
+note+=line("Rev if we can add less","less");
+note+=line("Rev Approval Disc","rev");
+note+=line("Sent Draft","approved");
+note+=line("Addtl funds still needed","addtl");
+note+=line("Advance rev/approved","adv");
+note+=line("Advance rej disc.","rej");
+note+=line("Advance rejected.","r");
+note+=line("C approved reject offer","rj");
+
+}
+
+if(currentTemplate==="Moved Fees"){
+note+=`Settlement for ${val("creditor")}\n`;
+note+=`Scheduled funds ${val("schedule")}\n`;
+note+=line("Reviewed SIF Details","details");
+note+=line("Name, Last 4","name4");
+note+=line("Orig. Bal, Curr. Bal, Sif Bal","balances");
+note+=line("Verbal/Written","verbal");
+note+=line("Payment amount/date ranges","payment");
+note+=line("Payment method","method");
+note+=line("Reviewed funds needed","withfunds");
+note+=line("C unable to amount needed","app");
+note+=line("Rev if we can add less","less");
+note+=line("Rev Approval Disc","rev");
+note+=line("Sent Draft","approved");
+note+=line("Addtl funds still needed","addtl");
+note+=line("Ver no needed funds ","noaddtl");
+note+=line("C approved SIF","rj");
+
+}
+
+if(currentTemplate==="Legal Intake"){
+note+=`C informed us they received a summons for:${val("main")}\n`;
+note+=line("Completed legal intake","li");
+note+=`(1) What date were you served? ${val("date")}\n`;
+note+=`(2)In what manner were you served? ${val("manner")}\n`;
+note+=`(3)What state was the summons filed in? ${val("state")}\n`;
+note+=`(4)Who is listed as the
+Plaintiff: ${val("plaintiff")}\n`;
+note+=`Defendant: ${val("defend")}\n`;
+note+=`Attorney for Plaintiff: ${val("atty")}\n`;
+note+=`(5)What is the docket or case number listed on
+the summons? ${val("docket")}\n`;
+note+=`(6)How many days do you have to respond? ${val("days")}\n`;
+note+=`(7)When is the response or answer to the summons
+due? ${val("respo")}\n`;
+note+=`(8)Please review the summons carefully - Do you
+have a court appearance or hearing scheduled?
+If so when? ${val("court")}\n`;
+note+=line("(9)Do you or anyone listed on the summons receive any form of government income? -If they say yes, pls request to send us proof in the next 24 hrs","ri");
+note+=line("-Set up RI for summons needed/created urgency to send it to us","rip");
+note+=line("-Filled in lawsuit info box","law");
+
+}
+
+if(currentTemplate==="Pro Se"){
+note+=`C informed us they received a summons for:${val("main")}\n`;
+note+=line("Completed legal intake","li");
+note+=`(1) What date were you served? ${val("date")}\n`;
+note+=`(2)In what manner were you served? ${val("manner")}\n`;
+note+=`(3)What state was the summons filed in? ${val("state")}\n`;
+note+=`(4)Who is listed as the
+Plaintiff: ${val("plaintiff")}\n`;
+note+=`Defendant: ${val("defend")}\n`;
+note+=`Attorney for Plaintiff: ${val("atty")}\n`;
+note+=`(5)What is the docket or case number listed on
+the summons? ${val("docket")}\n`;
+note+=`(6)How many days do you have to respond? ${val("days")}\n`;
+note+=`(7)When is the response or answer to the summons
+due? ${val("respo")}\n`;
+note+=`(8)Please review the summons carefully - Do you
+have a court appearance or hearing scheduled?
+If so when? ${val("court")}\n`;
+note+=line("(9)Do you or anyone listed on the summons receive any form of government income? -If they say yes, pls request to send us proof in the next 24 hrs","ri");
+note+=line("-Set up RI for summons needed/created urgency to send it to us","rip");
+note+=line("-Offered option for Prose","prose");
+note+=line("-Filled in lawsuit info box","law");
+
+}
+
+const n=val("notes");
+if(n) note+=`\n${n}\n`;
+
+note+=`
+B/H: Y
+Portal: Y
+Ans all questions: Y
+Survey: Y
+VC Link: ${val("vc")}
+`;
+
+let finalNote = note.trim();
+
+if(templateOnly){
+
+// Remove title (first line + blank line)
+const firstBreak = finalNote.indexOf("\n\n");
+if(firstBreak !== -1){
+finalNote = finalNote.substring(firstBreak + 2);
+}
+
+// Remove opening block
+const openingStart = finalNote.indexOf("BPO Agent");
+const openingEnd = finalNote.indexOf("Discussed w. C:");
+if(openingStart !== -1 && openingEnd !== -1){
+const afterOpening = finalNote.indexOf("\n\n", openingEnd);
+if(afterOpening !== -1){
+finalNote = finalNote.substring(afterOpening + 2);
+}
+}
+
+// Remove closing block (B/H to Survey)
+const closingStart = finalNote.indexOf("\nB/H:");
+if(closingStart !== -1){
+finalNote = finalNote.substring(0, closingStart);
+}
+
+}
+
+document.getElementById("outputArea").value = finalNote.trim();
+}
+
+function copyToClipboard(){
+const text=document.getElementById('outputArea').value;
+if(!text){showToast('Nothing to copy','danger');return;}
+if(navigator.clipboard && window.isSecureContext){
+ navigator.clipboard.writeText(text).then(()=>showToast('✅ Copied to Clipboard','success')).catch(fallbackCopy);
+}else{
+ fallbackCopy();
+}
+function fallbackCopy(){
+ const ta=document.getElementById('outputArea');
+ ta.removeAttribute('readonly');
+ ta.select();
+ ta.setSelectionRange(0,999999);
+ try{document.execCommand('copy');showToast('✅ Copied to Clipboard','success');}
+ catch(e){showToast('❌ Copy failed','danger');}
+ ta.setAttribute('readonly','readonly');
+}
+}
+function clearOutput(){
+
+// Clear generated output
+document.getElementById('outputArea').value='';
+
+// Target ONLY fields inside left panel template container
+const fieldContainer = document.getElementById('fields');
+
+if(fieldContainer){
+
+// Clear ALL input elements EXCEPT dropdowns
+fieldContainer.querySelectorAll('input').forEach(input=>{
+input.value = '';
+
+showToast("🗑️ Output Cleared","danger");
+});
+
+// Clear all textareas
+fieldContainer.querySelectorAll('textarea').forEach(area=>{
+area.value = '';
+});
+
+}
+
+// Do NOT touch selects (Y/NA dropdowns remain)
+// Do NOT call saveMemory()
+// Do NOT change template
+
+}
+function toggleDarkMode(){ document.documentElement.classList.toggle('dark'); }
+
+function toggleHelpPanel(){
+
+// close other panels
+document.getElementById("calendarPanel")?.classList.add("hidden");
+document.getElementById("timerPanel")?.classList.add("hidden");
+
+const panel = document.getElementById("helpPanel");
+
+panel.classList.toggle("hidden");
+
+if(!panel.classList.contains("hidden")){
+searchKB();
+}
+
+}
+
+
+function openArticle(id){
+
+document.getElementById("helpPanel").classList.add("hidden");
+
+const article = document.getElementById(id).innerHTML;
+document.getElementById("articleContent").innerHTML = article;
+
+document.getElementById("articleViewer").classList.remove("hidden");
+
+}
+
+function closeArticle(){
+
+// Close article viewer
+document.getElementById("articleViewer").classList.add("hidden");
+
+// Reopen knowledge base search panel
+document.getElementById("helpPanel").classList.remove("hidden");
+
+}
+
+function searchKB(){
+
+const query = document.getElementById("kbSearch").value.toLowerCase().trim();
+const container = document.getElementById("kbResults");
+
+container.innerHTML = "";
+
+// show nothing if empty
+if(query === "") return;
+
+const articles = document.querySelectorAll("div[style='display:none'] > div");
+
+let results = [];
+
+articles.forEach(article=>{
+
+const title = article.querySelector("h2").innerText;
+const text = article.innerText.toLowerCase();
+
+let score = 0;
+
+// title match = strong score
+if(title.toLowerCase().includes(query)) score += 5;
+
+// body match
+if(text.includes(query)) score += 2;
+
+// partial word matches
+query.split(" ").forEach(word=>{
+if(text.includes(word)) score += 1;
+});
+
+if(score > 0){
+results.push({
+id: article.id,
+title: title,
+score: score
+});
+}
+
+});
+
+// sort best matches first
+results.sort((a,b)=> b.score - a.score);
+
+// render results
+results.forEach(r=>{
+
+const btn = document.createElement("button");
+
+btn.className = "articleBtn";
+btn.textContent = r.title;
+
+btn.onclick = ()=> openArticle(r.id);
+
+container.appendChild(btn);
+
+});
+
+}
+
+document.addEventListener("click", function(e){
+
+const calendar = document.getElementById("calendarPanel");
+const timer = document.getElementById("timerPanel");
+const help = document.getElementById("helpPanel");
+const article = document.getElementById("articleViewer");
+const calculator = document.getElementById("calculatorPanel");
+const schedulePanel=document.getElementById("schedulePanel")
+
+// close analyzer
+if(e.target===schedulePanel){
+schedulePanel.classList.add("hidden")
+}
+
+// close calendar
+if(e.target === calendar){
+calendar.classList.add("hidden");
+}
+
+// close calculator
+if(e.target === calculator){
+calculator.classList.add("hidden");
+calculatorOpen = false;
+}
+
+// close timer
+if(e.target === timer){
+timer.classList.add("hidden");
+}
+
+// close knowledge base
+if(e.target === help){
+help.classList.add("hidden");
+}
+
+// close article viewer and return to search
+if(e.target === article){
+
+article.classList.add("hidden");
+
+document.getElementById("helpPanel")?.classList.remove("hidden");
+
+}
+
+});
+
+/* ===============================
+   CALCULATOR KEYBOARD INPUT
+================================ */
+
+document.addEventListener("keydown", function(e){
+
+if(!calculatorOpen) return;
+
+const display = document.getElementById("calcDisplay");
+
+const allowed = "0123456789+-*/.";
+
+if(allowed.includes(e.key)){
+display.value += e.key;
+e.preventDefault();
+}
+
+if(e.key === "Enter"){
+calcEquals();
+}
+
+if(e.key === "Backspace"){
+display.value = display.value.slice(0,-1);
+}
+
+});
+
+</script>
+
+<div id="calendarPanel" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[320px] rounded-xl p-5 shadow-xl">
+
+<div class="flex justify-between items-center mb-3">
+
+<button onclick="changeMonth(-1)" class="text-lg">◀</button>
+
+<div id="calendarTitle" class="font-semibold text-slate-800 dark:text-white"></div>
+
+<button onclick="changeMonth(1)" class="text-lg">▶</button>
+
+<button onclick="toggleCalendar()" class="text-red-500 text-lg">
+<i class="fas fa-times"></i>
+</button>
+
+</div>
+
+<div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-sm"></div>
+
+</div>
+</div>
+
+
+<div id="helpPanel" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[650px] max-h-[80vh] overflow-y-auto rounded-xl p-6 shadow-xl">
+
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-semibold text-slate-800 dark:text-white">
+Mei Knowledge Base Scripts
+</h2>
+
+<button onclick="toggleHelpPanel()" class="text-red-500 text-lg">
+<i class="fas fa-times"></i>
+</button>
+</div>
+
+<input 
+id="kbSearch" 
+class="inp mb-3" 
+placeholder="Search articles..." 
+oninput="searchKB()"
+>
+
+<div id="kbResults" class="space-y-2"></div>
+
+</div>
+</div>
+
+
+<div id="calculatorPanel" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[320px] rounded-xl p-5 shadow-xl">
+
+<div class="flex justify-between items-center mb-3">
+
+<h2 class="text-lg font-semibold text-slate-800 dark:text-white">
+Mei Calculator
+</h2>
+
+<button onclick="toggleCalculator()" class="text-red-500 text-lg">
+<i class="fas fa-times"></i>
+</button>
+
+</div>
+
+<input id="calcDisplay" class="inp text-right text-lg font-mono" readonly>
+
+<div class="grid grid-cols-4 gap-2 mt-3">
+
+<button onclick="calcPress('7')" class="articleBtn">7</button>
+<button onclick="calcPress('8')" class="articleBtn">8</button>
+<button onclick="calcPress('9')" class="articleBtn">9</button>
+<button onclick="calcPress('/')" class="articleBtn">÷</button>
+
+<button onclick="calcPress('4')" class="articleBtn">4</button>
+<button onclick="calcPress('5')" class="articleBtn">5</button>
+<button onclick="calcPress('6')" class="articleBtn">6</button>
+<button onclick="calcPress('*')" class="articleBtn">×</button>
+
+<button onclick="calcPress('1')" class="articleBtn">1</button>
+<button onclick="calcPress('2')" class="articleBtn">2</button>
+<button onclick="calcPress('3')" class="articleBtn">3</button>
+<button onclick="calcPress('-')" class="articleBtn">−</button>
+
+<button onclick="calcPress('0')" class="articleBtn">0</button>
+<button onclick="calcPress('.')" class="articleBtn">.</button>
+<button onclick="calcEquals()" class="articleBtn bg-blue-200">=</button>
+<button onclick="calcPress('+')" class="articleBtn">+</button>
+
+<button onclick="calcClear()" class="col-span-4 articleBtn bg-red-200">
+Clear
+</button>
+
+</div>
+
+</div>
+</div>
+
+<div id="articleViewer" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[900px] h-[80vh] rounded-xl shadow-xl flex flex-col">
+
+<div class="flex justify-between items-center p-4 border-b border-slate-300">
+
+<h2 class="text-lg font-semibold">Mei Scripts and Help Desk</h2>
+
+<button onclick="closeArticle()" class="text-red-500 text-lg">
+<i class="fas fa-times"></i>
+</button>
+
+</div>
+
+<div id="articleContent" class="p-6 overflow-y-auto flex-1 text-slate-800 dark:text-slate-200"></div>
+
+</div>
+
+</div>
+
+
+<div style="display:none">
+
+<div id="transactionfeeArticle">
+<h2>Transaction Fees ($1.50)</h2>
+
+<p><b>Why is there a $1.50 transaction fee if it is just an Email/Online payment?</b> <br><br>
+<i>I get why you’re wondering about that $1.50 fee, it feels a little odd since it’s “just” an online or email payment, right? The thing is, those payments aren’t as simple as they look. They’re actually processed through a secure, encrypted link or invoice that moves money from your Dedicated Savings Account over to your creditor. And because it’s treated like a billing/service payment, the bank charges a small fee for handling it.
+<br>
+Your creditor agreed to accept payments this way, so that’s the setup we’re working with. The good news is, the fee comes straight out of your DSA, so you don’t have to do anything extra, just keep making your deposits and everything stays on track.</i></p>
+</div>
+
+<div id="confidenceArticle">
+<h2>Script - Trust Issues/Hesitant/Hesitations in Program</h2>
+
+<p><b>Client is Hesitatnt on the Program/Has Trust Issues due to Previous Agents</b> <br><br>
+<i>C: What if this program doesn't work? Esp the creditors, still, have the final say towards negotiations 
+<br>
+CS: Hm. That's actually a fair question. I would be more than happy to answer that. Tell me, how would you know if it's working or not?
+
+(Provide C proper information related to his/her concerns regarding the program. Focus on providing positive rebuttals)
+<br><br>
+C: I'm just worried I'll waste time and money without getting results.
+<br>
+CS: I get you're concerned. But guess what, we've worked with thousands of people in your exact position. What makes you think you'd be different? 
+
+<br><br>
+C: "I guess it could work, but can you guarantee the outcome?"
+<br>
+CS: Nobody can guarantee your results except you. What we do is give you everything you need to SUCEED, and ONLY IN THIS PROGRAM, but only if you actually execute. Can you commit to doing that? (Then explain what C needs to know)
+<br><br>
+C: Yeah, but I still don't want to throw money away, esp those fees
+<br>
+CS: Everyone worries about the risk of joining this program. But what's the cost of staying exactly where you are? If six months from now nothing's changed, you still owe the same creditors, you haven't paid any single one of them, and interests are piling up, same issues, same frustration. What's that actually costing you?
+<br>
+Your creditor agreed to accept payments this way, so that’s the setup we’re working with. The good news is, the fee comes straight out of your DSA, so you don’t have to do anything extra, just keep making your deposits and everything stays on track.</i></p>
+</div>
+
+<div id="StipfeeArticle">
+<h2>STIP/Stipulations Documents</h2>
+
+<p><b>STIP/Stipulations Document</b>
+<br><br>
+<i>What's the STIP for? Why do I have to sign it?<br><br>
+That's a good question! It’s basically a legal document which serves as a written confirmation that shows you agree to the settlement terms and what happens if payments stop. Signing it locks in the agreement so your creditor can’t take further legal action as long as you keep up with the scheduled payments until everything’s settled.
+ </i>
+</p>
+</div>
+
+<div id="BankfeeArticle">
+<h2>Bank Fees</h2>
+
+<p><b>Do I have to pay the bank fee?</b>
+<br><br>
+<i>I get why you’d ask about the bank fee. Since your creditor agreed to accept payments through this secure setup, the fee is part of the process. It’s taken directly from your Dedicated Savings Account, so you don’t have to pay it separately. Just keep making your deposits and everything stays on track</i>
+</p>
+</div>
+
+<div id="DebitArticle">
+<h2>Using Debit Card in the Program Deposits</h2>
+
+<p><b>Why can't I use my debit card for my deposits?
+</b>
+<br><br>
+<i>I get why you’d ask about using a debit card. Since this is a debt settlement program, deposits have to go through the bank using ACH transfers. ACH is safer, cheaper, and better for recurring payments, while debit cards come with higher fees and more fraud risk. That’s why banks are the only option here.</i>
+</p>
+</div>
+
+<div id="OtherfeesArticle">
+<h2>Script - Other Fees/Hidden Fees</h2>
+
+<p><b>What are these "hidden fees" that you charge into my account?
+</b>
+<br><br>
+<i>I understand that you're concerned about these "hidden fees", but I also want to let you know that they are not actually hidden fees, as these fees are used by us to keep providing you excellent service. At the same time, some fees are charged by multiple entities that processes each transactions.
+<br>
+Also, please be advised that your GLS fee is already included in your (payment type) (amount) deposits.
+<br><br>
+<b>Holding Company Set Up Fee: $9.00</b><br>
+This is a one-time setup fee paid directly out of your dedicated savings account with our banking partner.<br><br>
+<b>Holding Company – Monthly Maintenance Fee: $9.85</b><br>
+We work with a banking institution that specializes in maintaining dedicated savings accounts such as yours. Each month, this service fee will be subtracted directly from your account balance.<br><br>
+<b>Gitmeid Legal Security: $18.00</b><br>
+With Gitmeid Legal Security (GLS), an attorney would be assigned to your case to provide comprehensive legal representation. They’ll handle court appearances, respond to legal documents, and work with your creditors` attorneys.</i>
+</p>
+</div>
+
+<div id="calcfeesArticle">
+<h2>Setting Up Shortage Calculator</h2>
+
+<p><b>Follow the steps to Setup your SIF Calculator:
+</b>
+<br><br>
+Create a copy <br>
+Dowload a copy <br>
+Clicked the downloads <br>
+Enable content <br>
+Sign in microsoft <br>
+customize ribbon <br>
+Macro settings > Enable <br>
+Enable > Trust access 
+Developer <br>
+Trust center <br>
+Trust center settings <br>
+Active x settings <br>
+Enable all controls <br>
+Safe mode <br>
+Ok <br>
+Save as<br>
+Close<br>
+Open again
+
+</p>
+</div>
+
+<div id="SSIArticle">
+<h2>SSI Proof</h2>
+
+<p><b>Why the need for SSI Proof?</b>
+<br><br>
+<i>The primary documents to prove you receive Supplemental Security Income (SSI) include an official <b>Benefit Verification Letter</b> (also known as a budget, award, or proof of income letter) from the Social Security Administration (SSA), a recent bank statement showing deposits, or a 1099/1042S tax form. These can be obtained instantly via online Social Security account. 
+<br><br>
+<b>Key Documents for Proving SSI Income:</b><br><br>
+<b>Benefit Verification Letter</b> (Most Common): This letter serves as official proof of your benefit amount, often called a "budget letter" or "proof of income letter".<br><br>
+<b>Bank Statements</b>: Statements from your bank showing direct deposits from the Social Security Administration. (Must be a PDF file)<br><br>
+<b>Tax Forms (1099/1042S)</b>: The annual tax form sent by the SSA reporting your Social Security income.<br><br>
+<b>Award Letter</b>: The original letter sent when you were first approved for benefits, confirming your monthly payment amount.<br><br>
+<b>Representative Payee Documents</b>: If someone else manages your benefits, they can provide documentation confirming your status.
+</i>
+</p>
+</div>
+
+<div id="PPAArticle">
+<h2></h2>
+
+<p><b>Strategy - Payment Plan Arrangement (PPA)</b>
+<br><br>
+<i>
+
+
+
+</i>
+</p>
+</div>
+
+<div id="ProgramArticle">
+<h2>Script - How the NDR Works</h2>
+
+<p><b>How does your program works? What do I need to expect?</b>
+<br><br>
+<i>Well, <b>National Debt Relief (NDR)</b> is a debt settlement and negotiation program that settles debts by negotiating with your creditors to settle your unsecured debt for LESS than what you actually owe them.   
+<br><br>
+The difference is, instead of you paying your creditors directly, you make these monthly deposits into a what we call <b>dedicated savings account or DSA</b> from which WE will pay your creditors in your behalf.   
+<br><br>
+Upon enrolling to the program, we will require clients to NOT PAY their outstanding debts for 4-6 months to build DELINQUENCY – we use this as leverage to negotiate with the creditors in order to lower down your debts. We usually can drop overall debts to 25-55% lower than your normal debt. We have to take note, however, that this is just the range and is not a guarantee, depends on the creditor.   
+<br><br>
+Also, we require you upon enrollment to deposit at least 20-40% of your debt per creditor as balance to the DSA – this is the only time we will start negotiating with the creditors. 
+<br><br>
+Once enough funds accumulate, NDR negotiates settlements for each debt; you then approve these deals, and the funds inside the Dedicated Savings Account are used to pay the creditors at the reduced rate. You only pay NDR a performance-based fee—after a settlement is successfully reached and funded. This will continue for as long as until you fully settle all of your debts.  
+<br><br>
+ Once we had paid all of your creditors, we will celebrate as this will be the time you will graduate from the program, and become <b>debt free</b>!  
+ </i>
+</p>
+</div>
+
+<div id="VerifyArticle">
+<h2>Client Verification/Security</h2>
+
+<p><b>If a client refuses to complete verification/identification on call</b>
+<br><br>
+<i> 
+I understand your hesitation, and I want to reassure you that the verification process is a standard and legally required step for all clients enrolling in a debt‑settlement program. Because we handle sensitive financial information and negotiate with creditors on your behalf, we must verify your identity before we can proceed. Debt‑settlement companies are required to comply with federal and state regulations designed to protect consumers and prevent fraud.
+<br><br>
+Without completing verification, we are legally restricted from discussing account-specific matters, or making any changes to your account.
+<br><br>
+Our goal is to protect you, your information, and the integrity of your debt‑settlement plan. We’re here to guide you through the process and make it as smooth as possible. <3
+<br><br>
+If you're your still hesitant and would like to check for some references, you may try searching this information online:<br><br>
+<b>Know Your Customer (KYC) Requirements</b> - These standards ensure we are working with the correct individual and prevent unauthorized parties from accessing or altering your financial information.<br><br>
+<b>Anti‑Money Laundering (AML) Regulations</b> - Under AML laws, financial service providers — including debt‑relief and settlement companies — must verify client identities to prevent fraudulent activity and financial crimes.<br><br>
+<b>Federal Trade Commission (FTC) rules for debt‑relief services</b> - The FTC requires companies like ours to maintain accurate client records and ensure that all information used in negotiations is legitimate and verified.
+</i>
+</p>
+</div>
+
+<div id="LegalnoticeArticle">
+<h2>Script - Legal Notices and Threats</h2>
+
+<p><b>Why am I receiving these legal notices? I thought I won't get sued since I enrolled the in the program?</b>
+<br><br>
+<i>I definitely get your concern in receiving these kind of notices. Just to set proper expectations, legal action is still a possibility even during an active settlement, the good thing is that your settlement significantly reduces that risk.<br> Our team diligently works to keep negotiations moving forward to resolve all of your accounts as quickly as possible. If any legal developments occur, we'll guide you through the next steps and continue working toward a resolution, just send us the document as soon as you receive it so we can check it out for you. You're not alone in this, we will help you every step of the way.</i>
+</p>
+</div>
+
+<div id="portaArticle">
+<h2>Client Portal Troubleshooting</h2>
+
+<p><b>Client Portal Access Issues</b><br><br>
+<i>"It looks like there's an on-going update, which is why it isn’t accessible at certain times. While the update is in progress, I’d be happy to assist you with your concern so you don’t experience any delays. Could you please share the details of what you need to accomplish today, and I’ll make sure it’s taken care of?"
+<br><br>
+<b>How to Log In/Where to Log In Client Portal</b><br>
+On your email, check one of our emails. You can see on the upper right side of our emails a blue "Log In" button. Click that button and you'll be redirected to our Portal. (Send client a CS Number and Email if she can't find our emails)
+
+<br><br><b>Create Client Portal Account</b><br>
+Great! I would be more than happy to help you out with that! So first off, let's create your account. (Go to drop down arrow beside update banking > create client portal)<br>
+Then, in order for you to log in, we'll be using your email that we registered into the program as a username. <br>
+Next is that, I'll be sending you in that email a "client portal account navigation link", from which it contains an instruction on how you will create a password to log in. (Go to drop down arrow beside update banking > client portal help > click yes/finish)<br>
+You should expect to receive the email within 24hrs. Once you receive it, follow the instructions inside until the end until you can fully log in to your account!
+</i>
+</p>
+</div>
+
+
+<div id="riArticle">
+<h2>Reminders - Legal Intake RI</h2>
+
+<p><b>Legal Intake - Required Items Reminders</b><br><br>
+When doing a Legal Intake, please be reminded of these RI's that must be created, and when they should be created: <br><br>
+<b>Summons Needed RI, CC Level; held for 2 days</b> - if the creditor is confirmed, and if the client cannot send the copy of the summons during the call <br><br>
+<b>Summons Needed RI, CC Level; held for 7 days</b> - if the creditor is confirmed and the summons is in Cases <br><br>
+<b>Summons Needed RI, DS Level; held for 2 days</b> - if any of the following is true: <br>
+*the client is unsure of the creditor who sued them, 
+there are multiple accounts with the same creditor and the client is unsure which specific account(s) <br>
+*they were served for OR the account numbers/name the client states does not match any enrolled creditors,
+<br><br>*AND the client has not yet sent us a copy of the summons <br><br>
+<b>Legal Intake Needed</b> - if there is no service date, or if the client cannot remember the service date 
+<br><br><i>Do Not Use the Legal Intake Needed RI when you are waiting for the client to send the copy of the summons.</i>
+</p>
+</div>
+
+<div id="rileArticle">
+<h2>Reminders - Removed Creditor with Pending SIF</h2>
+
+<p><b>Removed Creditor with Pending SIF</b><br><br>
+If you encounter a contact where the previous representative presented the SIF and ended up removing the creditor as client requested BEFORE rejecting the settlement please do the following: <br><br>
+<b>Reject the offer</b><br><br>
+<b>Check the status of the Refresh DS page.</b> - The creditor Status will revert back to Active<br><br>
+<b>Report the previous agent who removed the creditor without rejecting the SIF</b> - Go to Scripts > Report an Agent > Fill up the Coaching Log Form w/ details</i>
+</p>
+</div>
+
+<div id="affordableArticle">
+<h2>Reminders - Required Item - Affordability RIs</h2>
+
+<p><b>Required Item - Affordability RIs</b><br><br>
+When the following RI's are on the account, the client needs to be transferred to Welcome Queue IMMEDIATELY after verifying the account: <br><br>
+<b>90 Day Affordability - Omni</b><br><br>
+<b>90 Day Affordability - CX Only</b><br><br>
+<b>Affordability - Omni</b><br><br>
+<b>Affordability - CX Only</b>
+</i>
+</p>
+</div>
+
+<div id="promoArticle">
+<h2>Reminders - Promotional Emails</h2>
+<br>
+<p>When a client calls asking to be opted out of receiving promotional emails, CS Voice agents should encourage the client to send a request to optoutrequest@nationaldebtrelief.com. <br><br>(As of August 28, 2024, Product will introduce a new case type, “Opt Out,” to handle opting existing customers out of promotional emails. These cases will be routed through Omni-Channel. Agents should follow their departments procedure based on this change.)
+</p>
+</div>
+
+<div id="adddebtArticle">
+<h2>Reminders - Add Debt Required Item/Client Request</h2>
+<br>
+<p>When following the process to add a debt to a client's file, <b>DO NOT</b> create a CC number nor an Add Debt - Client Request RI, if you have not yet received a response to the manager approval request.<br><br>The CC number should only be created once you are told that the debt is good the add.<br><br>The Add Debt - Client Request RI should be created if you have obtained a manager approval to add the debt (i.e. create the CC number), but you cannot change the status to Active due to a PSR being needed and there is a pending deposit.
+</p>
+</div>
+
+<div id="nsfArticle">
+<h2>Reminders - NSF Max Days to Resolve</h2>
+<br>
+<p>The resolution window for NSF starts from the date of the call, not the date of the missed deposit.<br>For example, the client has NSF on 12/11/2025 and the client calls on 02/05/2026:<br><br>the 30-day window will be on 03/07/2026, not 01/10/2026<br><br>the 60-day window will be on 04/06/2026, not 02/09/2026
+</p>
+</div>
+
+<div id="detractArticle">
+<h2>Reminders - Required Item - Detractor Experience Follow Up Call</h2>
+<br>
+<p>Please be advised that if the Detractor Experience Follow-Up Call RI is present on the DS, we should transfer the call to the Welcome Calls queue to be addressed by an Experience agent.
+</p>
+</div>
+
+<div id="creatorArticle">
+<h2>About Mei Note Generator and its Creator</h2>
+<br>
+<p>The MEI NOTE Generator - short for <b>"Multi-Entry Interface for Notation, Organization & Template Execution"</b> is created solely by <b>Castel Noleal</b>, an agent from Project E Wave 9. He created this with sweat and tears, with the motivation of helping out his fellow workmates and friends in his department. He is not asked nor paid to do this, he just made this because why not? (But he will pitch this in the future).<br><br> As long as he can see them happy and this tool helps his friends, and his department, he's happy.<br>UPDATE: He wants an extra bonus now HAHAHA
+</p>
+</div>
+
+<div id="detractArticle">
+<h2>Reminders - Alerts - ADA</h2>
+<br>
+<p>Please be advised that whenever we encounter DS with an ADA alert, let's be sensitive and considerate towards the client's disability. 
+ <br><br>
+Meanwhile, if the client verbalizes that they are hard of hearing, deaf, and/or blind and there is no ADA alert, please reach out to any available leaders to help you set up an alert.
+ <br><br>
+Examples of ADA Alerts:
+ <br>
+KB Article for reference 
+https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Maintenance/Enrolled%20Clients%20with%20Disabilities.htm?Highlight=ADA
+</p>
+</div>
+
+<div id="notworkingArticle">
+<h2>Script - SIF (C not working)</h2>
+
+<p><b>"I don't have a work right now! And your'e still aksing for money?"</b>
+<br><br>
+<i>
+"I completely understand, and I want to make sure the offer you accept is one that works for your current situation and budget without adding stress to your life. <br>Since additional funds would be needed to go with this offer, and I'd like to look at some other options we can do with you to see if we could somehow make this work within your budget. <br>Knowing your situattion, as much as possible, I want to exhaust all possibilities I can because I can see that this is a really strong offer, so before we walk away from it, are you okay with me looking at someother deposit options?"<br>
+</i>
+<br>
+(Assist the client with her questions, and if C agreed, explain what your going to do and make it sound positive)
+</p>
+</div>
+
+<div id="askngforfundArticle">
+<h2>Script - SIF (Why we need to add additional funds)</h2>
+
+<p><b>"Why would you ask me to add additional funds now with what’s going on with [ hardship reason ]?"</b>
+<br><br>
+<i>
+"I completely understand, and of course, I want to make sure the offer you accept is one that works for your current situation and budget without adding any stress to your life. <br><br>At the same time, of course, you mighty be wondering and is frustrated why is there a need for us to ask for funds that might somehow confuse you more, so let me explain first the reason why-- so based on what I can see here on the negotiation with this creditor, our negotiations team actually had been insisting to give us more time on the first payment, but the ctreditor was firm that <b>if they are going to lower down</b>the balance, then they want to get paid as soon a spossible, and the thing here is that, just think of it: if this creditor, the (creditor name), give us until (state a specific month that you think is plausible), then we shouldv'e accumulated sufficient funds in the DSA to accept this offer, but since tis creditor wanted to start immediately, coincidentally, we don't have sufficient funds in the DSA to actually accept this offer,that's why we need funds, and even if we continue our regular scheduled deposits, the shortage will just pile up, eventually missing a payment to this creditor, as well as to other creditors, if there is. <br><br>With that being said, of course, the creditor needed to assure no payments are going to be missed as part of the offer agreement, and it's the main reason we need to add funds. The reason I think this is a great offer for you is because of the money you'd be saving overall --it's a really strong offer that way. But I totally get that we want to balance long - and - short - term savings for you. <br><br>Would you be open to reviewing your budget with me so that we can see if this is an offer that could work? In the end, if you still feel it's not a fit for you, we'll keep negotiating with your
+creditor(s). "<br><br>
+<b>Alternate language 2<br></b>
+"I know additional funds aren't easy, however, it's a time sensitive account, and we don't want legalaction to escalate. Let me review what options we have.
+I want to be mindful of your budget, and I'll try my best to keep things as they are, I'll exhaust all myoptions for you."<br><br>
+<b>Alternate language 3<br></b>
+"I understand and I don't want to create another hardship for you, I do still have to review theseoptions, but we'll work to see how flexible they can be."<br><br>
+<b>Alternate language 4<br></b>
+"We don't have a lot of time to save up the funds in advance due to the legal action, but I can try tospread it out and make it as affordable as we can within the allotted time given."
+</i>
+</p>
+</div>
+
+<div id="alertArticle">
+<h2>Reminders - SIF (Custom Client Alert)</h2>
+
+<p><b>"I don't want to be asked again about adding funds. This is the only amount I can afford and I even can't barely make it."</b>
+<br><br>
+
+If the client states they do not want to be asked for additional funds again due to their budget/hardship, add alert to the account:<br><br><b>
+"Client reports tight budget. Be mindful whendiscussing additional funds; waterfall still required."</b><br>
+</p>
+</div>
+
+<div id="thoughtArticle">
+<h2>Script - SIF (C Thought that He/She Doesn't Need to Add Funds)</h2>
+
+<p><b>"I was told when I first started this program that I wouldn't have to add any additional funds!"</b>
+<br><br>
+
+“I completely understand. And I do agree with you as well, and that's why sometimes those offers become available before those funds are.<br><br>
+Supposedly, that should be the case, but it just so happened that this specific creditor gave us a settlement offer WAY TOO EARLY, and that's the reason why there was a shortage. WHen you first enroll into the program, we already analyzed the estimated timeline as well as payments, but at the end of the day, the creditor will still be the one to decide, and looking at the information here, the creditor agreed to reduce the overall balance to this amount but only in the condition with the term offers I had provided earlier. <br>This is astrong offer, and I’d like to explore options with you before we walk away from it. Are you OK with melooking at some other deposit options for you since additional funds are needed?”
+</p>
+</div>
+
+<div id="hardshiptArticle">
+<h2>Script - SIF ("I thought this is a Hardship Program?")</h2>
+
+<p><b>"I was told when I first started this program that it is a Hardship Program, but why are you asking for more money knowing my situation?"</b>
+<br><br>
+
+“I undestand why you are frustrated. This is a hardship program designed to align with your budget. But sometimes, our negotiators receive offers before your account has built the funds needed to accept it. With that said, our goal is to get these offers accepted on your behalf at a pace that is affordable to you. We will always review settlement offers evenwhen additional funds are needed because we want to be transparent about program updates. I do agree with you as well, and that's why sometimes those offers become available before those funds are.<br><br>
+Supposedly, that should be the case, but it just so happened that this specific creditor gave us a settlement offer WAY TOO EARLY, and that's the reason why there was a shortage. WHen you first enroll into the program, we already analyzed the estimated timeline as well as payments, but at the end of the day, the creditor will still be the one to decide, and looking at the information here, the creditor agreed to reduce the overall balance to this amount but only in the condition with the term offers I had provided earlier. <br>This is astrong offer, and I’d like to explore options with you before we walk away from it. Are you OK with melooking at some other deposit options for you since additional funds are needed?”
+</p>
+</div>
+
+<div id="siflegArticle">
+<h2>SIF Legal Next Steps (After Accepting)</h2>
+
+<p><b>Perfect! Now that we had approved this Offer:</b><br><br>
+<i>The next step is that the negotiator will contact the law office to let them know that you approved the offer and request the written confirmation.<br><br>
+We will email you the document when we have it with instructions on how to respond to it. Please keep an eye out for this email since the document might require your signature.
+<br>
+At the same time, I would like as well to let you know to keep your lines open, as we will contact you via email or call just in case there would be a new update that needs your attention. You can just chill while we handle everything in your behalf.<br><br>(After accepting a Legal SIF, please make sure to set the client expectations on what happens after accepting the offer.)
+</i>
+</p>
+
+</div>
+</div>
+
+<!-- Schedule Spreadsheet Analyzer -->
+<div id="schedulePanel" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[950px] max-h-[80vh] overflow-y-auto rounded-xl p-6 shadow-xl">
+
+<div class="flex justify-between items-center mb-3">
+<h2 class="text-lg font-semibold text-slate-800 dark:text-white">
+Mei Payment Schedule Analyzer
+</h2>
+<button onclick="toggleSchedulePanel()" class="text-red-500 text-lg">✕</button>
+</div>
+
+<textarea id="scheduleInput"
+class="inp w-full h-32 font-mono"
+placeholder="Paste schedule here..."></textarea>
+
+<div class="flex gap-2 mt-3">
+<button onclick="parseSchedule()" class="bg-blue-600 text-white px-3 py-1 rounded">
+Analyze
+</button>
+
+<button onclick="clearSchedule()" class="bg-red-500 text-white px-3 py-1 rounded">
+Clear
+</button>
+</div>
+
+<table class="w-full text-sm mt-4 border">
+
+
+
+<tbody id="scheduleTable"></tbody>
+
+</table>
+
+<div id="scheduleTotal" class="mt-3 font-bold text-blue-400"></div>
+
+<pre id="scheduleSummary" class="text-sm text-blue-300"></pre>
+<div id="creditorSummaryPanel"></div>
+
+</div>
+</div>
+
+<div id="timerPanel" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+<div class="bg-white dark:bg-slate-800 w-[350px] rounded-xl p-6 shadow-xl">
+
+<div class="flex justify-between items-center mb-4">
+
+<h2 class="text-lg font-semibold text-slate-800 dark:text-white">
+Timer Settings
+</h2>
+
+<button onclick="toggleTimerPanel()" class="text-red-500 text-lg">
+<i class="fas fa-times"></i>
+</button>
+
+</div>
+
+<div class="space-y-3">
+
+<button onclick="startTimer(120)" class="articleBtn">
+Start 2 Minute Timer
+</button>
+
+<button onclick="startTimer(900)" class="articleBtn">
+Start 15 Minute Timer
+</button>
+
+<button onclick="startTimer(3600)" class="articleBtn">
+Start 60 Minute Timer
+</button>
+
+<div class="flex gap-2">
+<input id="customMinutes" class="inp" placeholder="Custom minutes">
+<button onclick="startCustomTimer()" class="bg-blue-600 text-white px-3 rounded">
+Start
+</button>
+</div>
+
+<button onclick="stopTimer()" class="bg-red-500 text-white w-full py-2 rounded">
+Stop Timer
+</button>
+
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const table = document.getElementById("scheduleTable");
+  if(!table) return;
+
+  // if thead already exists do nothing
+  if(table.querySelector("thead")) return;
+
+  const firstRow = table.querySelector("tr");
+  if(!firstRow) return;
+
+  const thead = document.createElement("thead");
+  thead.appendChild(firstRow.cloneNode(true));
+
+  const tbody = document.createElement("tbody");
+
+  const rows = table.querySelectorAll("tr");
+  rows.forEach((r,i)=>{
+    if(i===0) return;
+    tbody.appendChild(r);
+  });
+
+  table.innerHTML = "";
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+});
+</script>
+
+
+<style>
+/* Sticky header */
+#scheduleTable th{
+position:sticky;
+top:0;
+background:#f2f2f2;
+z-index:5;
+}
+
+/* grid lines */
+#scheduleTable, #scheduleTable td, #scheduleTable th{
+border:1px solid #ccc;
+border-collapse:collapse;
+padding:4px;
+font-size:12px;
+}
+
+/* summary top container */
+#summaryTop{
+margin-bottom:8px;
+padding:6px;
+border:1px solid #ccc;
+background:#fafafa;
+font-size:12px;
+white-space:pre-line;
+}
+</style>
+
+<script>
+
+function detectDate(value){
+ if(!value) return ""
+ const patterns=[
+  /\b\d{1,2}\/\d{1,2}\/\d{4}\b/,
+  /\b\d{4}-\d{1,2}-\d{1,2}\b/,
+  /\b\d{1,2}-\d{1,2}-\d{4}\b/
+ ]
+ for(let p of patterns){
+  let m=value.match(p)
+  if(m) return m[0]
+ }
+ return ""
+}
+
+/* rebuild table based on spreadsheet columns */
+function rebuildAnalyzerTable(){
+
+ const table=document.getElementById("scheduleTable")
+ if(!table) return
+
+ const rows=[...table.querySelectorAll("tr")]
+ if(rows.length===0) return
+
+ const newHeader=`
+ <tr>
+  <th>✓</th>
+  <th>PS ID</th>
+  <th>Date</th>
+  <th>Amount</th>
+  <th>Bank Fee</th>
+  <th>Creditor</th>
+  <th>Type</th>
+  <th>Status</th>
+ </tr>
+ `
+
+ let newHTML=newHeader
+
+ rows.slice(1).forEach(r=>{
+
+  const text=r.innerText
+  const cols=text.split("\t")
+
+  const psid=cols[1]||""
+  const date=detectDate(text)||cols[2]||""
+  const amount=cols[3]||""
+  const bankFee=cols[4]||""
+  const creditor=cols[6]||""
+  const type=cols[7]||""
+  const status=cols[8]||""
+
+  newHTML+=`
+  <tr>
+   <td></td>
+   <td>${psid}</td>
+   <td>${date}</td>
+   <td>${amount}</td>
+   <td>${bankFee}</td>
+   <td>${creditor}</td>
+   <td>${type}</td>
+   <td>${status}</td>
+  </tr>
+  `
+
+ })
+
+ table.innerHTML=newHTML
+}
+
+/* move summary above table */
+function moveSummary(){
+
+ const summary=document.getElementById("scheduleSummary")
+ const panel=document.getElementById("creditorSummaryPanel")
+ const table=document.getElementById("scheduleTable")
+
+ if(!summary || !table) return
+
+ let top=document.getElementById("summaryTop")
+
+ if(!top){
+  top=document.createElement("div")
+  top.id="summaryTop"
+  table.parentNode.insertBefore(top,table)
+ }
+
+ if(panel) top.appendChild(panel)
+ top.appendChild(summary)
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+ setTimeout(()=>{
+  moveSummary()
+  rebuildAnalyzerTable()
+ },500)
+
+})
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+
+const table=document.getElementById("scheduleTable");
+if(!table) return;
+
+let rows=table.querySelectorAll("tr");
+if(rows.length>0){
+
+ // create THEAD if missing
+ if(!table.querySelector("thead")){
+  const thead=document.createElement("thead");
+  thead.appendChild(rows[0]);
+  table.insertBefore(thead,table.firstChild);
+ }
+
+ // move summary above table if misplaced
+ const summary=document.getElementById("scheduleSummary");
+ const panel=document.getElementById("creditorSummaryPanel");
+ const container=document.getElementById("summaryTop");
+
+ if(container && summary && panel){
+  container.appendChild(panel);
+  container.appendChild(summary);
+ }
+
+}
+
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+ const table=document.getElementById("scheduleTable");
+ const summary=document.getElementById("scheduleSummary");
+ const panel=document.getElementById("creditorSummaryPanel");
+
+ if(table && summary){
+   let wrapper=document.getElementById("summaryTop");
+   if(!wrapper){
+      wrapper=document.createElement("div");
+      wrapper.id="summaryTop";
+      table.parentNode.insertBefore(wrapper,table);
+   }
+   if(panel) wrapper.appendChild(panel);
+   wrapper.appendChild(summary);
+ }
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+
+const table=document.getElementById("scheduleTable");
+if(!table) return;
+
+let rows=table.querySelectorAll("tr");
+if(rows.length===0) return;
+
+/* ensure header row is inside THEAD */
+if(!table.querySelector("thead")){
+ const thead=document.createElement("thead");
+ thead.appendChild(rows[0]);
+ table.insertBefore(thead,table.firstChild);
+}
+
+/* ensure table is positioned after summary */
+const summary=document.getElementById("summaryTop");
+if(summary){
+ summary.after(table);
+}
+
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const btn = document.getElementById("quickTimerBtn");
+  if(!btn) return;
+
+  btn.addEventListener("click", function(){
+      if(typeof startTimer === "function"){
+          startTimer(120); // always 2 minutes
+      }else{
+          console.error("startTimer() not found");
+      }
+  });
+
+});
+</script>
+
+
+<script>
+(function(){
+function updateWorkCountdown(){
+  const now = new Date();
+  const start = new Date();
+  start.setHours(11,30,0,0);
+  const end = new Date();
+  end.setHours(21,0,0,0);
+
+  let display = "";
+
+  if(now < start){
+    const diff = start - now;
+    display = "Shift Starts in " + formatTime(diff);
+  }
+  else if(now >= start && now <= end){
+    const diff = end - now;
+    display = formatTime(diff);
+  }
+  else{
+    display = "Shift Ended";
+  }
+
+  const el = document.getElementById("workCountdown");
+  if(el) el.textContent = display;
+}
+
+function formatTime(ms){
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+
+  return (
+    String(h).padStart(2,'0') + ":" +
+    String(m).padStart(2,'0') + ":" +
+    String(s).padStart(2,'0')
+  );
+}
+
+updateWorkCountdown();
+setInterval(updateWorkCountdown, 1000);
+})();
+
+function openMissedInteraction(){
+ toggleHtmlViewer("https://castelmei.com/missed-interaction-tracker.html");
+}
+
+function openUSMapFull(){
+    toggleHtmlViewer("https://castelmei.com/ccast-us-tz.html");
+}
+
+</script>
+
+
+<script id="uiFx">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("button").forEach(b=>{b.classList.add("ripple");b.addEventListener("click",e=>{let s=document.createElement("span");s.className="ripplefx";let r=b.getBoundingClientRect(),d=Math.max(r.width,r.height);s.style.width=s.style.height=d+"px";s.style.left=(e.clientX-r.left-d/2)+"px";s.style.top=(e.clientY-r.top-d/2)+"px";b.appendChild(s);setTimeout(()=>s.remove(),600);});});let f=document.getElementById("fields");if(f)new MutationObserver(()=>[...f.children].forEach(x=>x.classList.add("fade-enter"))).observe(f,{childList:true});});</script>
+<script id="proUi">
+document.addEventListener('DOMContentLoaded',()=>{
+const toast=t=>{let d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1600);}
+document.querySelectorAll('button').forEach(b=>{
+b.addEventListener('click',()=>{if(b.textContent.includes('Copy'))setTimeout(()=>toast('Copied'),30);if(b.textContent.includes('Clear'))setTimeout(()=>toast('Cleared'),30);});
+});
+});
+
+<script id="liveDateScript">
+document.addEventListener("DOMContentLoaded",()=>{
+ const el=document.getElementById("liveDate");
+ if(!el) return;
+ function updateDate(){
+   const now=new Date();
+   el.textContent=now.toLocaleDateString(undefined,{
+      weekday:"long",
+      year:"numeric",
+      month:"long",
+      day:"numeric"
+   });
+ }
+ updateDate();
+ setInterval(updateDate,60000);
+});
+</script>
+</script>
+<script id="liveDateScriptCenter">
+document.addEventListener("DOMContentLoaded",()=>{
+ const el=document.getElementById("liveDate");
+ if(!el) return;
+ function upd(){
+  el.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+ }
+ upd();
+ setInterval(upd,60000);
+});
+</script>
+
+
+<script>
+function showToast(message,type="success"){
+ const old=document.querySelector(".mei-toast");
+ if(old) old.remove();
+ const t=document.createElement("div");
+ t.className="mei-toast toast-"+type;
+ t.innerHTML=message;
+ document.body.appendChild(t);
+ setTimeout(()=>t.remove(),2600);
+}
+</script>
+
+
+<!-- HTML VIEWER PANEL -->
+<div id="htmlViewerPanel" class="hidden fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
+<div class="bg-white dark:bg-slate-800 w-[96%] h-[92%] rounded-xl shadow-2xl overflow-hidden flex flex-col" id="htmlViewerWindow">
+<div class="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
+<span class="font-semibold">MeiNote Version 3.1.0 by Castel | Project Empower</span>
+<button onclick="toggleHtmlViewer()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Close</button>
+</div>
+<iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
+</div>
+</div>
+</body>
+</html>
