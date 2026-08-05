@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeiNote V.3.0</title>
+<title>MeiNote V.3.1.0</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -669,7 +669,7 @@ animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
 <div class="flex flex-col">
 
 <h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
-<span class="font-semibold text-blue-300">MeiNote</span> version.3.0
+<span class="font-semibold text-blue-300">MeiNote</span> Openers V.3.1.0
 </h1>
 
 <span class="text-[10px] text-blue-200 tracking-wider">
@@ -703,13 +703,19 @@ Multi Entry Interface for Notation, Organization & Task Execution | by Castel No
 
 <button id="quickTimerBtn" class="text-blue-200 hover:text-white text-xl mx-2" title="Start 2 Minute Timer">⚡</button>
 <button onclick="toggleTimerPanel()" class="text-blue-200 hover:text-white text-xl" title="Open Timer Settings">
-<i class="fas fa-cog"></i>
+<i class="fas fa-stopwatch"></i>
+</button>
+
+<button onclick="openUSMapFull()"
+class="text-blue-200 hover:text-white text-xl"
+title="Open US Timezone Map">
+<i class="fas fa-map"></i>
 </button>
 
 <button onclick="toggleHtmlViewer()"
 class="text-blue-200 hover:text-white text-xl"
-title="Open US Timezone Map">
-<i class="fas fa-map"></i>
+title="Open CasTools KB Navigator">
+<i class="fas fa-compass"></i>
 </button>
 
 <button onclick="toggleCalendar()" class="text-blue-200 hover:text-white text-xl" title="Open Calendar">
@@ -799,6 +805,7 @@ title="Open Missed Interaction Tracker">
 <option>CS Operations Request</option>
 <option>CS Correspondence</option>
 <option>Report an Agent</option>
+<option>File Salary Dispute</option>
 </optgroup>
 
 </select>
@@ -1356,7 +1363,7 @@ document.title = timeText + " • ON HOLD";
 }
 
 }else{
-document.title = "Mei Note V.2.0";
+document.title = "Mei Note V.3.1.0";
 }
 
 if(totalTime > 0){
@@ -1500,10 +1507,21 @@ document.getElementById("template").selectedIndex = 0;
 return; // Stop function here
 }
 
-//If CS Operations selected → open link
+//If Report an Agent selected → open link
 if(selected === "Report an Agent"){
 
 window.open("https://forms.office.com/Pages/ResponsePage.aspx?id=YzvnuFr0hEm5fvk7hG6uBbVQtm6I3VdGpIef04Hhe-JUNjNWNVdVMk9JVDI4R0Y0SU1NS04yUFQyQi4u", "_blank");
+
+// Reset dropdown
+document.getElementById("template").selectedIndex = 0;
+
+return; // Stop function here
+}
+
+//If File Salary Dispute selected → open link
+if(selected === "File Salary Dispute"){
+
+window.open("https://forms.cloud.microsoft/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBatITmSR0eZIggAn14YvX7VUOUNQTkxRTlYxVjlBQkpMQjFTTVRBVTAzUy4u&route=shorturl", "_blank");
 
 // Reset dropdown
 document.getElementById("template").selectedIndex = 0;
@@ -3696,7 +3714,7 @@ When the following RI's are on the account, the client needs to be transferred t
 <div id="creatorArticle">
 <h2>About Mei Note Generator and its Creator</h2>
 <br>
-<p>The MEI NOTE Generator - short for <b>"Multi-Entry Interface for Notation, Organization & Template Execution"</b> is created solely by <b>Castel Noleal</b>, an agent from Project E Wave 9. He created this with sweat and tears, with the motivation of helping out his fellow workmates and friends in his department. He is not asked nor paid to do this, he just made this because why not? (But he will pitch this in the future).<br><br> As long as he can see them happy and this tool helps his friends, and his department, he's happy.
+<p>The MEI NOTE Generator - short for <b>"Multi-Entry Interface for Notation, Organization & Template Execution"</b> is created solely by <b>Castel Noleal</b>, an agent from Project E Wave 9. He created this with sweat and tears, with the motivation of helping out his fellow workmates and friends in his department. He is not asked nor paid to do this, he just made this because why not? (But he will pitch this in the future).<br><br> As long as he can see them happy and this tool helps his friends, and his department, he's happy.<br>UPDATE: He wants an extra bonus now HAHAHA
 </p>
 </div>
 
@@ -4154,7 +4172,7 @@ function updateWorkCountdown(){
 
   if(now < start){
     const diff = start - now;
-    display = "Starts in " + formatTime(diff);
+    display = "Shift Starts in " + formatTime(diff);
   }
   else if(now >= start && now <= end){
     const diff = end - now;
@@ -4188,6 +4206,11 @@ setInterval(updateWorkCountdown, 1000);
 function openMissedInteraction(){
  toggleHtmlViewer("https://castelmei.com/missed-interaction-tracker.html");
 }
+
+function openUSMapFull(){
+    toggleHtmlViewer("https://castelmei.com/ccast-us-tz.html");
+}
+
 </script>
 
 
@@ -4248,7 +4271,7 @@ function showToast(message,type="success"){
 <div id="htmlViewerPanel" class="hidden fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
 <div class="bg-white dark:bg-slate-800 w-[96%] h-[92%] rounded-xl shadow-2xl overflow-hidden flex flex-col" id="htmlViewerWindow">
 <div class="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-<span class="font-semibold">MeiNote Version 3.0 by Castel | Project Empower</span>
+<span class="font-semibold">MeiNote Version 3.1.0 by Castel | Project Empower</span>
 <button onclick="toggleHtmlViewer()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Close</button>
 </div>
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
