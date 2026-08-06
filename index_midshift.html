@@ -4277,5 +4277,179 @@ function showToast(message,type="success"){
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
 </div>
 </div>
+
+<script>
+async function quickScreenshot() {
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    displaySurface: "browser"
+                },
+                audio: false
+            });
+
+        const video = document.createElement("video");
+        video.srcObject = stream;
+
+        await video.play();
+
+        await new Promise(resolve =>
+            setTimeout(resolve, 300)
+        );
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        stream.getTracks().forEach(track =>
+            track.stop()
+        );
+
+        window.lastScreenshot =
+            canvas.toDataURL("image/png");
+
+        document.getElementById(
+            "screenshotPreview"
+        ).src = window.lastScreenshot;
+
+        document.getElementById(
+            "screenshotTray"
+        ).style.display = "block";
+
+        showToast?.(
+            "📸 Screenshot captured",
+            "success"
+        );
+
+    } catch (e) {
+
+        console.error(e);
+
+        showToast?.(
+            "❌ Screenshot cancelled",
+            "danger"
+        );
+    }
+}
+</script>
+
+<script>
+async function copyScreenshotToClipboard() {
+
+    try {
+
+        if (!window.lastScreenshot) {
+
+            showToast?.(
+                "No screenshot available",
+                "danger"
+            );
+
+            return;
+        }
+
+        const response =
+            await fetch(window.lastScreenshot);
+
+        const blob =
+            await response.blob();
+
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                "image/png": blob
+            })
+        ]);
+
+        showToast?.(
+            "📋 Copied to clipboard. Press Ctrl+V.",
+            "success"
+        );
+
+    } catch (e) {
+
+        console.error(e);
+
+        showToast?.(
+            "❌ Clipboard copy failed",
+            "danger"
+        );
+    }
+}
+</script>
+
+<div id="screenshotTray"
+style="
+position:fixed;
+bottom:20px;
+right:20px;
+z-index:99999;
+display:none;
+background:#1e293b;
+color:white;
+padding:12px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,.4);
+max-width:350px;
+">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:8px;
+    ">
+        <strong>📸 Screenshot</strong>
+
+        <button onclick="document.getElementById('screenshotTray').style.display='none'"
+        style="
+        background:none;
+        border:none;
+        color:white;
+        cursor:pointer;
+        font-size:16px;
+        ">
+            ✕
+        </button>
+    </div>
+
+    <img id="screenshotPreview"
+    style="
+    width:100%;
+    border-radius:8px;
+    display:block;
+    ">
+
+    <button
+    onclick="copyScreenshotToClipboard()"
+    style="
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+    ">
+        📋 Copy Screenshot
+    </button>
+
+</div>
+  
 </body>
 </html>
