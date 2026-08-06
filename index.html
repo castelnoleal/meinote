@@ -699,7 +699,11 @@ Multi Entry Interface for Notation, Organization & Task Execution | by Castel No
 
 </div>
 
-
+<button onclick="quickScreenshot()"
+class="text-blue-200 hover:text-white text-xl"
+title="Quick Screenshot">
+    <i class="fas fa-camera"></i>
+</button>
 
 <button id="quickTimerBtn" class="text-blue-200 hover:text-white text-xl mx-2" title="Start 2 Minute Timer">⚡</button>
 <button onclick="toggleTimerPanel()" class="text-blue-200 hover:text-white text-xl" title="Open Timer Settings">
@@ -4277,5 +4281,94 @@ function showToast(message,type="success"){
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
 </div>
 </div>
+
+<script>
+async function quickScreenshot() {
+    try {
+
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                displaySurface: "browser"
+            },
+            audio: false
+        });
+
+        const video = document.createElement("video");
+        video.srcObject = stream;
+
+        video.onloadedmetadata = async () => {
+
+            await video.play();
+
+            setTimeout(async () => {
+
+                try {
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+
+                    const ctx = canvas.getContext("2d");
+
+                    ctx.drawImage(
+                        video,
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
+
+                    stream.getTracks().forEach(track => track.stop());
+
+                    const blob = await new Promise(resolve =>
+                        canvas.toBlob(resolve, "image/png")
+                    );
+
+                  if (!navigator.clipboard || !window.ClipboardItem) {
+    throw new Error("Clipboard image API not supported");
+}
+
+await navigator.clipboard.write([
+    new ClipboardItem({
+        "image/png": blob
+    })
+]);
+
+                    if (typeof showToast === "function") {
+                        showToast(
+                            "📋 Screenshot copied to clipboard. Press Ctrl+V.",
+                            "success"
+                        );
+                    }
+
+                } catch (clipboardError) {
+
+                    console.error(clipboardError);
+
+                    if (typeof showToast === "function") {
+                        showToast(
+                            "❌ Clipboard access blocked.",
+                            "danger"
+                        );
+                    }
+                }
+
+            }, 300);
+
+        };
+
+    } catch (err) {
+
+        console.error(err);
+
+        if (typeof showToast === "function") {
+            showToast(
+                "❌ Screenshot cancelled.",
+                "danger"
+            );
+        }
+    }
+}
+</script>
 </body>
 </html>
