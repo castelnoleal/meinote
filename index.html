@@ -710,6 +710,13 @@ title="Quick Screenshot">
 <i class="fas fa-stopwatch"></i>
 </button>
 
+<button
+    onclick="toggleCCSATPanel()"
+    class="text-blue-200 hover:text-white text-xl"
+    title="Open CSAT Calculator">
+    <i class="fas fa-chart-line"></i>
+</button>
+
 <button onclick="openUSMapFull()"
 class="text-blue-200 hover:text-white text-xl"
 title="Open US Timezone Map">
@@ -1494,6 +1501,29 @@ Object.entries(memory[t]).forEach(([id,v])=>{
 const el=document.getElementById(id);
 if(el) el.value=v;
 });
+}
+
+function toggleCCSATPanel(){
+
+    document.getElementById("calendarPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("timerPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("helpPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("calculatorPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("schedulePanel")
+        ?.classList.add("hidden");
+
+    const panel =
+        document.getElementById("ccsatPanel");
+
+    panel.classList.toggle("hidden");
 }
 
 function switchTemplate(){
@@ -3246,6 +3276,11 @@ const help = document.getElementById("helpPanel");
 const article = document.getElementById("articleViewer");
 const calculator = document.getElementById("calculatorPanel");
 const schedulePanel=document.getElementById("schedulePanel")
+const ccsatPanel = document.getElementById("ccsatPanel");
+
+if(e.target === ccsatPanel){
+    ccsatPanel.classList.add("hidden");
+}
 
 // close analyzer
 if(e.target===schedulePanel){
@@ -4288,10 +4323,12 @@ async function quickScreenshot() {
     try {
 
         const stream =
-    await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: false
-    });
+            await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    displaySurface: "browser"
+                },
+                audio: false
+            });
 
         const video = document.createElement("video");
         video.srcObject = stream;
@@ -4450,6 +4487,58 @@ max-width:350px;
     ">
         📋 Copy Screenshot
     </button>
+
+</div>
+
+<!-- CCSAT CALCULATOR PANEL -->
+<div id="ccsatPanel"
+class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div
+        class="bg-white dark:bg-slate-800
+               w-[750px]
+               h-[850px]
+               rounded-xl
+               shadow-2xl
+               overflow-hidden
+               flex
+               flex-col">
+
+        <!-- Header -->
+        <div
+            class="bg-blue-900
+                   text-white
+                   px-4
+                   py-3
+                   flex
+                   justify-between
+                   items-center">
+
+            <h2 class="font-semibold">
+                CCSAT Recovery Calculator
+            </h2>
+
+            <button
+                onclick="toggleCCSATPanel()"
+                class="text-red-300 hover:text-white text-lg">
+
+                ✕
+
+            </button>
+
+        </div>
+
+        <!-- Calculator -->
+        <iframe src="https://castelmei.com/ccast-calculator.html"
+            style="
+                width:100%;
+                height:200%;
+                border:none;
+                flex:1;
+            ">
+        </iframe>
+
+    </div>
 
 </div>
 
