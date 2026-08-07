@@ -4288,12 +4288,10 @@ async function quickScreenshot() {
     try {
 
         const stream =
-            await navigator.mediaDevices.getDisplayMedia({
-                video: {
-                    displaySurface: "browser"
-                },
-                audio: false
-            });
+    await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false
+    });
 
         const video = document.createElement("video");
         video.srcObject = stream;
