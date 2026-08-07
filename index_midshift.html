@@ -669,7 +669,7 @@ animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
 <div class="flex flex-col">
 
 <h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
-<span class="font-semibold text-blue-300">MeiNote</span> midshift V.3.1.0
+<span class="font-semibold text-blue-300">MeiNote</span> Midshift V.3.1.0
 </h1>
 
 <span class="text-[10px] text-blue-200 tracking-wider">
@@ -693,7 +693,6 @@ Multi Entry Interface for Notation, Organization & Task Execution | by Castel No
 00:00
 </div>
 
-  
 <div id="timerBar" class="w-24 h-1.5 bg-slate-600 rounded mt-1 overflow-hidden">
 <div id="timerProgress" class="h-full bg-blue-400 w-full"></div>
 </div>
@@ -705,10 +704,17 @@ class="text-blue-200 hover:text-white text-xl"
 title="Quick Screenshot">
     <i class="fas fa-camera"></i>
 </button>
-  
+
 <button id="quickTimerBtn" class="text-blue-200 hover:text-white text-xl mx-2" title="Start 2 Minute Timer">⚡</button>
 <button onclick="toggleTimerPanel()" class="text-blue-200 hover:text-white text-xl" title="Open Timer Settings">
 <i class="fas fa-stopwatch"></i>
+</button>
+
+<button
+    onclick="toggleCCSATPanel()"
+    class="text-blue-200 hover:text-white text-xl"
+    title="Open CSAT Calculator">
+    <i class="fas fa-chart-line"></i>
 </button>
 
 <button onclick="openUSMapFull()"
@@ -1495,6 +1501,29 @@ Object.entries(memory[t]).forEach(([id,v])=>{
 const el=document.getElementById(id);
 if(el) el.value=v;
 });
+}
+
+function toggleCCSATPanel(){
+
+    document.getElementById("calendarPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("timerPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("helpPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("calculatorPanel")
+        ?.classList.add("hidden");
+
+    document.getElementById("schedulePanel")
+        ?.classList.add("hidden");
+
+    const panel =
+        document.getElementById("ccsatPanel");
+
+    panel.classList.toggle("hidden");
 }
 
 function switchTemplate(){
@@ -3247,6 +3276,11 @@ const help = document.getElementById("helpPanel");
 const article = document.getElementById("articleViewer");
 const calculator = document.getElementById("calculatorPanel");
 const schedulePanel=document.getElementById("schedulePanel")
+const ccsatPanel = document.getElementById("ccsatPanel");
+
+if(e.target === ccsatPanel){
+    ccsatPanel.classList.add("hidden");
+}
 
 // close analyzer
 if(e.target===schedulePanel){
@@ -4169,9 +4203,9 @@ document.addEventListener("DOMContentLoaded", function(){
 function updateWorkCountdown(){
   const now = new Date();
   const start = new Date();
-  start.setHours(10,30,0,0);
+  start.setHours(10,0,0,0);
   const end = new Date();
-  end.setHours(20,0,0,0);
+  end.setHours(20,30,0,0);
 
   let display = "";
 
@@ -4455,6 +4489,59 @@ max-width:350px;
     </button>
 
 </div>
-  
+
+<!-- CCSAT CALCULATOR PANEL -->
+<div id="ccsatPanel"
+class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+    <div
+        class="bg-white dark:bg-slate-800
+               w-[750px]
+               h-[850px]
+               rounded-xl
+               shadow-2xl
+               overflow-hidden
+               flex
+               flex-col">
+
+        <!-- Header -->
+        <div
+            class="bg-blue-900
+                   text-white
+                   px-4
+                   py-3
+                   flex
+                   justify-between
+                   items-center">
+
+            <h2 class="font-semibold">
+                CCSAT Recovery Calculator
+            </h2>
+
+            <button
+                onclick="toggleCCSATPanel()"
+                class="text-red-300 hover:text-white text-lg">
+
+                ✕
+
+            </button>
+
+        </div>
+
+        <!-- Calculator -->
+        <iframe src="https://castelmei.com/ccast-calculator.html"
+            style="
+                width:100%;
+                height:200%;
+                border:none;
+                flex:1;
+            ">
+        </iframe>
+
+    </div>
+
+</div>
+
+</body>
 </body>
 </html>
