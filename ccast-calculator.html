@@ -47,6 +47,7 @@ input:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.3);}
 <div class="subtitle">5 = CSAT • 1 = DSAT • Passing Score = 4.60</div>
 <label>Total CSATs (5)</label><input id="ccsat" type="number" min="0">
 <label>Total DSATs (1)</label><input id="dsat" type="number" min="0">
+<label>Target Passing Score</label><input id="passscore" type="number" min="0" max="5" step="0.01" value="4.60">
 <div class="result">
 <div class="resultCard"><div class="resultLabel">Current Average CSAT</div><div id="average" class="mainNumber blue">0.00</div></div>
 <div class="resultCard metric"><span>CSAT Needed</span><span id="needed" class="metricValue">0</span></div>
@@ -54,11 +55,11 @@ input:focus{outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.3);}
 <div id="feedback" class="feedback"><i>Enter survey data to begin</i></div>
 </div></div>
 <script>
-const PASS_SCORE=4.60;
-function calculate(){let ccsat=parseInt(document.getElementById('ccsat').value)||0;let dsat=parseInt(document.getElementById('dsat').value)||0;let total=ccsat+dsat;let average=0;if(total>0){average=((ccsat*5)+(dsat*1))/total;}updateAverage(average);calculateRecovery(ccsat,dsat,total,average);}
+
+function calculate(){let ccsat=parseInt(document.getElementById('ccsat').value)||0;let dsat=parseInt(document.getElementById('dsat').value)||0;let passScore=parseFloat(document.getElementById('passscore').value)||4.60;let total=ccsat+dsat;let average=0;if(total>0){average=((ccsat*5)+(dsat*1))/total;}updateAverage(average);calculateRecovery(ccsat,dsat,total,average,passScore);}
 function updateAverage(a){document.getElementById('average').textContent=a.toFixed(2);}
-function calculateRecovery(ccsat,dsat,total,average){let needed=0;while(total>0&&((((ccsat+needed)*5)+(dsat*1))/(total+needed))<PASS_SCORE){needed++;}document.getElementById('needed').textContent=needed;document.getElementById('projected').textContent=total+needed;updateFeedback(average,total);}
-function updateFeedback(average,total){const avg=document.getElementById('average');const feedback=document.getElementById('feedback');if(total===0){avg.className='mainNumber blue';feedback.className='feedback';feedback.innerHTML='Enter survey data to begin.';return;} if(average>=4.80){avg.className='mainNumber green';feedback.className='feedback pass';feedback.innerHTML='🟢 Outstanding performance.';} else if(average>=PASS_SCORE){avg.className='mainNumber green';feedback.className='feedback pass';feedback.innerHTML='✅ Passing.';} else if(average>=4.40){avg.className='mainNumber yellow';feedback.className='feedback warn';feedback.innerHTML='🟡 Recovery Zone.';} else {avg.className='mainNumber red';feedback.className='feedback fail';feedback.innerHTML='🔴 Critical Risk.';}}
+function calculateRecovery(ccsat,dsat,total,average,passScore){let needed=0;while(total>0&&((((ccsat+needed)*5)+(dsat*1))/(total+needed))<passScore){needed++;}document.getElementById('needed').textContent=needed;document.getElementById('projected').textContent=total+needed;updateFeedback(average,total,passScore);}
+function updateFeedback(average,total,passScore){const avg=document.getElementById('average');const feedback=document.getElementById('feedback');if(total===0){avg.className='mainNumber blue';feedback.className='feedback';feedback.innerHTML='Enter survey data to begin.';return;}const outstandingThreshold=Math.min(5,passScore+0.20);const recoveryThreshold=Math.max(0,passScore-0.20);if(average>=outstandingThreshold){avg.className='mainNumber green';feedback.className='feedback pass';feedback.innerHTML='🟢 Outstanding performance. ('+outstandingThreshold.toFixed(2)+'+)';}else if(average>=passScore){avg.className='mainNumber green';feedback.className='feedback pass';feedback.innerHTML='✅ Passing. Target: '+passScore.toFixed(2);}else if(average>=recoveryThreshold){avg.className='mainNumber yellow';feedback.className='feedback warn';feedback.innerHTML='🟡 Recovery Zone. ('+recoveryThreshold.toFixed(2)+' - '+passScore.toFixed(2)+')';}else{avg.className='mainNumber red';feedback.className='feedback fail';feedback.innerHTML='🔴 Critical Risk. Below '+recoveryThreshold.toFixed(2);}}
 document.querySelectorAll('input').forEach(i=>i.addEventListener('input',calculate));calculate();
 function resizeIframe(){const height=document.documentElement.scrollHeight;window.parent.postMessage({type:'resize',height},'*');}
 window.addEventListener('load',resizeIframe);window.addEventListener('resize',resizeIframe);
