@@ -1,72 +1,635 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
 <title>CSAT Recovery Calculator</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:auto}
+
+/* ==========================
+   Castel Noleal _ Global Settings
+========================== */
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    width:100%;
+    min-height:100%;
+}
+
 body{
-font-family:'Segoe UI',sans-serif;
-background:transparent;
-padding:8px;
-color:white;
+    margin:0;
+    width:100%;
+    min-height:100vh;
+    min-height:100dvh;
+    font-family:"Segoe UI",sans-serif;
+    background:
+        radial-gradient(
+            circle at top right,
+            #2563eb,
+            #0f172a 55%
+        );
+    color:white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:
+        max(10px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+
+    overflow:auto;
+    overflow-x:hidden;
 }
+
+/* ==========================
+   CARD
+========================== */
+
 .card{
-width:min(100%,420px);
-margin:0 auto;
-background:rgba(30,41,59,.96);
-border-radius:16px;
-padding:14px;
-border:1px solid rgba(255,255,255,.08);
-box-shadow:0 8px 20px rgba(0,0,0,.25);
+    width:min(100%, 620px);
+    max-width:620px;
+    min-width:0;
+
+    background:rgba(30,41,59,.95);
+
+    border-radius:clamp(14px, 3vw, 24px);
+
+    padding:clamp(14px, 4vw, 28px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 25px 50px rgba(0,0,0,.45);
+
+    /* Prevent the card from being wider than a small iframe. */
+    overflow:hidden;
 }
-h1{font-size:1.1rem;text-align:center;color:#93c5fd;margin-bottom:4px}
-.subtitle{font-size:.72rem;text-align:center;color:#94a3b8;margin-bottom:12px}
-label{display:block;font-size:.78rem;margin:8px 0 4px;font-weight:600}
+
+h1{
+    margin:0;
+    text-align:center;
+    color:#93c5fd;
+    font-size:clamp(22px, 5vw, 32px);
+    line-height:1.15;
+}
+
+.subtitle{
+    text-align:center;
+    color:#94a3b8;
+
+    margin-top:clamp(5px, 1.5vw, 8px);
+    margin-bottom:clamp(14px, 4vw, 25px);
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
+/* ==========================
+   INPUTS
+========================== */
+
+label{
+    display:block;
+
+    margin-top:clamp(7px, 2vw, 12px);
+    margin-bottom:clamp(4px, 1vw, 6px);
+
+    font-weight:600;
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
 input{
-width:100%;padding:10px;border:none;border-radius:10px;
-background:#334155;color:#fff;font-size:.9rem;
+    width:100%;
+
+    padding:clamp(9px, 2.5vw, 14px);
+
+    border:none;
+    border-radius:clamp(9px, 2vw, 12px);
+
+    background:#334155;
+    color:white;
+    font-size:clamp(14px, 3vw, 16px);
+    min-width:0;
 }
-.result{display:grid;gap:10px;margin-top:12px}
-.resultCard{background:#111827;padding:12px;border-radius:12px}
-.resultLabel{font-size:.65rem;color:#94a3b8;text-transform:uppercase}
-.mainNumber{font-size:2rem;font-weight:800}
-.metric{display:flex;justify-content:space-between;align-items:center}
-.metricValue{font-size:1.2rem;font-weight:700}
-.blue{color:#60a5fa}.green{color:#22c55e}.yellow{color:#facc15}.red{color:#ef4444}
-.feedback{padding:12px;border-radius:10px;font-size:.85rem}
-.pass{background:rgba(34,197,94,.15)}
-.warn{background:rgba(250,204,21,.15)}
-.fail{background:rgba(239,68,68,.15)}
+
+input:focus{
+    outline:none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59,130,246,.3);
+}
+
+/* ==========================
+   RESULTS
+========================== */
+
+.result{
+    margin-top:clamp(10px, 3vw, 20px);
+
+    display:grid;
+    gap:clamp(8px, 2.5vw, 15px);
+}
+
+.resultCard{
+    background:#111827;
+
+    padding:clamp(10px, 3vw, 16px);
+
+    border-radius:clamp(11px, 2.5vw, 16px);
+}
+
+.resultLabel{
+    color:#94a3b8;
+
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+.mainNumber{
+    font-size:clamp(34px, 10vw, 52px);
+    line-height:1;
+    font-weight:800;
+}
+
+.metric{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.metricValue{
+    font-size:clamp(20px, 5vw, 28px);
+    font-weight:800;
+    line-height:1.1;
+}
+
+/* ==========================
+   COLORS
+========================== */
+
+.blue{
+    color:#60a5fa;
+}
+
+.green{
+    color:#22c55e;
+}
+
+.yellow{
+    color:#facc15;
+}
+
+.red{
+    color:#ef4444;
+}
+
+/* ==========================
+   FEEDBACK
+========================== */
+
+.feedback{
+    padding:clamp(10px, 3vw, 16px);
+    border-radius:clamp(10px, 2.5vw, 14px);
+
+    line-height:1.4;
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
+.pass{
+    background:rgba(34,197,94,.15);
+}
+
+.warn{
+    background:rgba(250,204,21,.15);
+}
+
+.fail{
+    background:rgba(239,68,68,.15);
+}
+
+
+/* ==========================
+   RESPONSIVE / IFRAME MODE
+   ========================== */
+
+/* Narrow iframe / mobile width */
+@media (max-width: 430px){
+    body{
+        padding:10px;
+        align-items:flex-start;
+    }
+
+    .card{
+        margin:auto 0;
+    }
+
+    .metric{
+        gap:10px;
+    }
+
+    .metricValue{
+        flex-shrink:0;
+    }
+}
+
+/* Short iframe: reduce vertical spacing while keeping every component visible. */
+@media (max-height: 700px){
+    body{
+        align-items:flex-start;
+    }
+
+    .card{
+        margin-top:0;
+        margin-bottom:0;
+    }
+
+    .subtitle{
+        margin-bottom:12px;
+    }
+
+    label{
+        margin-top:6px;
+        margin-bottom:3px;
+    }
+
+    .result{
+        margin-top:10px;
+        gap:8px;
+    }
+
+    .resultCard{
+        padding:9px 12px;
+    }
+
+    .feedback{
+        padding:9px 12px;
+    }
+}
+
+/* Very short iframe: make the calculator compact enough for dashboard embeds. */
+@media (max-height: 520px){
+    body{
+        padding:6px;
+    }
+
+    .card{
+        border-radius:14px;
+        padding:10px 12px;
+    }
+
+    h1{
+        font-size:22px;
+    }
+
+    .subtitle{
+        margin-top:3px;
+        margin-bottom:7px;
+        font-size:11px;
+    }
+
+    label{
+        margin-top:4px;
+        margin-bottom:2px;
+        font-size:12px;
+    }
+
+    input{
+        padding:7px 10px;
+        font-size:14px;
+        border-radius:8px;
+    }
+
+    .result{
+        margin-top:7px;
+        gap:6px;
+    }
+
+    .resultCard{
+        padding:7px 10px;
+        border-radius:9px;
+    }
+
+    .resultLabel{
+        font-size:10px;
+    }
+
+    .mainNumber{
+        font-size:32px;
+    }
+
+    .metricValue{
+        font-size:19px;
+    }
+
+    .feedback{
+        padding:7px 10px;
+        font-size:11px;
+        border-radius:9px;
+    }
+}
+
+/* If the iframe is extremely narrow, prevent metric rows from clipping. */
+@media (max-width: 300px){
+    .metric{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:3px;
+    }
+
+    .metricValue{
+        align-self:flex-end;
+    }
+}
+
 </style>
+
 </head>
+
 <body>
+
 <div class="card">
-<h1>CSAT Recovery Calculator</h1>
-<div class="subtitle">Compact widget for OneNote / iframe embeds</div>
-<label>Total CSATs (5)</label>
-<input id="ccsat" type="number" min="0">
-<label>Total DSATs (1)</label>
-<input id="dsat" type="number" min="0">
-<label>Target Passing Score</label>
-<input id="passscore" type="number" min="0" max="5" step="0.01" value="4.60">
-<div class="result">
-<div class="resultCard"><div class="resultLabel">Current Average</div><div id="average" class="mainNumber blue">0.00</div></div>
-<div class="resultCard metric"><span>CSAT Needed</span><span id="needed" class="metricValue">0</span></div>
-<div class="resultCard metric"><span>Total Surveys</span><span id="projected" class="metricValue">0</span></div>
-<div id="feedback" class="feedback"><i>Enter survey data to begin</i></div>
+
+    <h1>CSAT Recovery Calculator</h1>
+
+    <div class="subtitle">
+        5 = CSAT • 1 = DSAT • Passing Score = 4.60
+    </div>
+
+    <label>Total CSATs (5)</label>
+    <input id="ccsat" type="number" min="0">
+
+    <label>Total DSATs (1)</label>
+    <input id="dsat" type="number" min="0">
+
+    <div class="result">
+
+        <div class="resultCard">
+
+            <div class="resultLabel">
+                Current Average CSAT
+            </div>
+
+            <div
+                id="average"
+                class="mainNumber blue">
+                0.00
+            </div>
+
+        </div>
+
+        <div class="resultCard metric">
+
+            <span>
+                CSAT Needed
+            </span>
+
+            <span
+                id="needed"
+                class="metricValue">
+                0
+            </span>
+
+        </div>
+
+        <div class="resultCard metric">
+
+            <span>
+                Projected Surveys in Total
+            </span>
+
+            <span
+                id="projected"
+                class="metricValue">
+                0
+            </span>
+
+        </div>
+
+        <div
+            id="feedback"
+            class="feedback">
+            <i>Enter survey data to begin</i>
+        </div>
+
+    </div>
+
 </div>
-</div>
+
 <script>
-const CONFIG={defaultPassingScore:4.6,outstandingOffset:.2,recoveryOffset:.2};
-const el={ccsat:ccsat,dsat:dsat,passscore:passscore,average:average,needed:needed,projected:projected,feedback:feedback};
-function thresholds(score){return{pass:score,outstanding:Math.min(5,score+CONFIG.outstandingOffset),recovery:Math.max(0,score-CONFIG.recoveryOffset)}}
-function calculate(){const c=+el.ccsat.value||0,d=+el.dsat.value||0,p=+el.passscore.value||CONFIG.defaultPassingScore;const total=c+d;const avg=total?((c*5)+d)/total:0;el.average.textContent=avg.toFixed(2);let need=0;while(total>0&&((((c+need)*5)+d)/(total+need))<p)need++;el.needed.textContent=need;el.projected.textContent=total+need;updateFeedback(avg,total,p);resizeIframe();}
-function updateFeedback(avg,total,p){if(!total){el.feedback.className='feedback';el.average.className='mainNumber blue';el.feedback.innerHTML='Enter survey data to begin';return;}const t=thresholds(p);if(avg>=t.outstanding){el.average.className='mainNumber green';el.feedback.className='feedback pass';el.feedback.innerHTML='🟢 Outstanding';}else if(avg>=t.pass){el.average.className='mainNumber green';el.feedback.className='feedback pass';el.feedback.innerHTML='✅ Passing';}else if(avg>=t.recovery){el.average.className='mainNumber yellow';el.feedback.className='feedback warn';el.feedback.innerHTML='🟡 Recovery Zone';}else{el.average.className='mainNumber red';el.feedback.className='feedback fail';el.feedback.innerHTML='🔴 Critical Risk';}}
-function resizeIframe(){window.parent?.postMessage({type:'resize',height:document.documentElement.scrollHeight},'*');}
-document.querySelectorAll('input').forEach(i=>i.addEventListener('input',calculate));calculate();
+
+/* ==========================
+   CONFIG
+========================== */
+
+const PASS_SCORE = 4.60;
+
+/* ==========================
+   CALCULATOR
+========================== */
+
+function calculate(){
+
+    let ccsat =
+        parseInt(
+            document.getElementById("ccsat").value
+        ) || 0;
+
+    let dsat =
+        parseInt(
+            document.getElementById("dsat").value
+        ) || 0;
+
+    let total =
+        ccsat + dsat;
+
+    let average = 0;
+
+    if(total > 0){
+
+        average =
+            ((ccsat * 5) + (dsat * 1))
+            / total;
+    }
+
+    updateAverage(average);
+
+    calculateRecovery(
+        ccsat,
+        dsat,
+        total,
+        average
+    );
+}
+
+/* ==========================
+   UPDATE SCORE
+========================== */
+
+function updateAverage(average){
+
+    document.getElementById(
+        "average"
+    ).textContent =
+        average.toFixed(2);
+}
+
+/* ==========================
+   RECOVERY
+========================== */
+
+function calculateRecovery(
+    ccsat,
+    dsat,
+    total,
+    average
+){
+
+    let needed = 0;
+
+    while(
+        total > 0 &&
+        (
+            (
+                ((ccsat + needed) * 5)
+                +
+                (dsat * 1)
+            )
+            /
+            (total + needed)
+        )
+        < PASS_SCORE
+    ){
+        needed++;
+    }
+
+    document.getElementById(
+        "needed"
+    ).textContent = needed;
+
+    document.getElementById(
+        "projected"
+    ).textContent =
+        total + needed;
+
+    updateFeedback(
+        average,
+        total
+    );
+}
+
+/* ==========================
+   FEEDBACK
+========================== */
+
+function updateFeedback(
+    average,
+    total
+){
+
+    const avg =
+        document.getElementById(
+            "average"
+        );
+
+    const feedback =
+        document.getElementById(
+            "feedback"
+        );
+
+    if(total === 0){
+
+        avg.className =
+            "mainNumber blue";
+
+        feedback.className =
+            "feedback";
+
+        feedback.innerHTML =
+            "Enter survey data to begin.";
+
+        return;
+    }
+
+    if(average >= 4.80){
+
+        avg.className =
+            "mainNumber green";
+
+        feedback.className =
+            "feedback pass";
+
+        feedback.innerHTML =
+            "🟢 Outstanding performance.";
+    }
+
+    else if(
+        average >= PASS_SCORE
+    ){
+
+        avg.className =
+            "mainNumber green";
+
+        feedback.className =
+            "feedback pass";
+
+        feedback.innerHTML =
+            "✅ Passing.";
+    }
+
+    else if(
+        average >= 4.40
+    ){
+
+        avg.className =
+            "mainNumber yellow";
+
+        feedback.className =
+            "feedback warn";
+
+        feedback.innerHTML =
+            "🟡 Recovery Zone.";
+    }
+
+    else{
+
+        avg.className =
+            "mainNumber red";
+
+        feedback.className =
+            "feedback fail";
+
+        feedback.innerHTML =
+            "🔴 Critical Risk.";
+    }
+}
+
+/* ==========================
+   EVENTS
+========================== */
+
+document
+.querySelectorAll("input")
+.forEach(input => {
+
+    input.addEventListener(
+        "input",
+        calculate
+    );
+
+});
+
+calculate();
+
 </script>
+
 </body>
 </html>
