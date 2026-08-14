@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeiNote V.3.2.0</title>
+<title>MeiNote V.3.5.0</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -669,7 +669,7 @@ animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
 <div class="flex flex-col">
 
 <h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
-<span class="font-semibold text-blue-300">MeiNote</span> Closers V.3.2.0
+<span class="font-semibold text-blue-300">MeiNote</span> Closers V.3.5.0
 </h1>
 
 <span class="text-[10px] text-blue-200 tracking-wider">
@@ -2286,6 +2286,21 @@ f.innerHTML=`
 <div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
 <div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
 <div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+
+<button
+    onclick="openStandaloneArticle('DCID')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Deposit Change Impact Disclosure">
+    DCID <i class="fas fa-warning"></i>
+</button>
+
+<button
+    onclick="openStandaloneArticle('ISD')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Impacted Settlement Disclosure">
+    ISD <i class="fas fa-warning"></i>
+</button>
+
 </div>
 
 <label class="lbl">Notes</label>
@@ -2309,6 +2324,19 @@ f.innerHTML=`
 <div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
 <div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
 <div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+<button
+    onclick="openStandaloneArticle('DCID')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Deposit Change Impact Disclosure">
+    DCID <i class="fas fa-warning"></i>
+</button>
+
+<button
+    onclick="openStandaloneArticle('ISD')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Impacted Settlement Disclosure">
+    ISD <i class="fas fa-warning"></i>
+</button>
 </div>
 
 <label class="lbl">Notes</label>
@@ -2332,6 +2360,19 @@ f.innerHTML=`
 <div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
 <div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
 <div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+<button
+    onclick="openStandaloneArticle('DCID')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Deposit Change Impact Disclosure">
+    DCID <i class="fas fa-warning"></i>
+</button>
+
+<button
+    onclick="openStandaloneArticle('ISD')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Impacted Settlement Disclosure">
+    ISD <i class="fas fa-warning"></i>
+</button>
 </div>
 
 <label class="lbl">Notes</label>
@@ -2357,6 +2398,19 @@ f.innerHTML=`
 <div><label class="lbl">Rev 90DD</label>${dd("dd90",["Y","NA"])}</div>
 <div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
 <div><label class="lbl">Sent draft</label>${dd("draft",["Y","NA"])}</div>
+<button
+    onclick="openStandaloneArticle('DCID')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Deposit Change Impact Disclosure">
+    DCID <i class="fas fa-warning"></i>
+</button>
+
+<button
+    onclick="openStandaloneArticle('ISD')"
+    class="text-red-500 hover:text-red text-xl"
+    title="Impacted Settlement Disclosure">
+    ISD <i class="fas fa-warning"></i>
+</button>
 </div>
 
 <label class="lbl">Notes</label>
@@ -2406,7 +2460,9 @@ f.innerHTML=`
 <div><label class="lbl">Checked/Rev ISD</label>${dd("isd",["Y","delete"])}</div>
 <div><label class="lbl">Sent contact info email</label>${dd("draft",["Y","NA"])}</div>
 </div>
-  <div><label class="lbl">Adv refund verbiage</label>${dd("verb",["Y","NA"])}</div>
+  <div><label class="lbl">Adv refund verbiage</label>${dd("verb",["Y","NA"])}
+</div>
+
 </div>
 
 
@@ -3185,26 +3241,54 @@ searchKB();
 
 }
 
+function openStandaloneArticle(id){
+    const article = document.getElementById(id);
+    if(!article) return;
+
+    document.getElementById("articleContent").innerHTML =
+        article.innerHTML;
+
+    document.getElementById("articleViewer")
+        .classList.remove("hidden");
+
+    document.getElementById("articleViewer")
+        .dataset.returnToKB = "false";
+}
 
 function openArticle(id){
+    document.getElementById("helpPanel")
+        .classList.add("hidden");
+document.getElementById("articleViewer").dataset.standalone = "false";
+    document.getElementById("articleContent").innerHTML =
+        document.getElementById(id).innerHTML;
 
-document.getElementById("helpPanel").classList.add("hidden");
+    document.getElementById("articleViewer")
+        .dataset.returnToKB = "true";
 
-const article = document.getElementById(id).innerHTML;
-document.getElementById("articleContent").innerHTML = article;
+    document.getElementById("articleViewer")
+        .classList.remove("hidden");
+}
 
-document.getElementById("articleViewer").classList.remove("hidden");
+function openStandaloneArticle(id){
+    const article = document.getElementById(id);
+    if(!article) return;
 
+    document.getElementById("articleContent").innerHTML = article.innerHTML;
+
+    const viewer = document.getElementById("articleViewer");
+    viewer.dataset.standalone = "true";
+
+    document.getElementById("articleViewer").classList.remove("hidden");
 }
 
 function closeArticle(){
+    const viewer = document.getElementById("articleViewer");
 
-// Close article viewer
-document.getElementById("articleViewer").classList.add("hidden");
+    viewer.classList.add("hidden");
 
-// Reopen knowledge base search panel
-document.getElementById("helpPanel").classList.remove("hidden");
-
+    if(viewer.dataset.standalone !== "true"){
+        document.getElementById("helpPanel").classList.remove("hidden");
+    }
 }
 
 function searchKB(){
@@ -3310,11 +3394,11 @@ help.classList.add("hidden");
 
 // close article viewer and return to search
 if(e.target === article){
+    article.classList.add("hidden");
 
-article.classList.add("hidden");
-
-document.getElementById("helpPanel")?.classList.remove("hidden");
-
+    if(article.dataset.standalone !== "true"){
+        document.getElementById("helpPanel")?.classList.remove("hidden");
+    }
 }
 
 });
@@ -3848,6 +3932,47 @@ At the same time, I would like as well to let you know to keep your lines open, 
 </p>
 
 </div>
+
+<div id="DCID">
+<h2><i><b>If the client is making a negative deposit change: delaying, reducing, skipping a deposit, or requesting to withdraw funds.</b></i></h2>
+<br>
+<p><b>Deposit Change Impact Disclosure, DCID (formerly 90DD/90 Day Disclosure)</b>
+<br><br>
+<i>
+“I do want to be transparent about how this change impacts your program."
+<br><br>
+"Reducing, skipping, or delaying deposits can extend your program timeline, delay settlements, and in some cases affect creditor payments or negotiations."<br><br>
+"If deposits are stopped for an extended period, your account may be pending review of your active status with the program until funding resumes or a longer-term plan is discussed."
+<br><br>
+"If you’re able to add funds later or make up for missed deposits, that can help get the program back on track.”
+
+</i>
+</p>
+</div>
+
+<div id="ISD">
+<h2><b><i>If an active settlement will be impacted due to the adjustment, or there is an active legal account enrolled</i></b></h2>
+
+<p><b>Impacted Settlement Disclosure (ISD)</b>
+<br><br>
+<i>
+“Since we're in the process of making settlement payments to some of your creditors, we do want you to know that once this change is made, it will impact one of the scheduled payments we have in place to...
+<br><br>
+"Creditor name, last 4 of account #, payment amount, date.
+<br>
+"Creditor name, last 4 of account #, payment amount, date.
+<br>
+"Creditor name, last 4 of account #, payment amount, date.
+<br>
+"Creditor name, last 4 of account #, payment amount, date.
+<br><br>
+"Based on the upcoming payment of $XX, is there any chance we could schedule that amount to keep the settlement in place?"
+
+</i>
+</p>
+</div>
+
+
 </div>
 
 <!-- Schedule Spreadsheet Analyzer -->
@@ -4203,9 +4328,9 @@ document.addEventListener("DOMContentLoaded", function(){
 function updateWorkCountdown(){
   const now = new Date();
   const start = new Date();
-  start.setHours(11,30,0,0);
+  start.setHours(9,0,0,0);
   const end = new Date();
-  end.setHours(21,0,0,0);
+  end.setHours(18,30,0,0);
 
   let display = "";
 
@@ -4310,7 +4435,7 @@ function showToast(message,type="success"){
 <div id="htmlViewerPanel" class="hidden fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
 <div class="bg-white dark:bg-slate-800 w-[96%] h-[92%] rounded-xl shadow-2xl overflow-hidden flex flex-col" id="htmlViewerWindow">
 <div class="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-<span class="font-semibold">MeiNote Version 3.2.0 by Castel | Project Empower</span>
+<span class="font-semibold">MeiNote Version 3.5.0 by Castel | Project Empower</span>
 <button onclick="toggleHtmlViewer()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Close</button>
 </div>
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
@@ -4497,7 +4622,7 @@ class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div
         class="bg-white dark:bg-slate-800
                w-[550px]
-               h-[500px]
+               h-[650px]
                rounded-xl
                shadow-2xl
                overflow-hidden
