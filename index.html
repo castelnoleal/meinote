@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeiNote V.3.5.0</title>
+<title>MeiNote V.4.0</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -669,7 +669,7 @@ animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
 <div class="flex flex-col">
 
 <h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
-<span class="font-semibold text-blue-300">MeiNote</span> Openers V.3.5.0
+<span class="font-semibold text-blue-300">MeiNote</span> Openers V.4.0
 </h1>
 
 <span class="text-[10px] text-blue-200 tracking-wider">
@@ -2436,7 +2436,12 @@ f.innerHTML=`
 <div><label class="lbl">Adv should take 5 bd to update</label>${dd("draft",["Y","NA"])}</div>
   <div><label class="lbl">Rev next deposit</label>${dd("depo",["Y","NA"])}</div>
 </div>
-
+<button
+    onclick="openStandaloneArticle('Authorization to Draft')"
+    class="text-red-500 hover:text-red text-xl"
+    title="ATD">
+    ATD <i class="fas fa-warning"></i>
+</button>
 <label class="lbl">Notes</label>
 <textarea id="notes" class="inp"></textarea>
 
@@ -3972,6 +3977,23 @@ At the same time, I would like as well to let you know to keep your lines open, 
 </p>
 </div>
 
+<div id="Authorization to Draft">
+<h2><i><b>If the client is needed to signs Authorization to Draft or Updating Banking Information.</b></i></h2>
+<br>
+<p><b>Authorization to Draft (ATD)</b>
+<br><br>
+<i>
+“I do want to be transparent about how this change impacts your program."
+<br><br>
+"We are more than happy to assist you with updating your banking information. To update, we will need you to electronically sign the Authorization to Draft letter. This form takes five business days to process, and we will not be able to draft deposits during this time."
+<br><br>
+
+"Do you authorize [<b> National Debt Relief or Safeguard Law Group, PLLC</b>] to draft [deposit amount] from your bank account [ monthly, semi-monthly, bi-weekly]?”
+
+</i>
+</p>
+</div>
+  
 
 </div>
 
@@ -4435,7 +4457,7 @@ function showToast(message,type="success"){
 <div id="htmlViewerPanel" class="hidden fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
 <div class="bg-white dark:bg-slate-800 w-[96%] h-[92%] rounded-xl shadow-2xl overflow-hidden flex flex-col" id="htmlViewerWindow">
 <div class="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-<span class="font-semibold">MeiNote Version 3.5.0 by Castel | Project Empower</span>
+<span class="font-semibold">MeiNote Version 4.0 by Castel | Project Empower</span>
 <button onclick="toggleHtmlViewer()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Close</button>
 </div>
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
