@@ -838,13 +838,21 @@ Template Mode: OFF
 
 <!-- RIGHT PANEL -->
 <div class="w-full lg:w-2/5 p-5 bg-slate-50 dark:bg-slate-900">
+<input 
+id="kbSearch" 
+class="inp mb-3" 
+placeholder="Search articles..." 
+oninput="searchKB()"
+>
 
+<div id="kbResults" class="space-y-2"></div>
 <label class="lbl">Generated Output</label>
 <textarea id="outputArea" readonly class="inp h-96 font-mono"></textarea>
 
 <div class="grid grid-cols-2 gap-2">
 <button onclick="copyToClipboard()" class="bg-blue-50 border rounded py-2 text-sm"><i class="far fa-copy text-xs"></i> Copy</button>
 <button onclick="clearOutput()" class="bg-white border rounded py-2 text-sm"><i class="fas fa-eraser text-xs"></i> Clear</button>
+<br>
 </div>
 
 </div>
@@ -1811,9 +1819,9 @@ f.innerHTML=`
 </div><div>
 <label class="lbl">Routing Number</label>
 <input id="main0" class="inp" placeholder="Input Routing Number">
-</div>
 </div><div><label class="lbl">OTP/KBA Verified?</label>${dd("otp",["Y","N"])}</div>
 <div><label class="lbl">Checking or Savings?</label>${dd("check",["Checking","Savings"])}</div></div>
+</div>
 <div> 
  <div><label class="lbl">Did C requested Callback?</label>${dd("call",["Y","N"])}</div></div>
 </div>
@@ -2436,12 +2444,15 @@ f.innerHTML=`
 <div><label class="lbl">C signed on the line</label>${dd("sign",["Y","NA"])}</div>
 <div><label class="lbl">Adv should take 5 bd to update</label>${dd("draft",["Y","NA"])}</div>
   <div><label class="lbl">Rev next deposit</label>${dd("depo",["Y","NA"])}</div>
+
+
 <button
     onclick="openStandaloneArticle('Authorization to Draft')"
     class="text-red-500 hover:text-red text-xl"
     title="ATD">
     ATD <i class="fas fa-warning"></i>
 </button>
+
 </div>
 
 <label class="lbl">Notes</label>
@@ -2806,8 +2817,8 @@ Will the deposit clear?(Y/N) ${val("depoc")}\n`;
 note+=`EST Post Date: ${val("main8")}\n`;
 note+=line("Do they want it to clear?: ","clear");
 note+=line("C wants to use new bank after deposit?: ","dep");
-note+=line("ATD Signed? ","atd");
-note+=line("Authentication (OTP/KBA) ","dep");
+note+=line("ATD Signed?: ","atd");
+note+=line("OTP/KBA Verified? ","otp");
 note+=line("Validation Completed?: ","val");
 note+=`Account Number: ${val("main9")}\n`;
 note+=`Routing Number: ${val("main0")}\n`;
@@ -2825,8 +2836,8 @@ note+=`EST Post date + 1BD: ${val("main6")}\n`;
 note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
 
 note+=`Funds will clear? ${val("depoc")}\n`;
-note+=line("Adv about timeframe?: ","clear");
-note+=line("Authentication (OTP/KBA): ","dep");
+note+=line("Adv about timeframe? ","clear");
+note+=line("Authentication (OTP/KBA) ","dep");
 note+=`Did C requested a callback? ${val("call")}\n`;
 }
 
@@ -2841,7 +2852,6 @@ note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
 
 note+=`NSF Waterfall Completed? ${val("depoc")}\n`;
 note+=`What date & amount were rescheduled (if applicable): ${val("main44")}\n`;
-note+=line("Authentication (OTP/KBA): ","dep");
 note+=line("Expectations set that should pending deposit clear, rescheduled amount will also still pull??: ","clear");
 note+=line("Is the client requesting the deposit (NSF) to be skipped?: ","dep");
 note+=`Did C requested a callback? ${val("call")}\n`;
@@ -3267,15 +3277,13 @@ function openStandaloneArticle(id){
 function openArticle(id){
     document.getElementById("helpPanel")
         .classList.add("hidden");
-document.getElementById("articleViewer").dataset.standalone = "false";
+
     document.getElementById("articleContent").innerHTML =
         document.getElementById(id).innerHTML;
 
-    document.getElementById("articleViewer")
-        .dataset.returnToKB = "true";
-
-    document.getElementById("articleViewer")
-        .classList.remove("hidden");
+    const viewer = document.getElementById("articleViewer");
+    viewer.dataset.standalone = "true";   // <-- add this
+    viewer.classList.remove("hidden");
 }
 
 function openStandaloneArticle(id){
@@ -3982,7 +3990,6 @@ At the same time, I would like as well to let you know to keep your lines open, 
 "Of course, if that happens, we’ll try to renegotiate with the creditor, but there’s no guarantee that we’d be able to get the same terms. You wouldn’t be charged any additional fees if we need to renegotiate. Do you have any questions on any of what I just went over?
 <br>
 "Did you want to move forward with this deposit change?”
-
 </i>
 </p>
 </div>
@@ -4003,7 +4010,7 @@ At the same time, I would like as well to let you know to keep your lines open, 
 </i>
 </p>
 </div>
-  
+
 
 </div>
 
@@ -4125,6 +4132,73 @@ document.addEventListener("DOMContentLoaded", function(){
   table.appendChild(tbody);
 
 });
+
+/* === FLOATING SEARCH RESULTS DROPDOWN === */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const search = document.getElementById("kbSearch");
+    const results = document.getElementById("kbResults");
+
+    if (!search || !results) return;
+
+    // Create floating popup automatically
+    const popup = document.createElement("div");
+    popup.id = "kbSearchPopup";
+    popup.className =
+        "hidden absolute z-50 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-xl max-h-96 overflow-y-auto";
+
+    results.parentNode.insertBefore(popup, results);
+    popup.appendChild(results);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "relative";
+
+    search.parentNode.insertBefore(wrapper, search);
+    wrapper.appendChild(search);
+    wrapper.appendChild(popup);
+
+    // Hide popup when clicking outside
+    document.addEventListener("click", function (e) {
+        if (
+            !popup.contains(e.target) &&
+            e.target !== search
+        ) {
+            popup.classList.add("hidden");
+        }
+    });
+
+    // Patch existing searchKB
+    const originalSearchKB = window.searchKB;
+
+    window.searchKB = function () {
+
+        originalSearchKB();
+
+        if (search.value.trim() === "") {
+            popup.classList.add("hidden");
+            return;
+        }
+
+        if (results.children.length > 0) {
+            popup.classList.remove("hidden");
+        } else {
+            popup.classList.add("hidden");
+        }
+    };
+
+    // Patch existing openArticle
+    const originalOpenArticle = window.openArticle;
+
+    window.openArticle = function (id) {
+
+        popup.classList.add("hidden");
+
+        originalOpenArticle(id);
+    };
+});
+
+
 </script>
 
 
