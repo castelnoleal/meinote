@@ -11,7 +11,7 @@
 <style>
 
 /* ==========================
-   Castel Noleal _ Global Settings
+   Castel Noleal Project Empower
 ========================== */
 
 *{
@@ -776,14 +776,16 @@ input:focus{
     <h1>CSAT Recovery Calculator</h1>
 
     <div class="subtitle">
-        5 = CSAT • 1 = DSAT • Passing Score = 4.60
+        Enter rating counts • Passing Score = 4.60
     </div>
 
-    <label>Total CSATs (5)</label>
-    <input id="ccsat" type="number" min="0">
-
-    <label>Total DSATs (1)</label>
-    <input id="dsat" type="number" min="0">
+    <div class="settingsGrid ratingGrid">
+        <div class="settingGroup"><label>5 Ratings</label><input id="rating5" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>4 Ratings</label><input id="rating4" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>3 Ratings</label><input id="rating3" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>2 Ratings</label><input id="rating2" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>1 Ratings</label><input id="rating1" type="number" min="0" value="0"></div>
+    </div>
 
     <div class="result">
 
@@ -804,7 +806,7 @@ input:focus{
         <div class="resultCard metric">
 
             <span>
-                CSAT Needed
+                Additional 5s Needed
             </span>
 
             <span
@@ -957,39 +959,19 @@ let PASS_SCORE = DEFAULT_PASS_SCORE;
 ========================== */
 
 function calculate(){
+    const r5 = parseInt(document.getElementById("rating5").value, 10) || 0;
+    const r4 = parseInt(document.getElementById("rating4").value, 10) || 0;
+    const r3 = parseInt(document.getElementById("rating3").value, 10) || 0;
+    const r2 = parseInt(document.getElementById("rating2").value, 10) || 0;
+    const r1 = parseInt(document.getElementById("rating1").value, 10) || 0;
 
-    let ccsat =
-        parseInt(
-            document.getElementById("ccsat").value
-        ) || 0;
-
-    let dsat =
-        parseInt(
-            document.getElementById("dsat").value
-        ) || 0;
-
-    let total =
-        ccsat + dsat;
-
-    let average = 0;
-
-    if(total > 0){
-
-        average =
-            ((ccsat * 5) + (dsat * 1))
-            / total;
-    }
+    const total = r5 + r4 + r3 + r2 + r1;
+    const currentPoints = (r5 * 5) + (r4 * 4) + (r3 * 3) + (r2 * 2) + r1;
+    const average = total > 0 ? currentPoints / total : 0;
 
     updateAverage(average);
-
-    calculateRecovery(
-        ccsat,
-        dsat,
-        total,
-        average
-    );
+    calculateRecovery(currentPoints, total, average);
 }
-
 /* ==========================
    UPDATE SCORE
 ========================== */
@@ -1006,41 +988,20 @@ function updateAverage(average){
    RECOVERY
 ========================== */
 
-function calculateRecovery(
-    ccsat,
-    dsat,
-    total,
-    average
-){
-
+function calculateRecovery(currentPoints, total, average){
     let needed = 0;
-
     if(total > 0 && average < PASS_SCORE && PASS_SCORE < 5){
-        const currentPoints = (ccsat * 5) + (dsat * 1);
         needed = Math.max(
             0,
             Math.ceil(
-                (PASS_SCORE * total - currentPoints) /
-                (5 - PASS_SCORE) - 1e-12
+                (PASS_SCORE * total - currentPoints) / (5 - PASS_SCORE) - 1e-12
             )
         );
     }
-
-    document.getElementById(
-        "needed"
-    ).textContent = needed;
-
-    document.getElementById(
-        "projected"
-    ).textContent =
-        total + needed;
-
-    updateFeedback(
-        average,
-        total
-    );
+    document.getElementById("needed").textContent = needed;
+    document.getElementById("projected").textContent = total + needed;
+    updateFeedback(average, total);
 }
-
 /* ==========================
    FEEDBACK
 ========================== */
@@ -1298,15 +1259,17 @@ document.addEventListener("keydown", event => {
     }
 });
 
-document.getElementById("ccsat").addEventListener("input", refreshAllCalculations);
-document.getElementById("dsat").addEventListener("input", refreshAllCalculations);
+["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
+    document.getElementById(id).addEventListener("input", refreshAllCalculations);
+});
 document.getElementById("currentScore").addEventListener("input", refreshAllCalculations);
 document.getElementById("currentTotal").addEventListener("input", refreshAllCalculations);
 document.getElementById("customPassScore").addEventListener("input", refreshAllCalculations);
 
 /* Also handle spinner controls, paste/autofill, and committed changes. */
-document.getElementById("ccsat").addEventListener("change", refreshAllCalculations);
-document.getElementById("dsat").addEventListener("change", refreshAllCalculations);
+["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
+    document.getElementById(id).addEventListener("change", refreshAllCalculations);
+});
 document.getElementById("currentScore").addEventListener("change", refreshAllCalculations);
 document.getElementById("currentTotal").addEventListener("change", refreshAllCalculations);
 document.getElementById("customPassScore").addEventListener("change", refreshAllCalculations);
@@ -1384,5 +1347,6 @@ setTimeout(fitCalculatorToEmbed, 100);
 
 </script>
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7e470b9e69c94b5d89261b33e7603cc7","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
