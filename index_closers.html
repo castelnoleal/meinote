@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeiNote V.4.0</title>
+<title>MeiNote V.5.0</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -669,7 +669,7 @@ animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards;
 <div class="flex flex-col">
 
 <h1 class="text-lg md:text-xl text-white uppercase tracking-[0.2em] font-light leading-tight">
-<span class="font-semibold text-blue-300">MeiNote</span> Closers 4.0
+<span class="font-semibold text-blue-300">MeiNote</span> Closers V.5.0
 </h1>
 
 <span class="text-[10px] text-blue-200 tracking-wider">
@@ -744,14 +744,6 @@ title="Open Missed Interaction Tracker">
 <i class="fas fa-calculator"></i>
 </button>
 
-<button onclick="toggleSchedulePanel()" class="text-blue-200 hover:text-white text-xl" title="Open Payment Schedule Analyzer">
-<i class="fas fa-table"></i>
-</button>
-
-<button onclick="toggleHelpPanel()" class="text-blue-200 hover:text-white text-xl">
-<i class="fas fa-book"></i>
-</button>
-
 <button onclick="toggleDarkMode()" class="text-blue-200 text-xl" title="Turn NightMode On/Off">
 <i class="fas fa-moon dark:hidden"></i>
 <i class="fas fa-sun hidden dark:block text-yellow-300"></i>
@@ -803,9 +795,9 @@ title="Open Missed Interaction Tracker">
 </optgroup>
 
 <optgroup label="INTERNAL CASES">
-<option>Bank Update</option>
-<option>Force Refund</option>
-<option>Internal NSF</option>
+<option>Internal Case Bank Update</option>
+<option>Internal Case Force Refund</option>
+<option>Internal Case Internal NSF</option>
 </optgroup>
 
 <optgroup label="DEPARTAMENTAL SPECIAL REQUESTS">
@@ -838,13 +830,21 @@ Template Mode: OFF
 
 <!-- RIGHT PANEL -->
 <div class="w-full lg:w-2/5 p-5 bg-slate-50 dark:bg-slate-900">
+<input 
+id="kbSearch" 
+class="inp mb-3" 
+placeholder="Search Articles, Templates or Requests, etc..." 
+oninput="searchKB()"
+>
 
+<div id="kbResults" class="space-y-2"></div>
 <label class="lbl">Generated Output</label>
 <textarea id="outputArea" readonly class="inp h-96 font-mono"></textarea>
 
 <div class="grid grid-cols-2 gap-2">
 <button onclick="copyToClipboard()" class="bg-blue-50 border rounded py-2 text-sm"><i class="far fa-copy text-xs"></i> Copy</button>
 <button onclick="clearOutput()" class="bg-white border rounded py-2 text-sm"><i class="fas fa-eraser text-xs"></i> Clear</button>
+<br>
 </div>
 
 </div>
@@ -1477,10 +1477,14 @@ btn.textContent = `Template Only Mode: ${templateOnly ? "ON" : "OFF"}`;
 }
 
 function dd(id, opts){
-return `<select id="${id}" class="inp">
-<option value="">Select...</option>
-${opts.map(o=>`<option>${o}</option>`).join('')}
-</select>`;
+    const defaultValue = opts.includes("Y") ? "Y" : "";
+
+    return `<select id="${id}" class="inp">
+        <option value="">Select...</option>
+        ${opts.map(o =>
+            `<option ${o === defaultValue ? "selected" : ""}>${o}</option>`
+        ).join("")}
+    </select>`;
 }
 
 function val(id){
@@ -1765,7 +1769,7 @@ f.innerHTML=`
 }
 
 /* ✅ Bank Update */
-if(t==="Bank Update"){
+if(t==="Internal Case Bank Update"){
 f.innerHTML=`
 
 <label class="lbl">Agent Full Name</label>
@@ -1789,7 +1793,7 @@ f.innerHTML=`
 <input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
 </div>
 <div>
-<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): </label>
 <input id="main7" class="inp" placeholder="Input Type">
 </div>
 <div><label class="lbl">Will the deposit clear?</label>${dd("depoc",["Y","N"])}</div>
@@ -1811,17 +1815,13 @@ f.innerHTML=`
 </div><div>
 <label class="lbl">Routing Number</label>
 <input id="main0" class="inp" placeholder="Input Routing Number">
-</div>
+</div><div><label class="lbl">OTP/KBA Verified?</label>${dd("otp",["Y","N"])}</div>
 <div><label class="lbl">Checking or Savings?</label>${dd("check",["Checking","Savings"])}</div></div>
+</div>
 <div> 
  <div><label class="lbl">Did C requested Callback?</label>${dd("call",["Y","N"])}</div></div>
 </div>
-<button
-    onclick="openStandaloneArticle('Authorization to Draft')"
-    class="text-red-500 hover:text-red text-xl"
-    title="ATD">
-    ATD <i class="fas fa-warning"></i>
-</button>
+
 <label class="lbl">Notes/Additional Info</label>
 <textarea id="notes" class="inp"></textarea>
 
@@ -1830,7 +1830,7 @@ f.innerHTML=`
 
 
 /* ✅ Force Refund */
-if(t==="Force Refund"){
+if(t==="Internal Case Force Refund"){
 f.innerHTML=`
 
 <label class="lbl">Agent Full Name</label>
@@ -1854,7 +1854,7 @@ f.innerHTML=`
 <input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
 </div>
 <div>
-<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): </label>
 <input id="main7" class="inp" placeholder="Input Type">
 </div>
 <div><label class="lbl">Funds will clear?</label>${dd("depoc",["Y","N"])}</div>
@@ -1873,7 +1873,7 @@ f.innerHTML=`
 }
 
 /* ✅ Internal NSF */
-if(t==="Internal NSF"){
+if(t==="Internal Case NSF"){
 f.innerHTML=`
 
 <label class="lbl">Agent Full Name</label>
@@ -1897,7 +1897,7 @@ f.innerHTML=`
 <input id="main6" class="inp" placeholder="Input Date + 1 Business Day">
 </div>
 <div>
-<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): :</label>
+<label class="lbl">Request Type(Bank update, NSF, PSR, Refund): </label>
 <input id="main7" class="inp" placeholder="Input Type">
 </div>
 <div><label class="lbl">NSF Waterfall Completed?</label>${dd("depoc",["Y","N"])}</div>
@@ -2440,6 +2440,15 @@ f.innerHTML=`
 <div><label class="lbl">C signed on the line</label>${dd("sign",["Y","NA"])}</div>
 <div><label class="lbl">Adv should take 5 bd to update</label>${dd("draft",["Y","NA"])}</div>
   <div><label class="lbl">Rev next deposit</label>${dd("depo",["Y","NA"])}</div>
+
+
+<button
+    onclick="openStandaloneArticle('Authorization to Draft')"
+    class="text-red-500 hover:text-red text-xl"
+    title="ATD">
+    ATD <i class="fas fa-warning"></i>
+</button>
+
 </div>
 
 <label class="lbl">Notes</label>
@@ -2790,7 +2799,7 @@ note+=`DS Number: ${val("main8")}\n`;
 note+=`DS Link: ${val("main9")}\n`;
 }
 
-if(currentTemplate==="Bank Update"){
+if(currentTemplate==="Internal Case Bank Update"){
 
 note+=`Internal Case Request -  ${val("main2")}\n`;
 note+=`DS Number: ${val("main3")}\n`;
@@ -2800,19 +2809,20 @@ note+=`EST Post date + 1BD: ${val("main6")}\n`;
 note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
 
 note+=`[Banking Update]
-Will the deposit clear?(Y/N) ${val("depoc")}\n`;
+Will the deposit clear?: ${val("depoc")}\n`;
 note+=`EST Post Date: ${val("main8")}\n`;
-note+=line("Do they want it to clear?: ","clear");
-note+=line("C wants to use new bank after deposit?: ","dep");
-note+=line("ATD Signed?: ","atd");
-note+=line("Validation Completed?: ","val");
+note+=line("Do they want it to clear? ","clear");
+note+=line("C wants to use new bank after deposit? ","dep");
+note+=line("ATD Signed? ","atd");
+note+=line("OTP/KBA Verified? ","otp");
+note+=line("Validation Completed? ","val");
 note+=`Account Number: ${val("main9")}\n`;
 note+=`Routing Number: ${val("main0")}\n`;
 note+=`Checking or Savings? ${val("check")}\n`;
 note+=`Did C requested a callback? ${val("call")}\n`;
 }
 
-if(currentTemplate==="Force Refund"){
+if(currentTemplate==="Internal Case Force Refund"){
 
 note+=`Internal Case Request -  ${val("main2")}\n`;
 note+=`DS Number: ${val("main3")}\n`;
@@ -2822,12 +2832,12 @@ note+=`EST Post date + 1BD: ${val("main6")}\n`;
 note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
 
 note+=`Funds will clear? ${val("depoc")}\n`;
-note+=line("Adv about timeframe?: ","clear");
-note+=line("Authentication (OTP/KBA): ","dep");
+note+=line("Adv about timeframe? ","clear");
+note+=line("Authentication (OTP/KBA) ","dep");
 note+=`Did C requested a callback? ${val("call")}\n`;
 }
 
-if(currentTemplate==="Internal NSF"){
+if(currentTemplate==="Internal Case Internal NSF"){
 
 note+=`Internal Case Request -  ${val("main2")}\n`;
 note+=`DS Number: ${val("main3")}\n`;
@@ -2836,11 +2846,11 @@ note+=`Pending Deposit Date & Amount: ${val("main5")}\n`;
 note+=`EST Post date + 1BD: ${val("main6")}\n`;
 note+=`Request Type(Bank update, NSF, PSR,Refund): ${val("main7")}\n`;
 
-note+=`NSF Waterfall Completed? ${val("depoc")}\n`;
+note+=`NSF Waterfall Completed?: ${val("depoc")}\n`;
 note+=`What date & amount were rescheduled (if applicable): ${val("main44")}\n`;
-note+=line("Expectations set that should pending deposit clear, rescheduled amount will also still pull??: ","clear");
-note+=line("Is the client requesting the deposit (NSF) to be skipped?: ","dep");
-note+=`Did C requested a callback? ${val("call")}\n`;
+note+=line("Expectations set that should pending deposit clear, rescheduled amount will also still pull?? ","clear");
+note+=line("Is the client requesting the deposit (NSF) to be skipped? ","dep");
+note+=`Did C requested a callback?: ${val("call")}\n`;
 }
 
 if(currentTemplate==="Skip Deposit"){
@@ -2951,7 +2961,7 @@ note+=`Please provide more details on the urgency of this request: ${val("main31
 }
 
 if(currentTemplate==="Lump Sum Request"){
-note+=`Expedited Negotiations Request${val("main1")}\n`;
+note+=`Lump Sum Request${val("main1")}\n`;
 note+=`${val("main0")}\n`;
 note+=`DS Number(s): ${val("main2")}\n`;
 note+=`DS Link(s): ${val("main333")}\n`;
@@ -2959,7 +2969,7 @@ note+=`CC NUMBER(S): ${val("main51")}\n`;
 
 note+=line("Request Type: ","req");
 
-note+=`Reason for Expedited Request: ${val("main31")}\n`;
+note+=`Reason for Lumpsum Request: ${val("main31")}\n`;
 }
 
 if(currentTemplate==="Lower Deposit"){
@@ -3263,15 +3273,13 @@ function openStandaloneArticle(id){
 function openArticle(id){
     document.getElementById("helpPanel")
         .classList.add("hidden");
-document.getElementById("articleViewer").dataset.standalone = "false";
+
     document.getElementById("articleContent").innerHTML =
         document.getElementById(id).innerHTML;
 
-    document.getElementById("articleViewer")
-        .dataset.returnToKB = "true";
-
-    document.getElementById("articleViewer")
-        .classList.remove("hidden");
+    const viewer = document.getElementById("articleViewer");
+    viewer.dataset.standalone = "true";   // <-- add this
+    viewer.classList.remove("hidden");
 }
 
 function openStandaloneArticle(id){
@@ -3297,66 +3305,171 @@ function closeArticle(){
 }
 
 function searchKB(){
+    const query = document.getElementById("kbSearch").value
+        .toLowerCase()
+        .trim();
 
-const query = document.getElementById("kbSearch").value.toLowerCase().trim();
-const container = document.getElementById("kbResults");
+    const container = document.getElementById("kbResults");
+    container.innerHTML = "";
 
-container.innerHTML = "";
+    if(query === "") return;
 
-// show nothing if empty
-if(query === "") return;
+    let results = [];
 
-const articles = document.querySelectorAll("div[style='display:none'] > div");
+    // ==========================================
+    // 1. SEARCH MEINOTE NOTATION TEMPLATES
+    // ==========================================
 
-let results = [];
+    const templateSelect = document.getElementById("template");
 
-articles.forEach(article=>{
+    if(templateSelect){
+        [...templateSelect.options].forEach(option => {
 
-const title = article.querySelector("h2").innerText;
-const text = article.innerText.toLowerCase();
+            const templateName = option.textContent.trim();
+            const templateValue = option.value;
 
-let score = 0;
+            // Ignore placeholder and optgroup-related empty items
+            if(!templateValue) return;
 
-// title match = strong score
-if(title.toLowerCase().includes(query)) score += 5;
+            const lowerName = templateName.toLowerCase();
 
-// body match
-if(text.includes(query)) score += 2;
+            let score = 0;
 
-// partial word matches
-query.split(" ").forEach(word=>{
-if(text.includes(word)) score += 1;
-});
+            // Exact match gets highest priority
+            if(lowerName === query){
+                score = 20;
+            }
+            // Template begins with search
+            else if(lowerName.startsWith(query)){
+                score = 15;
+            }
+            // Template contains search
+            else if(lowerName.includes(query)){
+                score = 10;
+            }
+            // Individual word matching
+            else{
+                query.split(" ").forEach(word => {
+                    if(lowerName.includes(word)){
+                        score += 2;
+                    }
+                });
+            }
 
-if(score > 0){
-results.push({
-id: article.id,
-title: title,
-score: score
-});
+            if(score > 0){
+                results.push({
+                    type: "template",
+                    title: templateName,
+                    value: templateValue,
+                    score: score
+                });
+            }
+        });
+    }
+
+
+    // ==========================================
+    // 2. SEARCH KNOWLEDGE BASE
+    // ==========================================
+
+    const articles =
+        document.querySelectorAll("div[style='display:none'] > div");
+
+    articles.forEach(article => {
+
+        const heading = article.querySelector("h2");
+
+        if(!heading) return;
+
+        const title = heading.innerText.trim();
+        const text = article.innerText.toLowerCase();
+
+        let score = 0;
+
+        if(title.toLowerCase().includes(query)){
+            score += 5;
+        }
+
+        if(text.includes(query)){
+            score += 2;
+        }
+
+        query.split(" ").forEach(word => {
+            if(text.includes(word)){
+                score += 1;
+            }
+        });
+
+        if(score > 0){
+            results.push({
+                type: "article",
+                id: article.id,
+                title: title,
+                score: score
+            });
+        }
+    });
+
+
+    // ==========================================
+    // 3. SORT BEST MATCHES FIRST
+    // ==========================================
+
+    results.sort((a,b) => b.score - a.score);
+
+
+    // ==========================================
+    // 4. DISPLAY RESULTS
+    // ==========================================
+
+    results.forEach(result => {
+
+        const btn = document.createElement("button");
+        btn.className = "articleBtn";
+
+        if(result.type === "template"){
+
+            btn.innerHTML =
+                `<span style="color:#2563eb;font-weight:bold">
+                    📝 TEMPLATE
+                 </span>
+                 &nbsp; ${result.title}`;
+
+            btn.onclick = () => {
+
+                // Set main template dropdown
+                templateSelect.value = result.value;
+
+                // Load that template
+                switchTemplate();
+
+                // Clear search
+                document.getElementById("kbSearch").value = "";
+
+                // Clear results
+                container.innerHTML = "";
+
+                // Close floating popup if present
+                document.getElementById("kbSearchPopup")
+                    ?.classList.add("hidden");
+            };
+
+        } else {
+
+            btn.innerHTML =
+                `<span style="color:#16a34a;font-weight:bold">
+                    📖 KB
+                 </span>
+                 &nbsp; ${result.title}`;
+
+            btn.onclick = () => {
+                openArticle(result.id);
+            };
+        }
+
+        container.appendChild(btn);
+    });
 }
-
-});
-
-// sort best matches first
-results.sort((a,b)=> b.score - a.score);
-
-// render results
-results.forEach(r=>{
-
-const btn = document.createElement("button");
-
-btn.className = "articleBtn";
-btn.textContent = r.title;
-
-btn.onclick = ()=> openArticle(r.id);
-
-container.appendChild(btn);
-
-});
-
-}
-
 document.addEventListener("click", function(e){
 
 const calendar = document.getElementById("calendarPanel");
@@ -3478,7 +3591,7 @@ Mei Knowledge Base Scripts
 <input 
 id="kbSearch" 
 class="inp mb-3" 
-placeholder="Search articles..." 
+placeholder="Search articles or Note Templates..." 
 oninput="searchKB()"
 >
 
@@ -3559,6 +3672,21 @@ Clear
 
 
 <div style="display:none">
+
+<div id="Contact Numbers/Informations">
+<h2><i><b>Department Hours of Operation</b></i></h2>
+<br>
+<p><b>All related Contact Informations and Numbers</b>
+<br><br>
+<i>
+"We are more than happy to assist you with updating your banking information. To update, we will need you to electronically sign the Authorization to Draft letter. This form takes five business days to process, and we will not be able to draft deposits during this time."
+<br><br>
+
+"Do you authorize [<b> National Debt Relief or Safeguard Law Group, PLLC</b>] to draft [deposit amount] from your bank account [ monthly, semi-monthly, bi-weekly]?”
+
+</i>
+</p>
+</div>
 
 <div id="transactionfeeArticle">
 <h2>Transaction Fees ($1.50)</h2>
@@ -3981,14 +4109,13 @@ At the same time, I would like as well to let you know to keep your lines open, 
 </i>
 </p>
 </div>
+
 <div id="Authorization to Draft">
 <h2><i><b>If the client is needed to signs Authorization to Draft or Updating Banking Information.</b></i></h2>
 <br>
 <p><b>Authorization to Draft (ATD)</b>
 <br><br>
 <i>
-“I do want to be transparent about how this change impacts your program."
-<br><br>
 "We are more than happy to assist you with updating your banking information. To update, we will need you to electronically sign the Authorization to Draft letter. This form takes five business days to process, and we will not be able to draft deposits during this time."
 <br><br>
 
@@ -3998,7 +4125,6 @@ At the same time, I would like as well to let you know to keep your lines open, 
 </p>
 </div>
 
-  
 
 </div>
 
@@ -4120,6 +4246,73 @@ document.addEventListener("DOMContentLoaded", function(){
   table.appendChild(tbody);
 
 });
+
+/* === FLOATING SEARCH RESULTS DROPDOWN === */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const search = document.getElementById("kbSearch");
+    const results = document.getElementById("kbResults");
+
+    if (!search || !results) return;
+
+    // Create floating popup automatically
+    const popup = document.createElement("div");
+    popup.id = "kbSearchPopup";
+    popup.className =
+        "hidden absolute z-50 w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-xl max-h-96 overflow-y-auto";
+
+    results.parentNode.insertBefore(popup, results);
+    popup.appendChild(results);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "relative";
+
+    search.parentNode.insertBefore(wrapper, search);
+    wrapper.appendChild(search);
+    wrapper.appendChild(popup);
+
+    // Hide popup when clicking outside
+    document.addEventListener("click", function (e) {
+        if (
+            !popup.contains(e.target) &&
+            e.target !== search
+        ) {
+            popup.classList.add("hidden");
+        }
+    });
+
+    // Patch existing searchKB
+    const originalSearchKB = window.searchKB;
+
+    window.searchKB = function () {
+
+        originalSearchKB();
+
+        if (search.value.trim() === "") {
+            popup.classList.add("hidden");
+            return;
+        }
+
+        if (results.children.length > 0) {
+            popup.classList.remove("hidden");
+        } else {
+            popup.classList.add("hidden");
+        }
+    };
+
+    // Patch existing openArticle
+    const originalOpenArticle = window.openArticle;
+
+    window.openArticle = function (id) {
+
+        popup.classList.add("hidden");
+
+        originalOpenArticle(id);
+    };
+});
+
+
 </script>
 
 
@@ -4462,7 +4655,7 @@ function showToast(message,type="success"){
 <div id="htmlViewerPanel" class="hidden fixed inset-0 bg-black/40 z-[9999] flex items-center justify-center">
 <div class="bg-white dark:bg-slate-800 w-[96%] h-[92%] rounded-xl shadow-2xl overflow-hidden flex flex-col" id="htmlViewerWindow">
 <div class="bg-blue-900 text-white px-4 py-2 flex justify-between items-center">
-<span class="font-semibold">MeiNote Version 4.0 by Castel | Project Empower</span>
+<span class="font-semibold">MeiNote Version 5.0 by Castel | Project Empower</span>
 <button onclick="toggleHtmlViewer()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Close</button>
 </div>
 <iframe id="htmlFrame" src="https://castelmei.com/MeiScript_V.0.1.0.html" style="border:none;width:100%;height:100%;"></iframe>
