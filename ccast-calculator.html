@@ -776,7 +776,7 @@ input:focus{
     <h1>CSAT Recovery Calculator</h1>
 
     <div class="subtitle">
-        Enter rating counts • Passing Score = 4.60
+        Enter rating counts • Passing Score = <span id="passScoreDisplay">4.60</span>
     </div>
 
     <div class="settingsGrid ratingGrid">
@@ -843,8 +843,8 @@ input:focus{
             id="settingsButton"
             class="settingsButton"
             type="button"
-            aria-label="Open CSAT recovery projection settings"
-            title="CSAT Recovery Projection">
+            aria-label="Open CSAT settings"
+            title="CSAT Settings">
             ⚙
         </button>
 
@@ -876,7 +876,7 @@ input:focus{
                 </div>
 
                 <div class="sectionHint">
-                    Enter your current average score and survey count.
+                    Set your passing score and optionally use the projection tool.
                     The calculator updates instantly as you type.
                 </div>
 
@@ -904,7 +904,7 @@ input:focus{
                 </div>
 
                 <div class="settingGroup" style="margin-top:10px;">
-                    <label>Passing Score</label>
+                    <label>Passing Score (0.00–5.00)</label>
                     <input
                         id="customPassScore"
                         type="number"
@@ -913,6 +913,13 @@ input:focus{
                         step="0.01"
                         value="4.60"
                         placeholder="e.g. 4.60">
+                    <div style="display:flex;gap:7px;margin-top:6px;align-items:center;">
+                        <button id="defaultPassScore" type="button"
+                            style="border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#334155;color:#cbd5e1;padding:6px 9px;cursor:pointer;font-size:11px;">
+                            Restore 4.60
+                        </button>
+                        <span style="color:#94a3b8;font-size:10px;">Saved automatically on this device.</span>
+                    </div>
                 </div>
 
                 <div class="projectionResult">
@@ -952,7 +959,27 @@ input:focus{
 ========================== */
 
 const DEFAULT_PASS_SCORE = 4.60;
+const PASS_SCORE_STORAGE_KEY = "csatPassingScore";
 let PASS_SCORE = DEFAULT_PASS_SCORE;
+
+function getSavedPassingScore(){
+    const saved = parseFloat(localStorage.getItem(PASS_SCORE_STORAGE_KEY));
+    return Number.isFinite(saved) && saved >= 0 && saved <= 5
+        ? saved
+        : DEFAULT_PASS_SCORE;
+}
+
+function updatePassingScoreDisplay(){
+    const display = document.getElementById("passScoreDisplay");
+    if(display){
+        display.textContent = PASS_SCORE.toFixed(2);
+    }
+
+    const targetEl = document.getElementById("customPassScore");
+    if(targetEl && document.activeElement !== targetEl){
+        targetEl.value = PASS_SCORE.toFixed(2);
+    }
+}
 
 /* ==========================
    CALCULATOR
@@ -1181,7 +1208,6 @@ function projectRecovery(){
 }
 
 function updatePassingScore(){
-
     const targetEl =
         document.getElementById("customPassScore");
 
@@ -1194,10 +1220,15 @@ function updatePassingScore(){
         target <= 5
     ){
         PASS_SCORE = target;
+        localStorage.setItem(
+            PASS_SCORE_STORAGE_KEY,
+            PASS_SCORE.toFixed(2)
+        );
     }else{
         PASS_SCORE = DEFAULT_PASS_SCORE;
     }
 
+    updatePassingScoreDisplay();
     calculate();
     projectRecovery();
 }
@@ -1273,6 +1304,16 @@ document.getElementById("customPassScore").addEventListener("input", refreshAllC
 document.getElementById("currentScore").addEventListener("change", refreshAllCalculations);
 document.getElementById("currentTotal").addEventListener("change", refreshAllCalculations);
 document.getElementById("customPassScore").addEventListener("change", refreshAllCalculations);
+document.getElementById("defaultPassScore").addEventListener("click", () => {
+    const targetEl = document.getElementById("customPassScore");
+    targetEl.value = DEFAULT_PASS_SCORE.toFixed(2);
+    updatePassingScore();
+});
+
+const savedPassingScore = getSavedPassingScore();
+PASS_SCORE = savedPassingScore;
+document.getElementById("customPassScore").value = savedPassingScore.toFixed(2);
+updatePassingScoreDisplay();
 
 calculate();
 projectRecovery();
