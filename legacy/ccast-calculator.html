@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>CSAT Recovery Calculator</title>
+
+<style>
+
+/* ==========================
+   Castel Noleal Project Empower
+========================== */
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    margin:0;
+    width:100%;
+    min-height:100vh;
+    min-height:100dvh;
+    font-family:"Segoe UI",sans-serif;
+    background:
+        radial-gradient(
+            circle at top right,
+            #2563eb,
+            #0f172a 55%
+        );
+    color:white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:
+        max(10px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+
+    overflow:auto;
+    overflow-x:hidden;
+}
+
+/* ==========================
+   CARD
+========================== */
+
+.card{
+    width:min(100%, 620px);
+    max-width:620px;
+    min-width:0;
+
+    background:rgba(30,41,59,.95);
+
+    border-radius:clamp(14px, 3vw, 24px);
+
+    padding:clamp(14px, 4vw, 28px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 25px 50px rgba(0,0,0,.45);
+
+    /* Prevent the card from being wider than a small iframe. */
+    overflow:hidden;
+}
+
+h1{
+    margin:0;
+    text-align:center;
+    color:#93c5fd;
+    font-size:clamp(22px, 5vw, 32px);
+    line-height:1.15;
+}
+
+.subtitle{
+    text-align:center;
+    color:#94a3b8;
+
+    margin-top:clamp(5px, 1.5vw, 8px);
+    margin-bottom:clamp(14px, 4vw, 25px);
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
+/* ==========================
+   INPUTS
+========================== */
+
+label{
+    display:block;
+
+    margin-top:clamp(7px, 2vw, 12px);
+    margin-bottom:clamp(4px, 1vw, 6px);
+
+    font-weight:600;
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
+input{
+    width:100%;
+
+    padding:clamp(9px, 2.5vw, 14px);
+
+    border:none;
+    border-radius:clamp(9px, 2vw, 12px);
+
+    background:#334155;
+    color:white;
+    font-size:clamp(14px, 3vw, 16px);
+    min-width:0;
+}
+
+input:focus{
+    outline:none;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(59,130,246,.3);
+}
+
+/* ==========================
+   RESULTS
+========================== */
+
+.result{
+    margin-top:clamp(10px, 3vw, 20px);
+
+    display:grid;
+    gap:clamp(8px, 2.5vw, 15px);
+}
+
+.resultCard{
+    background:#111827;
+
+    padding:clamp(10px, 3vw, 16px);
+
+    border-radius:clamp(11px, 2.5vw, 16px);
+}
+
+.resultLabel{
+    color:#94a3b8;
+
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+.mainNumber{
+    font-size:clamp(34px, 10vw, 52px);
+    line-height:1;
+    font-weight:800;
+}
+
+.metric{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.metricValue{
+    font-size:clamp(20px, 5vw, 28px);
+    font-weight:800;
+    line-height:1.1;
+}
+
+/* ==========================
+   COLORS
+========================== */
+
+.blue{
+    color:#60a5fa;
+}
+
+.green{
+    color:#22c55e;
+}
+
+.yellow{
+    color:#facc15;
+}
+
+.red{
+    color:#ef4444;
+}
+
+/* ==========================
+   FEEDBACK
+========================== */
+
+.feedback{
+    padding:clamp(10px, 3vw, 16px);
+    border-radius:clamp(10px, 2.5vw, 14px);
+
+    line-height:1.4;
+    font-size:clamp(12px, 2.5vw, 16px);
+}
+
+.pass{
+    background:rgba(34,197,94,.15);
+}
+
+.warn{
+    background:rgba(250,204,21,.15);
+}
+
+.fail{
+    background:rgba(239,68,68,.15);
+}
+
+
+
+/* ==========================
+   PROJECTION + SETTINGS
+   ========================== */
+
+.toolSection{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.sectionTitle{
+    color:#bfdbfe;
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:4px;
+}
+
+.sectionHint{
+    color:#94a3b8;
+    font-size:11px;
+    line-height:1.3;
+    margin-bottom:7px;
+}
+
+.settingsGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.settingGroup{
+    min-width:0;
+}
+
+.settingGroup label{
+    margin:0 0 4px;
+    font-size:12px;
+}
+
+.settingGroup input{
+    padding:8px 10px;
+    font-size:14px;
+}
+
+.projectionResult{
+    margin-top:8px;
+    background:#111827;
+    border:1px solid rgba(96,165,250,.15);
+    padding:9px 11px;
+    border-radius:11px;
+}
+
+.projectionNumber{
+    color:#60a5fa;
+    font-size:32px;
+    line-height:1;
+    font-weight:800;
+    margin-top:3px;
+}
+
+.projectionMeta{
+    color:#94a3b8;
+    font-size:10px;
+    line-height:1.3;
+    margin-top:5px;
+}
+
+.projectionStatus{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1.3;
+}
+
+.targetDisplay{
+    color:#facc15;
+    font-weight:800;
+}
+
+/* On wider embeds, put the two calculators beside each other. */
+@media (min-width:700px){
+    .card{
+        max-width:900px;
+    }
+
+    .card > .result{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .card > .result > .resultCard:first-child,
+    .card > .result > #feedback{
+        grid-column:1;
+    }
+
+    .card > .result > .resultCard:nth-child(2),
+    .card > .result > .resultCard:nth-child(3){
+        grid-column:2;
+    }
+
+    .card > .result > #feedback{
+        grid-row:3;
+    }
+
+    .card{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+        column-gap:16px;
+        align-items:start;
+    }
+
+    .card > h1,
+    .card > .subtitle{
+        grid-column:1 / -1;
+    }
+
+    .card > label,
+    .card > input{
+        grid-column:1;
+    }
+
+    .card > .result{
+        grid-column:1;
+        grid-row:4 / span 4;
+    }
+
+    .card > .toolSection{
+        grid-column:2;
+        grid-row:3 / span 5;
+    }
+}
+
+@media (max-width:430px){
+    .settingsGrid{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media (max-height:650px){
+    .card{
+        padding:12px 14px;
+    }
+
+    h1{
+        font-size:23px;
+    }
+
+    .subtitle{
+        margin-top:4px;
+        margin-bottom:8px;
+        font-size:11px;
+    }
+
+    label{
+        margin-top:5px;
+        margin-bottom:3px;
+        font-size:12px;
+    }
+
+    input{
+        padding:7px 9px;
+        font-size:14px;
+    }
+
+    .result{
+        margin-top:8px;
+        gap:6px;
+    }
+
+    .resultCard{
+        padding:8px 10px;
+    }
+
+    .mainNumber{
+        font-size:34px;
+    }
+
+    .metricValue{
+        font-size:20px;
+    }
+
+    .feedback{
+        padding:8px 10px;
+        font-size:11px;
+    }
+
+    .toolSection{
+        margin-top:8px;
+        padding-top:8px;
+    }
+}
+
+@media (max-height:500px){
+    .card{
+        padding:8px 10px;
+        border-radius:14px;
+    }
+
+    h1{
+        font-size:19px;
+    }
+
+    .subtitle{
+        margin:2px 0 5px;
+        font-size:9px;
+    }
+
+    label{
+        margin-top:3px;
+        margin-bottom:2px;
+        font-size:10px;
+    }
+
+    input{
+        padding:5px 7px;
+        font-size:12px;
+        border-radius:7px;
+    }
+
+    .result{
+        margin-top:5px;
+        gap:4px;
+    }
+
+    .resultCard{
+        padding:6px 8px;
+        border-radius:8px;
+    }
+
+    .resultLabel{
+        font-size:8px;
+    }
+
+    .mainNumber{
+        font-size:27px;
+    }
+
+    .metricValue{
+        font-size:17px;
+    }
+
+    .feedback{
+        padding:6px 8px;
+        font-size:9px;
+    }
+
+    .sectionTitle{
+        font-size:12px;
+        margin-bottom:2px;
+    }
+
+    .sectionHint{
+        font-size:8px;
+        margin-bottom:4px;
+    }
+
+    .settingGroup label{
+        font-size:9px;
+        margin-bottom:2px;
+    }
+
+    .settingGroup input{
+        padding:5px 6px;
+        font-size:11px;
+    }
+
+    .projectionResult{
+        margin-top:5px;
+        padding:6px 8px;
+        border-radius:8px;
+    }
+
+    .projectionNumber{
+        font-size:24px;
+    }
+
+    .projectionMeta,
+    .projectionStatus{
+        font-size:8px;
+    }
+}
+
+@media (max-width:299px){
+    .settingsGrid{
+        grid-template-columns:1fr;
+    }
+
+    .metric{
+        gap:4px;
+    }
+}
+
+
+/* ==========================
+   SETTINGS BUTTON + MODAL
+   ========================== */
+
+.settingsButton{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    margin:10px auto 0;
+    padding:0;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:50%;
+    background:#1e293b;
+    color:#94a3b8;
+    font-size:20px;
+    line-height:1;
+    cursor:pointer;
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        color .18s ease,
+        border-color .18s ease;
+}
+
+.settingsButton:hover{
+    transform:rotate(45deg);
+    background:#334155;
+    color:#fff;
+    border-color:rgba(147,197,253,.35);
+}
+
+.settingsButton:active{
+    transform:rotate(45deg) scale(.94);
+}
+
+.projectionModal{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:12px;
+}
+
+.projectionModal.open{
+    display:flex;
+}
+
+.projectionOverlay{
+    position:absolute;
+    inset:0;
+    background:rgba(2,6,23,.72);
+    backdrop-filter:blur(4px);
+}
+
+.projectionDialog{
+    position:relative;
+    z-index:1;
+    width:min(100%, 480px);
+    max-height:calc(100dvh - 24px);
+    overflow:auto;
+    padding:18px;
+    background:rgba(30,41,59,.98);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:18px;
+    box-shadow:0 25px 70px rgba(0,0,0,.55);
+    animation:projectionIn .18s ease-out;
+}
+
+.closeProjection{
+    position:absolute;
+    top:8px;
+    right:10px;
+    width:32px;
+    height:32px;
+    border:0;
+    border-radius:50%;
+    background:transparent;
+    color:#94a3b8;
+    font-size:25px;
+    line-height:1;
+    cursor:pointer;
+}
+
+.closeProjection:hover{
+    background:#334155;
+    color:#fff;
+}
+
+.projectionDialog .sectionTitle{
+    padding-right:35px;
+}
+
+@keyframes projectionIn{
+    from{
+        opacity:0;
+        transform:translateY(8px) scale(.98);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+@media (max-height:500px){
+    .settingsButton{
+        width:30px;
+        height:30px;
+        margin-top:5px;
+        font-size:17px;
+    }
+
+    .projectionDialog{
+        padding:12px;
+        border-radius:13px;
+    }
+}
+
+/* ==========================
+   RESPONSIVE / IFRAME MODE
+   ========================== */
+
+/* Narrow iframe / mobile width */
+@media (max-width: 430px){
+    body{
+        padding:10px;
+        align-items:flex-start;
+    }
+
+    .card{
+        margin:auto 0;
+    }
+
+    .metric{
+        gap:10px;
+    }
+
+    .metricValue{
+        flex-shrink:0;
+    }
+}
+
+/* Short iframe: reduce vertical spacing while keeping every component visible. */
+@media (max-height: 700px){
+    body{
+        align-items:flex-start;
+    }
+
+    .card{
+        margin-top:0;
+        margin-bottom:0;
+    }
+
+    .subtitle{
+        margin-bottom:12px;
+    }
+
+    label{
+        margin-top:6px;
+        margin-bottom:3px;
+    }
+
+    .result{
+        margin-top:10px;
+        gap:8px;
+    }
+
+    .resultCard{
+        padding:9px 12px;
+    }
+
+    .feedback{
+        padding:9px 12px;
+    }
+}
+
+/* Very short iframe: make the calculator compact enough for dashboard embeds. */
+@media (max-height: 520px){
+    body{
+        padding:6px;
+    }
+
+    .card{
+        border-radius:14px;
+        padding:10px 12px;
+    }
+
+    h1{
+        font-size:22px;
+    }
+
+    .subtitle{
+        margin-top:3px;
+        margin-bottom:7px;
+        font-size:11px;
+    }
+
+    label{
+        margin-top:4px;
+        margin-bottom:2px;
+        font-size:12px;
+    }
+
+    input{
+        padding:7px 10px;
+        font-size:14px;
+        border-radius:8px;
+    }
+
+    .result{
+        margin-top:7px;
+        gap:6px;
+    }
+
+    .resultCard{
+        padding:7px 10px;
+        border-radius:9px;
+    }
+
+    .resultLabel{
+        font-size:10px;
+    }
+
+    .mainNumber{
+        font-size:32px;
+    }
+
+    .metricValue{
+        font-size:19px;
+    }
+
+    .feedback{
+        padding:7px 10px;
+        font-size:11px;
+        border-radius:9px;
+    }
+}
+
+/* If the iframe is extremely narrow, prevent metric rows from clipping. */
+@media (max-width: 300px){
+    .metric{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:3px;
+    }
+
+    .metricValue{
+        align-self:flex-end;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>CSAT Recovery Calculator</h1>
+
+    <div class="subtitle">
+        Enter rating counts • Passing Score = <span id="passScoreDisplay">4.60</span>
+    </div>
+
+    <div class="settingsGrid ratingGrid">
+        <div class="settingGroup"><label>5 Ratings</label><input id="rating5" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>4 Ratings</label><input id="rating4" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>3 Ratings</label><input id="rating3" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>2 Ratings</label><input id="rating2" type="number" min="0" value="0"></div>
+        <div class="settingGroup"><label>1 Ratings</label><input id="rating1" type="number" min="0" value="0"></div>
+    </div>
+
+    <div class="result">
+
+        <div class="resultCard">
+
+            <div class="resultLabel">
+                Current Average CSAT
+            </div>
+
+            <div
+                id="average"
+                class="mainNumber blue">
+                0.00
+            </div>
+
+        </div>
+
+        <div class="resultCard metric">
+
+            <span>
+                Additional 5s Needed
+            </span>
+
+            <span
+                id="needed"
+                class="metricValue">
+                0
+            </span>
+
+        </div>
+
+        <div class="resultCard metric">
+
+            <span>
+                Projected Surveys in Total
+            </span>
+
+            <span
+                id="projected"
+                class="metricValue">
+                0
+            </span>
+
+        </div>
+
+        <div
+            id="feedback"
+            class="feedback">
+            <i>Enter survey data to begin</i>
+        </div>
+
+        
+        <!-- SECONDARY TOOL SETTINGS -->
+        <button
+            id="settingsButton"
+            class="settingsButton"
+            type="button"
+            aria-label="Open CSAT settings"
+            title="CSAT Settings">
+            ⚙
+        </button>
+
+        <div
+            id="projectionModal"
+            class="projectionModal"
+            aria-hidden="true">
+
+            <div
+                class="projectionOverlay"
+                id="projectionOverlay"></div>
+
+            <div
+                class="projectionDialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="projectionTitle">
+
+                <button
+                    id="closeProjection"
+                    class="closeProjection"
+                    type="button"
+                    aria-label="Close">
+                    ×
+                </button>
+
+                <div id="projectionTitle" class="sectionTitle">
+                    CSAT Recovery Projection
+                </div>
+
+                <div class="sectionHint">
+                    Set your passing score and optionally use the projection tool.
+                    The calculator updates instantly as you type.
+                </div>
+
+                <div class="settingsGrid">
+                    <div class="settingGroup">
+                        <label>Current Score</label>
+                        <input
+                            id="currentScore"
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.01"
+                            placeholder="e.g. 4.32">
+                    </div>
+
+                    <div class="settingGroup">
+                        <label>Current Total Surveys</label>
+                        <input
+                            id="currentTotal"
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="e.g. 100">
+                    </div>
+                </div>
+
+                <div class="settingGroup" style="margin-top:10px;">
+                    <label>Passing Score (0.00–5.00)</label>
+                    <input
+                        id="customPassScore"
+                        type="number"
+                        min="0"
+                        max="5"
+                        step="0.01"
+                        value="4.60"
+                        placeholder="e.g. 4.60">
+                    <div style="display:flex;gap:7px;margin-top:6px;align-items:center;">
+                        <button id="defaultPassScore" type="button"
+                            style="border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#334155;color:#cbd5e1;padding:6px 9px;cursor:pointer;font-size:11px;">
+                            Restore 4.60
+                        </button>
+                        <span style="color:#94a3b8;font-size:10px;">Saved automatically on this device.</span>
+                    </div>
+                </div>
+
+                <div class="projectionResult">
+                    <div class="resultLabel">
+                        Additional 5-CSAT Surveys Needed
+                    </div>
+
+                    <div
+                        id="projectionNeeded"
+                        class="projectionNumber">
+                        —
+                    </div>
+
+                    <div
+                        id="projectionMeta"
+                        class="projectionMeta">
+                        Enter your current score and total surveys.
+                    </div>
+
+                    <div
+                        id="projectionStatus"
+                        class="projectionStatus">
+                        <i>Projection updates automatically as you type.</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ==========================
+   CONFIG
+========================== */
+
+const DEFAULT_PASS_SCORE = 4.60;
+const PASS_SCORE_STORAGE_KEY = "csatPassingScore";
+let PASS_SCORE = DEFAULT_PASS_SCORE;
+
+function getSavedPassingScore(){
+    const saved = parseFloat(localStorage.getItem(PASS_SCORE_STORAGE_KEY));
+    return Number.isFinite(saved) && saved >= 0 && saved <= 5
+        ? saved
+        : DEFAULT_PASS_SCORE;
+}
+
+function updatePassingScoreDisplay(){
+    const display = document.getElementById("passScoreDisplay");
+    if(display){
+        display.textContent = PASS_SCORE.toFixed(2);
+    }
+
+    const targetEl = document.getElementById("customPassScore");
+    if(targetEl && document.activeElement !== targetEl){
+        targetEl.value = PASS_SCORE.toFixed(2);
+    }
+}
+
+/* ==========================
+   CALCULATOR
+========================== */
+
+function calculate(){
+    const r5 = parseInt(document.getElementById("rating5").value, 10) || 0;
+    const r4 = parseInt(document.getElementById("rating4").value, 10) || 0;
+    const r3 = parseInt(document.getElementById("rating3").value, 10) || 0;
+    const r2 = parseInt(document.getElementById("rating2").value, 10) || 0;
+    const r1 = parseInt(document.getElementById("rating1").value, 10) || 0;
+
+    const total = r5 + r4 + r3 + r2 + r1;
+    const currentPoints = (r5 * 5) + (r4 * 4) + (r3 * 3) + (r2 * 2) + r1;
+    const average = total > 0 ? currentPoints / total : 0;
+
+    updateAverage(average);
+    calculateRecovery(currentPoints, total, average);
+}
+/* ==========================
+   UPDATE SCORE
+========================== */
+
+function updateAverage(average){
+
+    document.getElementById(
+        "average"
+    ).textContent =
+        average.toFixed(2);
+}
+
+/* ==========================
+   RECOVERY
+========================== */
+
+function calculateRecovery(currentPoints, total, average){
+    let needed = 0;
+    if(total > 0 && average < PASS_SCORE && PASS_SCORE < 5){
+        needed = Math.max(
+            0,
+            Math.ceil(
+                (PASS_SCORE * total - currentPoints) / (5 - PASS_SCORE) - 1e-12
+            )
+        );
+    }
+    document.getElementById("needed").textContent = needed;
+    document.getElementById("projected").textContent = total + needed;
+    updateFeedback(average, total);
+}
+/* ==========================
+   FEEDBACK
+========================== */
+
+function updateFeedback(
+    average,
+    total
+){
+
+    const avg =
+        document.getElementById(
+            "average"
+        );
+
+    const feedback =
+        document.getElementById(
+            "feedback"
+        );
+
+    if(total === 0){
+
+        avg.className =
+            "mainNumber blue";
+
+        feedback.className =
+            "feedback";
+
+        feedback.innerHTML =
+            "Enter survey data to begin.";
+
+        return;
+    }
+
+    if(average >= 4.80){
+
+        avg.className =
+            "mainNumber green";
+
+        feedback.className =
+            "feedback pass";
+
+        feedback.innerHTML =
+            "🟢 Outstanding performance.";
+    }
+
+    else if(
+        average >= PASS_SCORE
+    ){
+
+        avg.className =
+            "mainNumber green";
+
+        feedback.className =
+            "feedback pass";
+
+        feedback.innerHTML =
+            "✅ Passing.";
+    }
+
+    else if(
+        average >= 4.40
+    ){
+
+        avg.className =
+            "mainNumber yellow";
+
+        feedback.className =
+            "feedback warn";
+
+        feedback.innerHTML =
+            "🟡 Recovery Zone.";
+    }
+
+    else{
+
+        avg.className =
+            "mainNumber red";
+
+        feedback.className =
+            "feedback fail";
+
+        feedback.innerHTML =
+            "🔴 Critical Risk.";
+    }
+}
+
+/* ==========================
+   QUICK PROJECTION
+   ========================== */
+
+function projectRecovery(){
+
+    const scoreEl = document.getElementById("currentScore");
+    const totalEl = document.getElementById("currentTotal");
+    const targetEl = document.getElementById("customPassScore");
+
+    const neededEl = document.getElementById("projectionNeeded");
+    const metaEl = document.getElementById("projectionMeta");
+    const statusEl = document.getElementById("projectionStatus");
+
+    const score = parseFloat(scoreEl.value);
+    const total = parseInt(totalEl.value, 10);
+    const target = parseFloat(targetEl.value);
+
+    /* Wait until all three values are valid. */
+    if(
+        !Number.isFinite(score) ||
+        !Number.isFinite(total) ||
+        !Number.isFinite(target) ||
+        total < 1 ||
+        score < 0 ||
+        score > 5 ||
+        target < 0 ||
+        target > 5
+    ){
+        neededEl.textContent = "—";
+        metaEl.textContent =
+            "Enter current score, total surveys, and passing score.";
+        statusEl.innerHTML =
+            "<i>Projection updates automatically as you type.</i>";
+        return;
+    }
+
+    if(score >= target){
+        neededEl.textContent = "0";
+        metaEl.innerHTML =
+            `Current <strong>${score.toFixed(2)}</strong> • ` +
+            `Target <strong class="targetDisplay">${target.toFixed(2)}</strong> • ` +
+            `${total.toLocaleString()} surveys`;
+        statusEl.innerHTML =
+            "✅ Already at or above the selected passing score.";
+        return;
+    }
+
+    if(target >= 5){
+        neededEl.textContent = "∞";
+        metaEl.innerHTML =
+            `Current <strong>${score.toFixed(2)}</strong> • ` +
+            `Target <strong class="targetDisplay">5.00</strong> • ` +
+            `${total.toLocaleString()} surveys`;
+        statusEl.innerHTML =
+            "⚠️ Exactly 5.00 cannot be reached from below 5.00 with a finite number of additional surveys.";
+        return;
+    }
+
+    /* Exact minimum x:
+       (score*N + 5x)/(N+x) >= target
+       x >= N(target-score)/(5-target)
+    */
+    const rawNeeded =
+        total * (target - score) /
+        (5 - target);
+
+    const needed =
+        Math.max(0, Math.ceil(rawNeeded - 1e-12));
+
+    const projectedTotal =
+        total + needed;
+
+    const projectedScore =
+        (score * total + needed * 5) /
+        projectedTotal;
+
+    neededEl.textContent =
+        needed.toLocaleString();
+
+    metaEl.innerHTML =
+        `Current <strong>${score.toFixed(2)}</strong> • ` +
+        `Target <strong class="targetDisplay">${target.toFixed(2)}</strong> • ` +
+        `${total.toLocaleString()} current surveys`;
+
+    statusEl.innerHTML =
+        `🎯 Add <strong>${needed.toLocaleString()}</strong> ` +
+        `5-CSAT survey${needed === 1 ? "" : "s"} → ` +
+        `<strong>${projectedScore.toFixed(4)}</strong> final score ` +
+        `(${projectedTotal.toLocaleString()} total).`;
+}
+
+function updatePassingScore(){
+    const targetEl =
+        document.getElementById("customPassScore");
+
+    const target =
+        parseFloat(targetEl.value);
+
+    if(
+        Number.isFinite(target) &&
+        target >= 0 &&
+        target <= 5
+    ){
+        PASS_SCORE = target;
+        localStorage.setItem(
+            PASS_SCORE_STORAGE_KEY,
+            PASS_SCORE.toFixed(2)
+        );
+    }else{
+        PASS_SCORE = DEFAULT_PASS_SCORE;
+    }
+
+    updatePassingScoreDisplay();
+    calculate();
+    projectRecovery();
+}
+
+/* One handler for all projection inputs. */
+function refreshAllCalculations(){
+    updatePassingScore();
+}
+
+/* ==========================
+   REAL-TIME EVENTS
+   ========================== */
+
+
+/* ==========================
+   SECONDARY TOOL MODAL
+   ========================== */
+
+const settingsButton =
+    document.getElementById("settingsButton");
+
+const projectionModal =
+    document.getElementById("projectionModal");
+
+const projectionOverlay =
+    document.getElementById("projectionOverlay");
+
+const closeProjection =
+    document.getElementById("closeProjection");
+
+function openProjection(){
+    projectionModal.classList.add("open");
+    projectionModal.setAttribute("aria-hidden", "false");
+
+    /* Calculate immediately using the current values. */
+    projectRecovery();
+
+    setTimeout(() => {
+        document.getElementById("currentScore").focus();
+    }, 50);
+}
+
+function closeProjectionModal(){
+    projectionModal.classList.remove("open");
+    projectionModal.setAttribute("aria-hidden", "true");
+    settingsButton.focus();
+}
+
+settingsButton.addEventListener("click", openProjection);
+closeProjection.addEventListener("click", closeProjectionModal);
+projectionOverlay.addEventListener("click", closeProjectionModal);
+
+document.addEventListener("keydown", event => {
+    if(
+        event.key === "Escape" &&
+        projectionModal.classList.contains("open")
+    ){
+        closeProjectionModal();
+    }
+});
+
+["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
+    document.getElementById(id).addEventListener("input", refreshAllCalculations);
+});
+document.getElementById("currentScore").addEventListener("input", refreshAllCalculations);
+document.getElementById("currentTotal").addEventListener("input", refreshAllCalculations);
+document.getElementById("customPassScore").addEventListener("input", refreshAllCalculations);
+
+/* Also handle spinner controls, paste/autofill, and committed changes. */
+["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
+    document.getElementById(id).addEventListener("change", refreshAllCalculations);
+});
+document.getElementById("currentScore").addEventListener("change", refreshAllCalculations);
+document.getElementById("currentTotal").addEventListener("change", refreshAllCalculations);
+document.getElementById("customPassScore").addEventListener("change", refreshAllCalculations);
+document.getElementById("defaultPassScore").addEventListener("click", () => {
+    const targetEl = document.getElementById("customPassScore");
+    targetEl.value = DEFAULT_PASS_SCORE.toFixed(2);
+    updatePassingScore();
+});
+
+const savedPassingScore = getSavedPassingScore();
+PASS_SCORE = savedPassingScore;
+document.getElementById("customPassScore").value = savedPassingScore.toFixed(2);
+updatePassingScoreDisplay();
+
+calculate();
+projectRecovery();
+
+/* ==========================
+   AUTO-FIT EMBED
+   ========================== */
+
+/*
+   If Meinote gives the iframe less vertical space than the calculator
+   naturally needs, scale the entire card down instead of forcing a
+   vertical scrollbar. This keeps every section visible.
+*/
+function fitCalculatorToEmbed(){
+
+    const card = document.querySelector(".card");
+    const body = document.body;
+
+    if(!card) return;
+
+    card.style.transform = "none";
+    body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+
+        const availableHeight =
+            Math.max(1, window.innerHeight - 8);
+
+        const availableWidth =
+            Math.max(1, window.innerWidth - 8);
+
+        const naturalHeight =
+            card.offsetHeight;
+
+        const naturalWidth =
+            card.offsetWidth;
+
+        const scale =
+            Math.min(
+                1,
+                availableHeight / naturalHeight,
+                availableWidth / naturalWidth
+            );
+
+        card.style.transform =
+            `scale(${scale})`;
+
+        card.style.transformOrigin =
+            "top center";
+
+        body.style.height =
+            window.innerHeight + "px";
+
+        body.style.overflow =
+            "hidden";
+    });
+}
+
+window.addEventListener("resize", fitCalculatorToEmbed);
+window.addEventListener("orientationchange", fitCalculatorToEmbed);
+
+if("ResizeObserver" in window){
+    const embedObserver =
+        new ResizeObserver(fitCalculatorToEmbed);
+
+    embedObserver.observe(document.documentElement);
+}
+
+setTimeout(fitCalculatorToEmbed, 0);
+setTimeout(fitCalculatorToEmbed, 100);
+
+
+</script>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7e470b9e69c94b5d89261b33e7603cc7","r":1,"spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

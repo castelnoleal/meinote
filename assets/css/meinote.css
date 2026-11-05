@@ -1,0 +1,145 @@
+/* =====================================================================
+   MeiNote styles
+   Layout classes (flex, p-5, bg-blue-900 ...) come from tailwind.css.
+   This file holds MeiNote's own look. Sections:
+     1. Base form controls      4. Payment schedule analyzer
+     2. Theme (header, card)    5. Toasts and tool viewer
+     3. Two-column layout       6. V.6 additions (live output, history, alarms)
+   ===================================================================== */
+
+/* ---------- 1. Base form controls ---------- */
+body{font-family:Inter,"Segoe UI",system-ui,sans-serif}
+.inp{width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:6px 10px;font-size:14px;margin-bottom:6px}
+.inp:focus{outline:none;box-shadow:0 0 0 4px rgba(59,130,246,.18)}
+.dark .inp{background:#334155;border-color:#475569;color:#fff}
+.lbl{font-size:10px;font-weight:bold;text-transform:uppercase;color:#64748b}
+.dark .lbl{color:#94a3b8}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 12px}
+.articleBtn{width:100%;text-align:left;padding:10px;border-radius:6px;background:#f1f5f9}
+.articleBtn:hover{background:#e2e8f0}
+.dark .articleBtn{background:#334155;color:#e2e8f0}
+.dark .articleBtn:hover{background:#3b4a63}
+
+/* ---------- 2. Theme ---------- */
+body{background:linear-gradient(135deg,#e8eefc,#dfe9f7)}
+html.dark body{background:#0f172a}
+.bg-white.dark\:bg-slate-800{border-radius:18px!important;box-shadow:0 25px 60px rgba(15,23,42,.25)!important}
+.bg-blue-900{background:linear-gradient(135deg,#0f172a,#2563eb)!important}
+button{border-radius:12px!important;font-weight:600}
+button:active{transform:scale(.97)}
+/* Night mode button: moon in light mode, sun in dark mode */
+html:not(.dark) #meiTools .fa-sun{display:none}
+html.dark #meiTools .fa-moon{display:none}
+
+/* ---------- 3. Two-column layout ----------
+   Left = template form, right = search and output.
+   Stays side by side down to 860px wide (also at 110–125% zoom). */
+@media (min-width:860px){
+  #meiMain{flex-direction:row}
+  #meiLeft{width:60%}
+  #meiRight{width:40%}
+}
+
+/* ---------- 4. Payment schedule analyzer ---------- */
+#summaryTop{display:flex;flex-wrap:wrap;gap:12px;width:100%;margin-bottom:8px;padding:6px;border:1px solid #ccc;background:#fafafa;font-size:12px;white-space:pre-line}
+#creditorSummaryPanel,#scheduleSummary{flex:1 1 48%;box-sizing:border-box;border:1px solid #888;border-radius:6px;padding:10px;font-size:12px;line-height:1.4;white-space:pre-line;background:#f5f5f5;color:#000}
+#scheduleTable{display:block;width:100%;border-collapse:collapse;margin-top:10px;clear:both;background:#fff;color:#000;border:1px solid #ccc}
+#scheduleTable thead{display:table-header-group}
+#scheduleTable th,#scheduleTable td{border:1px solid #ccc;padding:4px;font-size:12px;vertical-align:top}
+#scheduleTable th{position:sticky;top:0;background:#f2f2f2;z-index:5;white-space:nowrap}
+#scheduleTable td{word-break:break-word}
+#scheduleTable input[type=checkbox]{transform:scale(1.05)}
+html.dark #summaryTop{background:#1e293b;border-color:#475569}
+html.dark #creditorSummaryPanel,html.dark #scheduleSummary{background:#2a2a2a;color:#f0f0f0;border-color:#555}
+html.dark #scheduleTable{background:#1e1e1e;color:#eee}
+html.dark #scheduleTable th{background:#333;color:#f0f0f0}
+html.dark #scheduleTable th,html.dark #scheduleTable td{border-color:#555}
+
+/* ---------- 5. Toasts and tool viewer ---------- */
+.mei-toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);padding:12px 18px;border-radius:12px;color:#fff;font-size:14px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,.25);z-index:999999;animation:toastIn .35s ease,toastOut .35s ease 2.2s forwards}
+.toast-success{background:#16a34a}
+.toast-danger{background:#dc2626}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes toastOut{to{opacity:0;transform:translate(-50%,20px)}}
+#htmlViewerPanel{transition:opacity .2s ease}
+#htmlViewerWindow{transition:transform .2s ease;resize:both;overflow:hidden;min-width:600px;min-height:400px}
+#htmlViewerPanel.hidden{opacity:0;pointer-events:none}
+#htmlViewerPanel:not(.hidden){opacity:1}
+#screenshotTray{bottom:90px!important}
+
+/* ---------- 6. V.6 additions ---------- */
+/* Live output: the readonly textarea stays (copy uses it) but is hidden;
+   #meiOutputView shows the same text line by line. */
+.mei-hidden-output{position:absolute!important;left:-9999px;width:1px!important;height:1px!important;opacity:0}
+.mei-output{overflow-y:auto;white-space:pre-wrap;word-break:break-word;padding:8px 0!important;line-height:1.55;font-size:13px}
+.mei-line{padding:0 10px;min-height:1.55em;border-left:3px solid transparent}
+.mei-line.mei-empty{background:#fef3c7;border-left-color:#f59e0b}
+.dark .mei-line.mei-empty{background:#422c06;border-left-color:#f59e0b}
+.mei-line.mei-changed{animation:meiChanged 1s ease-out}
+@keyframes meiChanged{from{background:#dbeafe}to{background:transparent}}
+.mei-placeholder{display:block;padding:4px 10px;color:#94a3b8;font-family:Inter,"Segoe UI",sans-serif}
+.mei-live-info{margin-left:8px;text-transform:none;font-weight:600;color:#16a34a}
+.mei-live-info.has-empty{color:#b45309}
+
+/* Recent templates */
+#meiRecent{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+#meiRecent button{font-size:11px;font-weight:500;padding:2px 9px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+#meiRecent button:hover,#meiRecent button.on{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+.dark #meiRecent button{background:#334155;color:#cbd5e1;border-color:#475569}
+
+/* Restore bar */
+#meiRestoreBar{display:flex;align-items:center;gap:8px;background:#fef3c7;color:#78350f;border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:13px}
+#meiRestoreBar span{flex:1}
+#meiRestoreBar button{background:#fff;padding:3px 10px;font-size:12px;border:1px solid #fcd34d}
+#meiRestoreBar button.p{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+
+/* Header: alarm count and next callback */
+#meiAlarmBtn b{position:absolute;top:-6px;right:-8px;min-width:16px;height:16px;border-radius:8px;background:#facc15;color:#422006;font:700 10px/16px Inter,sans-serif;padding:0 4px}
+#meiNextAlarm{margin-top:4px;font-size:11px;color:#fde68a;cursor:pointer;text-align:center;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#meiNextAlarm:hover{text-decoration:underline}
+
+/* History button and panel */
+#meiHistoryBtn{position:fixed;right:22px;bottom:22px;z-index:60;width:52px;height:52px;border-radius:50%!important;color:#fff;font-size:20px;background:linear-gradient(135deg,#0f172a,#2563eb);box-shadow:0 10px 25px rgba(15,23,42,.35)}
+#meiHistoryBtn b{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#dc2626;color:#fff;font:700 11px/20px Inter,sans-serif;padding:0 5px}
+#meiHistory{position:fixed;right:22px;bottom:86px;z-index:60;width:min(400px,calc(100vw - 32px));height:min(620px,calc(100vh - 110px));background:#fff;border-radius:18px;box-shadow:0 25px 60px rgba(15,23,42,.35);overflow:hidden;display:flex;flex-direction:column}
+#meiHistory.hidden{display:none}
+.dark #meiHistory{background:#1e293b;color:#e2e8f0}
+.mei-tabs{display:flex;gap:4px}
+.mei-tabs button{flex:1;padding:4px 0;font-size:12px;background:#f1f5f9;color:#475569}
+.mei-tabs button.on{background:#1d4ed8;color:#fff}
+.dark .mei-tabs button{background:#334155;color:#cbd5e1}
+.dark .mei-tabs button.on{background:#2563eb;color:#fff}
+.mei-hitem{cursor:pointer;font-size:14px}
+.mei-hitem.open{outline:2px solid #3b82f6}
+.mei-tags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.mei-tag{font-size:10px;font-weight:700;text-transform:uppercase;padding:1px 6px;border-radius:4px;background:#e2e8f0;color:#475569}
+.mei-tag-generated{background:#dbeafe;color:#1d4ed8}
+.mei-tag-copied{background:#dcfce7;color:#15803d}
+.mei-tag-cleared{background:#fee2e2;color:#b91c1c}
+.mei-hprev{font:12px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-height:2.9em;overflow:hidden;margin:0;color:#475569}
+.mei-hitem.open .mei-hprev{max-height:240px;overflow:auto;background:#fff;border-radius:6px;padding:6px 8px}
+.dark .mei-hprev{color:#cbd5e1}
+.dark .mei-hitem.open .mei-hprev{background:#0f172a}
+.mei-vers{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11px;color:#64748b;margin-top:6px}
+.mei-vers button{font:500 11px ui-monospace,Consolas,monospace;padding:1px 6px;background:#fff;border:1px solid #cbd5e1}
+.mei-vers button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+
+/* Small action buttons (history items, alarms, ringing card) */
+.mei-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mei-acts button{font-size:12px;padding:4px 10px;background:#fff;border:1px solid #cbd5e1;color:#1e293b}
+.mei-acts button:hover{border-color:#3b82f6}
+.mei-acts button.p{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.mei-acts button.d{color:#dc2626}
+.dark .mei-acts button{background:#334155;color:#e2e8f0;border-color:#475569}
+.dark .mei-acts button.p{background:#2563eb;color:#fff}
+
+/* Alarm form quick buttons */
+#maQuick button{font-size:12px;padding:3px 10px;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0}
+#maQuick button:hover{background:#dbeafe;color:#1d4ed8}
+.dark #maQuick button{background:#334155;color:#e2e8f0;border-color:#475569}
+
+/* Ringing alarm */
+#meiRinging{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;display:grid;gap:10px;width:min(440px,calc(100vw - 24px))}
+.mei-bell{animation:meiBell 1s ease-in-out infinite}
+@keyframes meiBell{0%,60%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}}
+@media (prefers-reduced-motion:reduce){.mei-bell,.mei-line.mei-changed{animation:none}}

@@ -4,14 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MeiNote US Time</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--canvas:#EEF2F8;--surface:#fff;--sunk:#F4F6FA;--ink:#0F1B33;--ink2:#43506A;--muted:#6B778F;--line:#D6DDE8;--line2:#E6EBF2;--accent:#2459E0;--accent-soft:#E6EDFF;--ok:#14804F;--ok-soft:#E3F4EA;--bad:#C2352B;--bad-soft:#FDE8E6;--warn:#A86200;--warn-soft:#FFF3DC;--land:#DCE3EE;--stroke:#fff;
 --pt:#3E7BEA;--mt:#2E9E67;--ct:#D08A1E;--et:#D14B43;--ak:#8162D8;--hi:#A0613A}
 html.dark{--canvas:#0A101C;--surface:#121A2B;--sunk:#0E1524;--ink:#E7ECF5;--ink2:#B3BED2;--muted:#8591A8;--line:#26324A;--line2:#1D2840;--accent:#5B8BFF;--accent-soft:#17264A;--ok:#4CC38A;--ok-soft:#10301F;--bad:#FF7A6E;--bad-soft:#3A1714;--warn:#F0B44C;--warn-soft:#33260C;--land:#1B2539;--stroke:#0A101C}
 *{box-sizing:border-box}
-body{margin:0;font:14px/1.45 "IBM Plex Sans",system-ui,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink);padding:16px}
+body{margin:0;font:14px/1.45 Inter,"Segoe UI",system-ui,sans-serif;background:var(--canvas);color:var(--ink);padding:16px}
 button,input,select{font:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .zones{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:14px}
@@ -19,7 +17,7 @@ button,input,select{font:inherit}
 .zone:hover{border-color:var(--line);border-top-color:var(--c)}
 .zone[aria-pressed="true"]{box-shadow:0 0 0 2px var(--c)}
 .zone .n{font-size:12px;font-weight:600;color:var(--ink2)}
-.zone .t{font:600 19px "IBM Plex Mono",monospace;margin:1px 0}
+.zone .t{font:600 19px ui-monospace,Consolas,monospace;margin:1px 0}
 .zone .s{font-size:11.5px;font-weight:700;border-radius:5px;padding:0 6px;display:inline-block}
 .s.ok{background:var(--ok-soft);color:var(--ok)}.s.no{background:var(--bad-soft);color:var(--bad)}.s.soon{background:var(--warn-soft);color:var(--warn)}
 .grid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px}
@@ -31,13 +29,13 @@ svg{width:100%;height:auto;display:block}
 .state{stroke:var(--stroke);stroke-width:.7;cursor:pointer;transition:opacity .15s}
 .state:hover{opacity:.82}
 .state.sel{stroke:var(--ink);stroke-width:2.2}
-.label{font:700 11px "IBM Plex Sans",sans-serif;text-anchor:middle;pointer-events:none;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:2px}
+.label{font:700 11px Inter,"Segoe UI",sans-serif;text-anchor:middle;pointer-events:none;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:2px}
 .loading{padding:60px 0;text-align:center;color:var(--muted)}
 .side h2{margin:0;font-size:22px}
-.side .ab{font:600 12px "IBM Plex Mono",monospace;color:var(--muted);margin-left:6px}
+.side .ab{font:600 12px ui-monospace,Consolas,monospace;color:var(--muted);margin-left:6px}
 .side .tzn{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink2);margin-top:2px}
 .side .tzn i{width:10px;height:10px;border-radius:3px;background:var(--c)}
-.clock{font:600 44px/1.1 "IBM Plex Mono",monospace;margin:10px 0 2px;letter-spacing:-.02em}
+.clock{font:600 44px/1.1 ui-monospace,Consolas,monospace;margin:10px 0 2px;letter-spacing:-.02em}
 .date{color:var(--muted);font-size:13px}
 .callable{margin:10px 0;font-weight:700;font-size:13.5px;border-radius:8px;padding:7px 10px}
 .split{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:7px 10px;margin-bottom:10px}
@@ -49,9 +47,9 @@ h3{font-size:13.5px;margin:0 0 8px}
 .conv label{font-size:12px;font-weight:600;color:var(--ink2);display:block;margin-bottom:3px}
 .conv input,.conv select{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 9px}
 .convout{margin-top:8px;font-size:13.5px;background:var(--sunk);border-radius:8px;padding:8px 10px;color:var(--ink2)}
-.convout b{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
+.convout b{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
 .me{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
-.me b{font:600 16px "IBM Plex Mono",monospace;color:var(--ink)}
+.me b{font:600 16px ui-monospace,Consolas,monospace;color:var(--ink)}
 .win{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
 .win input{width:96px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:3px 6px}
 .note{font-size:11.5px;color:var(--muted);margin:6px 4px 4px}
