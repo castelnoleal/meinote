@@ -3,63 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MeiScript V.0.1.0</title>
+<title>MeiScript KB Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* =========================
-   STYLES
-   ========================= */
-:root{
-  --accent:#3b82f6;
-  --bg:#0f172a;
-  --panel:#111827;
-  --text:#e5e7eb;
-}
+:root{--canvas:#EEF2F8;--surface:#fff;--sunk:#F4F6FA;--ink:#0F1B33;--ink2:#43506A;--muted:#6B778F;--line:#D6DDE8;--line2:#E6EBF2;--navy:#0E2350;--accent:#2459E0;--accent-soft:#E6EDFF;--star:#C98500;--mark:#FFE7A3}
+html.dark{--canvas:#0A101C;--surface:#121A2B;--sunk:#0E1524;--ink:#E7ECF5;--ink2:#B3BED2;--muted:#8591A8;--line:#26324A;--line2:#1D2840;--navy:#0B1A3D;--accent:#5B8BFF;--accent-soft:#17264A;--star:#F0B44C;--mark:#5A4410}
 *{box-sizing:border-box}
-body{margin:0;font-family:Segoe UI,Arial,sans-serif;color:var(--text);background:linear-gradient(135deg,#0f172a,#1e3a8a)}
-.app{display:flex;min-height:100vh}
-.sidebar{width:280px;padding:20px;background:rgba(0,0,0,.25);backdrop-filter:blur(16px)}
-.main{flex:1;padding:20px}
-.search{width:100%;padding:12px;border:none;border-radius:12px}
-.nav-btn{width:100%;margin:8px 0;padding:14px;border:none;border-radius:12px;background:#1f2937;color:white;text-align:left;cursor:pointer}
-.nav-btn.active,.nav-btn:hover{background:var(--accent)}
-.hero{background:rgba(255,255,255,.08);padding:18px;border-radius:18px;margin-bottom:16px}
-.group{background:rgba(255,255,255,.08);border-radius:16px;margin-bottom:12px;overflow:hidden}
-.group-title{background:var(--accent);padding:14px;cursor:pointer;font-weight:bold}
-.group-content{display:none;padding:12px}
-.link-btn{display:inline-block;margin:6px;padding:12px 14px;background:var(--accent);color:white;text-decoration:none;border-radius:12px}
-@media(max-width:900px){.app{flex-direction:column}.sidebar{width:100%}.link-btn{display:block}}
+body{margin:0;font:15px/1.5 "IBM Plex Sans",system-ui,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+aside{background:var(--navy);color:#DCE5FA;padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{padding:0 8px 16px}
+.brand b{display:block;font-size:18px;color:#fff}.brand b span{color:#9DB8FF}
+.brand small{color:#8FA3CC;font-size:12px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;color:#C8D5F2;padding:9px 10px;border-radius:9px;font-weight:500}
+.nav:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav[aria-current="true"]{background:rgba(157,184,255,.16);color:#fff}
+.nav .ic{width:22px;text-align:center}
+.nav .ct{margin-left:auto;font:500 12px "IBM Plex Mono",monospace;color:#8FA3CC}
+.sep{height:1px;background:rgba(255,255,255,.1);margin:10px 6px}
+.side-foot{margin-top:auto;font-size:12px;color:#8FA3CC;padding:0 8px}
+main{padding:22px 26px 40px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.search{flex:1;position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:11px 14px 11px 40px;font:15px "IBM Plex Sans",sans-serif}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:500 11px "IBM Plex Mono",monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--muted);background:var(--sunk)}
+.tbtn{border:1px solid var(--line);background:var(--surface);color:var(--ink2);border-radius:10px;padding:10px 12px;font-weight:600;font-size:13.5px;white-space:nowrap}
+.tbtn:hover{border-color:var(--accent);color:var(--accent)}
+h1{font-size:24px;margin:0 0 2px;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+.group{background:var(--surface);border:1px solid var(--line2);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.ghead{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:12px 16px;text-align:left;color:var(--ink);font-weight:600;font-size:15px}
+.ghead .n{font:500 12px "IBM Plex Mono",monospace;color:var(--muted);margin-left:auto}
+.ghead svg{transition:transform .15s;color:var(--muted)}
+.group.closed .ghead svg{transform:rotate(-90deg)}
+.group.closed .links{display:none}
+.links{border-top:1px solid var(--line2);padding:6px}
+.link{display:flex;align-items:center;gap:6px;border-radius:9px;padding:2px 4px 2px 10px}
+.link:hover{background:var(--sunk)}
+.link a{flex:1;min-width:0;display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;padding:8px 0;font-size:14.5px}
+.link a:hover .lt{color:var(--accent);text-decoration:underline}
+.link a[aria-disabled="true"]{color:var(--muted);pointer-events:none}
+.path{font-size:12px;color:var(--muted);display:block}
+.kb{font:600 10.5px "IBM Plex Sans",sans-serif;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:1px 6px;flex:none}
+.soon{font:600 10.5px "IBM Plex Sans",sans-serif;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px}
+.ib{border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex:none}
+.ib:hover{background:var(--surface);color:var(--ink)}
+.ib.on{color:var(--star)}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.empty{color:var(--muted);text-align:center;padding:48px 16px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:9px 16px;border-radius:9px;font-weight:600;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:820px){.app{grid-template-columns:1fr}aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:12px}.brand,.sep,.side-foot{display:none}.nav{width:auto}.nav .ct{display:none}main{padding:16px}}
 </style>
 </head>
 <body>
 <div class="app">
-
-<div class="sidebar">
-  <h2>MeiScript KB V.0.1.0</h2><h5>By Castel Noleal</h5>
-  <input id="search" class="search" placeholder="Search...">
-  <button class="nav-btn active" onclick="showCategory('CasTools',this)">🔧 CasTools</button>
-  <button class="nav-btn" onclick="showCategory('Disclosures',this)">⚖️ Disclosures</button>
-  <button class="nav-btn" onclick="showCategory('Scripts',this)">📋 Scripts</button>
-  <button class="nav-btn" onclick="showCategory('Rebuttals',this)">🎯 Rebuttals</button>
-  <button class="nav-btn" onclick="showCategory('Empathy',this)">🥰 Empathy</button>
-</div>
-
-<div class="main">
-  <div class="hero">
-    <h1 id="pageTitle">CasTools</h1>
-    <div id="stats"></div>
+<aside aria-label="Categories">
+  <div class="brand"><b><span>MeiScript</span> KB</b><small>Knowledge base navigator · by Castel Noleal</small></div>
+  <div id="nav"></div>
+  <div class="side-foot">Press <b>/</b> to search, <b>Enter</b> to open the first result.</div>
+</aside>
+<main>
+  <div class="top">
+    <label class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search scripts, rebuttals, disclosures, contacts" aria-label="Search the knowledge base" autocomplete="off"><kbd>/</kbd></label>
+    <button class="tbtn" id="toggleAll" type="button">Collapse all</button>
   </div>
-
+  <h1 id="title">CasTools</h1>
+  <p class="sub" id="stats"></p>
   <div id="content"></div>
+</main>
 </div>
-
-</div>
-
+<div class="toast" id="toast" role="status"></div>
 <script>
-/* =====================================================
-   Castel Noleal. Project Empower. Eperformax Cebu
-   ===================================================== */
-
-const DATA = {
+/* Link data: unchanged from MeiScript V.0.1.0 */
+var DATA = {
 
   CasTools: {
 
@@ -186,13 +208,6 @@ const DATA = {
         label: "NDR Top FAQs",
         link: "https://www.nationaldebtrelief.com/resources/debt-relief-settlement/top-faqs-debt-relief/"
       }
-    ],
-
-    "gwrhwwrh": [
-      {
-        label: "NDR Top FAQs",
-        link: "https://www.nationaldebtrelief.com/resources/debt-relief-settlement/top-faqs-debt-relief/"
-      }
     ]
   },
 
@@ -301,78 +316,89 @@ const DATA = {
   }
 };
 
-/* =====================================================
-   Project Empower's MeiScript V0.1.0 by Castel Noleal
-   ===================================================== */
-
-let currentCategory = 'CasTools';
-
-function renderCategory(category){
-  currentCategory = category;
-
-  let groups = 0;
-  let buttons = 0;
-  let html = '';
-
-  for(const groupName in DATA[category]){
-    groups++;
-
-    html += `<div class="group">
-      <div class="group-title" onclick="toggleGroup(this)">${groupName}</div>
-      <div class="group-content">`;
-
-    DATA[category][groupName].forEach(item => {
-      buttons++;
-      html += `<a class="link-btn" href="${item.link}" target="_blank">${item.label}</a>`;
-    });
-
-    html += `</div></div>`;
-  }
-
-  pageTitle.textContent = category;
-  stats.textContent = `${groups} Groups • ${buttons} Buttons`;
-  content.innerHTML = html;
+var ICONS={CasTools:"🔧",Disclosures:"⚖️",Scripts:"📋",Rebuttals:"🎯",Empathy:"🤝"};
+var LS={get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+var pins=LS.get("meiscript.pins",[]), recent=LS.get("meiscript.recent",[]), closed=LS.get("meiscript.closed",{});
+var view="CasTools";
+var ALL=[];
+Object.keys(DATA).forEach(function(c){Object.keys(DATA[c]).forEach(function(g){DATA[c][g].forEach(function(it){
+  var plain=it.label.replace(/<[^>]+>/g,"");
+  ALL.push({cat:c,group:g,label:plain.replace(/\s*\[KB\]\s*$/,""),kb:/\[KB\]/.test(plain),link:it.link,key:c+"|"+g+"|"+plain});
+});});});
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]});}
+function hl(s,q){s=esc(s);if(!q)return s;var i=s.toLowerCase().indexOf(q);return i<0?s:s.slice(0,i)+"<mark>"+s.slice(i,i+q.length)+"</mark>"+s.slice(i+q.length);}
+function byKey(k){return ALL.find(function(x){return x.key===k});}
+var STAR='<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>';
+var STAR_O='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>';
+var COPY='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+var CHEV='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+function row(it,q,showPath){
+  var dead=!it.link||it.link==="#", pinned=pins.indexOf(it.key)>=0;
+  return '<div class="link"><a href="'+(dead?"#":esc(it.link))+'" target="_blank" rel="noopener" data-k="'+esc(it.key)+'"'+(dead?' aria-disabled="true"':'')+'>'+
+    '<span style="min-width:0"><span class="lt">'+hl(it.label,q)+'</span>'+(showPath?'<span class="path">'+esc(it.cat)+' › '+esc(it.group)+'</span>':'')+'</span>'+
+    (it.kb?'<span class="kb">KB</span>':'')+(dead?'<span class="soon">No link yet</span>':'')+'</a>'+
+    '<button class="ib'+(pinned?' on':'')+'" type="button" data-pin="'+esc(it.key)+'" aria-label="'+(pinned?'Unpin':'Pin')+' '+esc(it.label)+'" title="'+(pinned?'Unpin':'Pin to top')+'">'+(pinned?STAR:STAR_O)+'</button>'+
+    (dead?'':'<button class="ib" type="button" data-copy="'+esc(it.key)+'" aria-label="Copy link" title="Copy link">'+COPY+'</button>')+'</div>';
 }
-
-function toggleGroup(element){
-  const panel = element.nextElementSibling;
-  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+function group(name,items,id,showPath){
+  var c=closed[id];
+  return '<section class="group'+(c?' closed':'')+'" data-g="'+esc(id)+'"><button class="ghead" type="button" aria-expanded="'+!c+'">'+CHEV+'<span>'+esc(name)+'</span><span class="n">'+items.length+'</span></button><div class="links">'+items.map(function(i){return row(i,"",showPath)}).join("")+'</div></section>';
 }
-
-function showCategory(category, button){
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-  button.classList.add('active');
-  renderCategory(category);
+function renderNav(){
+  var h='<button class="nav" data-v="Pinned" aria-current="'+(view==="Pinned")+'"><span class="ic">⭐</span>Pinned<span class="ct">'+pins.length+'</span></button>'+
+        '<button class="nav" data-v="Recent" aria-current="'+(view==="Recent")+'"><span class="ic">🕘</span>Recently opened<span class="ct">'+recent.length+'</span></button><div class="sep"></div>';
+  Object.keys(DATA).forEach(function(c){var n=ALL.filter(function(x){return x.cat===c}).length;h+='<button class="nav" data-v="'+c+'" aria-current="'+(view===c)+'"><span class="ic">'+(ICONS[c]||"•")+'</span>'+c+'<span class="ct">'+n+'</span></button>';});
+  document.getElementById("nav").innerHTML=h;
 }
-
-search.addEventListener('input', function(){
-  const query = this.value.toLowerCase().trim();
-
-  if(!query){
-    renderCategory(currentCategory);
-    return;
+function render(){
+  var q=document.getElementById("q").value.trim().toLowerCase(), out="", title=view, stats="";
+  if(q){
+    var res=ALL.filter(function(x){return (x.label+" "+x.group+" "+x.cat).toLowerCase().indexOf(q)>=0});
+    title="Search results"; stats=res.length+" match"+(res.length===1?"":"es")+' for “'+esc(q)+'”';
+    out=res.length?'<section class="group"><div class="links">'+res.map(function(i){return row(i,q,true)}).join("")+'</div></section>':'<div class="empty">Nothing matches “'+esc(q)+'”. Try a shorter word, like “NSF” or “credit”.</div>';
+  }else if(view==="Pinned"){
+    var p=pins.map(byKey).filter(Boolean); stats="Your most-used links, kept on this computer.";
+    out=p.length?'<section class="group"><div class="links">'+p.map(function(i){return row(i,"",true)}).join("")+'</div></section>':'<div class="empty">Pin a link with the star and it shows up here for one-click access.</div>';
+  }else if(view==="Recent"){
+    var r=recent.map(byKey).filter(Boolean); stats="The last links you opened.";
+    out=r.length?'<section class="group"><div class="links">'+r.map(function(i){return row(i,"",true)}).join("")+'</div></section>':'<div class="empty">Links you open will be listed here.</div>';
+  }else{
+    var groups=Object.keys(DATA[view]); var n=0;
+    groups.forEach(function(g){var items=ALL.filter(function(x){return x.cat===view&&x.group===g});n+=items.length;out+=group(g,items,view+"|"+g,false);});
+    stats=groups.length+" groups · "+n+" links";
   }
-
-  let results = '';
-
-  for(const category in DATA){
-    for(const group in DATA[category]){
-      DATA[category][group].forEach(item => {
-        if((category + group + item.label).toLowerCase().includes(query)){
-          results += `<a class="link-btn" href="${item.link}" target="_blank">
-            ${category} › ${group} › ${item.label}
-          </a>`;
-        }
-      });
-    }
-  }
-
-  pageTitle.textContent = 'Search Results';
-  stats.textContent = '';
-  content.innerHTML = results || '<p>No results found.</p>';
+  document.getElementById("title").textContent=title;
+  document.getElementById("stats").innerHTML=stats;
+  document.getElementById("content").innerHTML=out;
+  document.getElementById("toggleAll").style.visibility=(q||view==="Pinned"||view==="Recent")?"hidden":"visible";
+  var anyOpen=document.querySelector(".group:not(.closed) .ghead");
+  document.getElementById("toggleAll").textContent=anyOpen?"Collapse all":"Expand all";
+  renderNav();
+}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show")},1600);}
+document.getElementById("nav").addEventListener("click",function(e){var b=e.target.closest("[data-v]");if(!b)return;view=b.dataset.v;document.getElementById("q").value="";render();});
+document.getElementById("content").addEventListener("click",function(e){
+  var g=e.target.closest(".ghead");
+  if(g){var s=g.parentNode,id=s.dataset.g;s.classList.toggle("closed");closed[id]=s.classList.contains("closed");g.setAttribute("aria-expanded",!closed[id]);LS.set("meiscript.closed",closed);return;}
+  var pb=e.target.closest("[data-pin]");
+  if(pb){var k=pb.dataset.pin,i=pins.indexOf(k);if(i>=0)pins.splice(i,1);else pins.unshift(k);LS.set("meiscript.pins",pins);toast(i>=0?"Unpinned":"Pinned to top");render();return;}
+  var cb=e.target.closest("[data-copy]");
+  if(cb){var it=byKey(cb.dataset.copy);navigator.clipboard&&navigator.clipboard.writeText(it.link).then(function(){toast("Link copied")},function(){toast("Copy blocked by the browser")});return;}
+  var a=e.target.closest("a[data-k]");
+  if(a&&a.getAttribute("aria-disabled")!=="true"){var key=a.dataset.k;recent=[key].concat(recent.filter(function(x){return x!==key})).slice(0,10);LS.set("meiscript.recent",recent);setTimeout(renderNav,50);}
 });
-
-renderCategory('CasTools');
+document.getElementById("toggleAll").onclick=function(){
+  var collapse=this.textContent==="Collapse all";
+  Object.keys(DATA[view]).forEach(function(g){closed[view+"|"+g]=collapse});LS.set("meiscript.closed",closed);render();
+};
+var qEl=document.getElementById("q");
+qEl.addEventListener("input",render);
+qEl.addEventListener("keydown",function(e){if(e.key==="Enter"){var a=document.querySelector("#content a[data-k]:not([aria-disabled])");if(a)a.click();}if(e.key==="Escape"){qEl.value="";render();}});
+document.addEventListener("keydown",function(e){if(e.key==="/"&&document.activeElement!==qEl){e.preventDefault();qEl.focus();}});
+/* Follow MeiNote's night mode when opened inside it */
+function syncTheme(){var dark=false;try{dark=window.parent!==window&&window.parent.document.documentElement.classList.contains("dark")}catch(e){}if(window.parent===window)dark=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",dark);}
+syncTheme();setInterval(syncTheme,1500);
+render();
 </script>
 </body>
 </html>

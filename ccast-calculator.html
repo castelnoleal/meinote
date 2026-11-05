@@ -1,1393 +1,209 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CSAT Recovery Calculator</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-
-/* ==========================
-   Castel Noleal Project Empower
-========================== */
-
-*{
-    box-sizing:border-box;
-}
-
-html{
-    width:100%;
-    min-height:100%;
-}
-
-body{
-    margin:0;
-    width:100%;
-    min-height:100vh;
-    min-height:100dvh;
-    font-family:"Segoe UI",sans-serif;
-    background:
-        radial-gradient(
-            circle at top right,
-            #2563eb,
-            #0f172a 55%
-        );
-    color:white;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    padding:
-        max(10px, env(safe-area-inset-top))
-        max(10px, env(safe-area-inset-right))
-        max(10px, env(safe-area-inset-bottom))
-        max(10px, env(safe-area-inset-left));
-
-    overflow:auto;
-    overflow-x:hidden;
-}
-
-/* ==========================
-   CARD
-========================== */
-
-.card{
-    width:min(100%, 620px);
-    max-width:620px;
-    min-width:0;
-
-    background:rgba(30,41,59,.95);
-
-    border-radius:clamp(14px, 3vw, 24px);
-
-    padding:clamp(14px, 4vw, 28px);
-
-    border:1px solid rgba(255,255,255,.08);
-
-    box-shadow:
-        0 25px 50px rgba(0,0,0,.45);
-
-    /* Prevent the card from being wider than a small iframe. */
-    overflow:hidden;
-}
-
-h1{
-    margin:0;
-    text-align:center;
-    color:#93c5fd;
-    font-size:clamp(22px, 5vw, 32px);
-    line-height:1.15;
-}
-
-.subtitle{
-    text-align:center;
-    color:#94a3b8;
-
-    margin-top:clamp(5px, 1.5vw, 8px);
-    margin-bottom:clamp(14px, 4vw, 25px);
-    font-size:clamp(12px, 2.5vw, 16px);
-}
-
-/* ==========================
-   INPUTS
-========================== */
-
-label{
-    display:block;
-
-    margin-top:clamp(7px, 2vw, 12px);
-    margin-bottom:clamp(4px, 1vw, 6px);
-
-    font-weight:600;
-    font-size:clamp(12px, 2.5vw, 16px);
-}
-
-input{
-    width:100%;
-
-    padding:clamp(9px, 2.5vw, 14px);
-
-    border:none;
-    border-radius:clamp(9px, 2vw, 12px);
-
-    background:#334155;
-    color:white;
-    font-size:clamp(14px, 3vw, 16px);
-    min-width:0;
-}
-
-input:focus{
-    outline:none;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(59,130,246,.3);
-}
-
-/* ==========================
-   RESULTS
-========================== */
-
-.result{
-    margin-top:clamp(10px, 3vw, 20px);
-
-    display:grid;
-    gap:clamp(8px, 2.5vw, 15px);
-}
-
-.resultCard{
-    background:#111827;
-
-    padding:clamp(10px, 3vw, 16px);
-
-    border-radius:clamp(11px, 2.5vw, 16px);
-}
-
-.resultLabel{
-    color:#94a3b8;
-
-    font-size:12px;
-    text-transform:uppercase;
-}
-
-.mainNumber{
-    font-size:clamp(34px, 10vw, 52px);
-    line-height:1;
-    font-weight:800;
-}
-
-.metric{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.metricValue{
-    font-size:clamp(20px, 5vw, 28px);
-    font-weight:800;
-    line-height:1.1;
-}
-
-/* ==========================
-   COLORS
-========================== */
-
-.blue{
-    color:#60a5fa;
-}
-
-.green{
-    color:#22c55e;
-}
-
-.yellow{
-    color:#facc15;
-}
-
-.red{
-    color:#ef4444;
-}
-
-/* ==========================
-   FEEDBACK
-========================== */
-
-.feedback{
-    padding:clamp(10px, 3vw, 16px);
-    border-radius:clamp(10px, 2.5vw, 14px);
-
-    line-height:1.4;
-    font-size:clamp(12px, 2.5vw, 16px);
-}
-
-.pass{
-    background:rgba(34,197,94,.15);
-}
-
-.warn{
-    background:rgba(250,204,21,.15);
-}
-
-.fail{
-    background:rgba(239,68,68,.15);
-}
-
-
-
-/* ==========================
-   PROJECTION + SETTINGS
-   ========================== */
-
-.toolSection{
-    margin-top:12px;
-    padding-top:12px;
-    border-top:1px solid rgba(255,255,255,.08);
-}
-
-.sectionTitle{
-    color:#bfdbfe;
-    font-size:15px;
-    font-weight:700;
-    margin-bottom:4px;
-}
-
-.sectionHint{
-    color:#94a3b8;
-    font-size:11px;
-    line-height:1.3;
-    margin-bottom:7px;
-}
-
-.settingsGrid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.settingGroup{
-    min-width:0;
-}
-
-.settingGroup label{
-    margin:0 0 4px;
-    font-size:12px;
-}
-
-.settingGroup input{
-    padding:8px 10px;
-    font-size:14px;
-}
-
-.projectionResult{
-    margin-top:8px;
-    background:#111827;
-    border:1px solid rgba(96,165,250,.15);
-    padding:9px 11px;
-    border-radius:11px;
-}
-
-.projectionNumber{
-    color:#60a5fa;
-    font-size:32px;
-    line-height:1;
-    font-weight:800;
-    margin-top:3px;
-}
-
-.projectionMeta{
-    color:#94a3b8;
-    font-size:10px;
-    line-height:1.3;
-    margin-top:5px;
-}
-
-.projectionStatus{
-    margin-top:5px;
-    font-size:11px;
-    line-height:1.3;
-}
-
-.targetDisplay{
-    color:#facc15;
-    font-weight:800;
-}
-
-/* On wider embeds, put the two calculators beside each other. */
-@media (min-width:700px){
-    .card{
-        max-width:900px;
-    }
-
-    .card > .result{
-        display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:10px;
-    }
-
-    .card > .result > .resultCard:first-child,
-    .card > .result > #feedback{
-        grid-column:1;
-    }
-
-    .card > .result > .resultCard:nth-child(2),
-    .card > .result > .resultCard:nth-child(3){
-        grid-column:2;
-    }
-
-    .card > .result > #feedback{
-        grid-row:3;
-    }
-
-    .card{
-        display:grid;
-        grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-        column-gap:16px;
-        align-items:start;
-    }
-
-    .card > h1,
-    .card > .subtitle{
-        grid-column:1 / -1;
-    }
-
-    .card > label,
-    .card > input{
-        grid-column:1;
-    }
-
-    .card > .result{
-        grid-column:1;
-        grid-row:4 / span 4;
-    }
-
-    .card > .toolSection{
-        grid-column:2;
-        grid-row:3 / span 5;
-    }
-}
-
-@media (max-width:430px){
-    .settingsGrid{
-        grid-template-columns:1fr 1fr;
-    }
-}
-
-@media (max-height:650px){
-    .card{
-        padding:12px 14px;
-    }
-
-    h1{
-        font-size:23px;
-    }
-
-    .subtitle{
-        margin-top:4px;
-        margin-bottom:8px;
-        font-size:11px;
-    }
-
-    label{
-        margin-top:5px;
-        margin-bottom:3px;
-        font-size:12px;
-    }
-
-    input{
-        padding:7px 9px;
-        font-size:14px;
-    }
-
-    .result{
-        margin-top:8px;
-        gap:6px;
-    }
-
-    .resultCard{
-        padding:8px 10px;
-    }
-
-    .mainNumber{
-        font-size:34px;
-    }
-
-    .metricValue{
-        font-size:20px;
-    }
-
-    .feedback{
-        padding:8px 10px;
-        font-size:11px;
-    }
-
-    .toolSection{
-        margin-top:8px;
-        padding-top:8px;
-    }
-}
-
-@media (max-height:500px){
-    .card{
-        padding:8px 10px;
-        border-radius:14px;
-    }
-
-    h1{
-        font-size:19px;
-    }
-
-    .subtitle{
-        margin:2px 0 5px;
-        font-size:9px;
-    }
-
-    label{
-        margin-top:3px;
-        margin-bottom:2px;
-        font-size:10px;
-    }
-
-    input{
-        padding:5px 7px;
-        font-size:12px;
-        border-radius:7px;
-    }
-
-    .result{
-        margin-top:5px;
-        gap:4px;
-    }
-
-    .resultCard{
-        padding:6px 8px;
-        border-radius:8px;
-    }
-
-    .resultLabel{
-        font-size:8px;
-    }
-
-    .mainNumber{
-        font-size:27px;
-    }
-
-    .metricValue{
-        font-size:17px;
-    }
-
-    .feedback{
-        padding:6px 8px;
-        font-size:9px;
-    }
-
-    .sectionTitle{
-        font-size:12px;
-        margin-bottom:2px;
-    }
-
-    .sectionHint{
-        font-size:8px;
-        margin-bottom:4px;
-    }
-
-    .settingGroup label{
-        font-size:9px;
-        margin-bottom:2px;
-    }
-
-    .settingGroup input{
-        padding:5px 6px;
-        font-size:11px;
-    }
-
-    .projectionResult{
-        margin-top:5px;
-        padding:6px 8px;
-        border-radius:8px;
-    }
-
-    .projectionNumber{
-        font-size:24px;
-    }
-
-    .projectionMeta,
-    .projectionStatus{
-        font-size:8px;
-    }
-}
-
-@media (max-width:299px){
-    .settingsGrid{
-        grid-template-columns:1fr;
-    }
-
-    .metric{
-        gap:4px;
-    }
-}
-
-
-/* ==========================
-   SETTINGS BUTTON + MODAL
-   ========================== */
-
-.settingsButton{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:36px;
-    height:36px;
-    margin:10px auto 0;
-    padding:0;
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:50%;
-    background:#1e293b;
-    color:#94a3b8;
-    font-size:20px;
-    line-height:1;
-    cursor:pointer;
-    transition:
-        transform .18s ease,
-        background .18s ease,
-        color .18s ease,
-        border-color .18s ease;
-}
-
-.settingsButton:hover{
-    transform:rotate(45deg);
-    background:#334155;
-    color:#fff;
-    border-color:rgba(147,197,253,.35);
-}
-
-.settingsButton:active{
-    transform:rotate(45deg) scale(.94);
-}
-
-.projectionModal{
-    position:fixed;
-    inset:0;
-    z-index:9999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:12px;
-}
-
-.projectionModal.open{
-    display:flex;
-}
-
-.projectionOverlay{
-    position:absolute;
-    inset:0;
-    background:rgba(2,6,23,.72);
-    backdrop-filter:blur(4px);
-}
-
-.projectionDialog{
-    position:relative;
-    z-index:1;
-    width:min(100%, 480px);
-    max-height:calc(100dvh - 24px);
-    overflow:auto;
-    padding:18px;
-    background:rgba(30,41,59,.98);
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:18px;
-    box-shadow:0 25px 70px rgba(0,0,0,.55);
-    animation:projectionIn .18s ease-out;
-}
-
-.closeProjection{
-    position:absolute;
-    top:8px;
-    right:10px;
-    width:32px;
-    height:32px;
-    border:0;
-    border-radius:50%;
-    background:transparent;
-    color:#94a3b8;
-    font-size:25px;
-    line-height:1;
-    cursor:pointer;
-}
-
-.closeProjection:hover{
-    background:#334155;
-    color:#fff;
-}
-
-.projectionDialog .sectionTitle{
-    padding-right:35px;
-}
-
-@keyframes projectionIn{
-    from{
-        opacity:0;
-        transform:translateY(8px) scale(.98);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0) scale(1);
-    }
-}
-
-@media (max-height:500px){
-    .settingsButton{
-        width:30px;
-        height:30px;
-        margin-top:5px;
-        font-size:17px;
-    }
-
-    .projectionDialog{
-        padding:12px;
-        border-radius:13px;
-    }
-}
-
-/* ==========================
-   RESPONSIVE / IFRAME MODE
-   ========================== */
-
-/* Narrow iframe / mobile width */
-@media (max-width: 430px){
-    body{
-        padding:10px;
-        align-items:flex-start;
-    }
-
-    .card{
-        margin:auto 0;
-    }
-
-    .metric{
-        gap:10px;
-    }
-
-    .metricValue{
-        flex-shrink:0;
-    }
-}
-
-/* Short iframe: reduce vertical spacing while keeping every component visible. */
-@media (max-height: 700px){
-    body{
-        align-items:flex-start;
-    }
-
-    .card{
-        margin-top:0;
-        margin-bottom:0;
-    }
-
-    .subtitle{
-        margin-bottom:12px;
-    }
-
-    label{
-        margin-top:6px;
-        margin-bottom:3px;
-    }
-
-    .result{
-        margin-top:10px;
-        gap:8px;
-    }
-
-    .resultCard{
-        padding:9px 12px;
-    }
-
-    .feedback{
-        padding:9px 12px;
-    }
-}
-
-/* Very short iframe: make the calculator compact enough for dashboard embeds. */
-@media (max-height: 520px){
-    body{
-        padding:6px;
-    }
-
-    .card{
-        border-radius:14px;
-        padding:10px 12px;
-    }
-
-    h1{
-        font-size:22px;
-    }
-
-    .subtitle{
-        margin-top:3px;
-        margin-bottom:7px;
-        font-size:11px;
-    }
-
-    label{
-        margin-top:4px;
-        margin-bottom:2px;
-        font-size:12px;
-    }
-
-    input{
-        padding:7px 10px;
-        font-size:14px;
-        border-radius:8px;
-    }
-
-    .result{
-        margin-top:7px;
-        gap:6px;
-    }
-
-    .resultCard{
-        padding:7px 10px;
-        border-radius:9px;
-    }
-
-    .resultLabel{
-        font-size:10px;
-    }
-
-    .mainNumber{
-        font-size:32px;
-    }
-
-    .metricValue{
-        font-size:19px;
-    }
-
-    .feedback{
-        padding:7px 10px;
-        font-size:11px;
-        border-radius:9px;
-    }
-}
-
-/* If the iframe is extremely narrow, prevent metric rows from clipping. */
-@media (max-width: 300px){
-    .metric{
-        align-items:flex-start;
-        flex-direction:column;
-        gap:3px;
-    }
-
-    .metricValue{
-        align-self:flex-end;
-    }
-}
-
+:root{--canvas:#EEF2F8;--surface:#fff;--sunk:#F4F6FA;--ink:#0F1B33;--ink2:#43506A;--muted:#6B778F;--line:#D6DDE8;--line2:#E6EBF2;--accent:#2459E0;--accent-soft:#E6EDFF;--ok:#14804F;--ok-soft:#E3F4EA;--warn:#A86200;--warn-soft:#FFF3DC;--bad:#C2352B;--bad-soft:#FDE8E6}
+html.dark{--canvas:#0A101C;--surface:#121A2B;--sunk:#0E1524;--ink:#E7ECF5;--ink2:#B3BED2;--muted:#8591A8;--line:#26324A;--line2:#1D2840;--accent:#5B8BFF;--accent-soft:#17264A;--ok:#4CC38A;--ok-soft:#10301F;--warn:#F0B44C;--warn-soft:#33260C;--bad:#FF7A6E;--bad-soft:#3A1714}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 "IBM Plex Sans",system-ui,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink);padding:14px}
+button,input{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:620px;margin:0 auto}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.head h1{font-size:18px;margin:0;flex:1}
+.tabs{display:flex;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;padding:3px}
+.tabs button{border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:5px 11px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(15,27,51,.12)}
+.card{background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.ratings{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.rt label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.rt label i{font-style:normal;color:#E0A100}
+.step{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.step button{border:0;background:var(--sunk);color:var(--ink2);width:26px;cursor:pointer;font-weight:700}
+.step button:hover{color:var(--accent)}
+.step input{width:100%;min-width:0;border:0;background:none;color:var(--ink);text-align:center;font:600 15px "IBM Plex Mono",monospace;padding:7px 0;-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none}
+.tot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.tot button{border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px}
+.score{display:grid;grid-template-columns:1.15fr 1fr;gap:10px}
+.big{display:flex;flex-direction:column;justify-content:center}
+.big .lbl{font-size:12.5px;color:var(--muted);font-weight:600}
+.big .num{font:600 46px/1.05 "IBM Plex Mono",monospace;letter-spacing:-.02em}
+.status{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;margin-top:6px;font-weight:700;font-size:13px;border-radius:6px;padding:2px 9px;background:var(--sunk);color:var(--muted)}
+.pass .num{color:var(--ok)}.pass .status{background:var(--ok-soft);color:var(--ok)}
+.warn .num{color:var(--warn)}.warn .status{background:var(--warn-soft);color:var(--warn)}
+.fail .num{color:var(--bad)}.fail .status{background:var(--bad-soft);color:var(--bad)}
+.bar{position:relative;height:8px;background:var(--sunk);border-radius:4px;margin:12px 0 4px;overflow:visible}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--accent);transition:width .25s}
+.bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.barl{display:flex;justify-content:space-between;font:500 11px "IBM Plex Mono",monospace;color:var(--muted)}
+.kpis{display:grid;gap:8px}
+.kpi{background:var(--sunk);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.kpi span{font-size:12.5px;color:var(--ink2)}
+.kpi b{font:600 20px "IBM Plex Mono",monospace}
+.msg{font-size:13.5px;color:var(--ink2);margin-top:2px}
+h2{font-size:13.5px;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:4px 6px;border-bottom:1px solid var(--line2)}
+td{padding:6px;border-bottom:1px solid var(--line2)}
+td:not(:first-child),th:not(:first-child){text-align:right;font-family:"IBM Plex Mono",monospace}
+tr.cur td{background:var(--accent-soft);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.f input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px;font:600 15px "IBM Plex Mono",monospace}
+.f small{color:var(--muted);font-size:11.5px}
+.hint{font-size:12px;color:var(--muted)}
+.lnk{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:12px;font-weight:600}
+[hidden]{display:none!important}
+@media (max-width:520px){.ratings{grid-template-columns:repeat(3,1fr)}.score,.two{grid-template-columns:1fr}}
 </style>
-
 </head>
-
 <body>
-
-<div class="card">
-
-    <h1>CSAT Recovery Calculator</h1>
-
-    <div class="subtitle">
-        Enter rating counts • Passing Score = <span id="passScoreDisplay">4.60</span>
+<div class="wrap">
+  <div class="head">
+    <h1>CSAT Recovery</h1>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="counts">From ratings</button>
+      <button role="tab" aria-selected="false" data-tab="quick">From score</button>
     </div>
+  </div>
 
-    <div class="settingsGrid ratingGrid">
-        <div class="settingGroup"><label>5 Ratings</label><input id="rating5" type="number" min="0" value="0"></div>
-        <div class="settingGroup"><label>4 Ratings</label><input id="rating4" type="number" min="0" value="0"></div>
-        <div class="settingGroup"><label>3 Ratings</label><input id="rating3" type="number" min="0" value="0"></div>
-        <div class="settingGroup"><label>2 Ratings</label><input id="rating2" type="number" min="0" value="0"></div>
-        <div class="settingGroup"><label>1 Ratings</label><input id="rating1" type="number" min="0" value="0"></div>
+  <!-- From rating counts -->
+  <section id="counts">
+    <div class="card">
+      <div class="ratings" id="ratingInputs"></div>
+      <div class="tot"><span id="totalLine">0 surveys</span><button type="button" id="reset">Reset counts</button></div>
     </div>
-
-    <div class="result">
-
-        <div class="resultCard">
-
-            <div class="resultLabel">
-                Current Average CSAT
-            </div>
-
-            <div
-                id="average"
-                class="mainNumber blue">
-                0.00
-            </div>
-
+    <div class="card">
+      <div class="score">
+        <div class="big" id="bigWrap"><span class="lbl">Current average</span><span class="num" id="average">0.00</span><span class="status" id="status">Enter ratings</span></div>
+        <div class="kpis">
+          <div class="kpi"><span>5s needed to pass</span><b id="needed">0</b></div>
+          <div class="kpi"><span>Total surveys after</span><b id="projected">0</b></div>
         </div>
-
-        <div class="resultCard metric">
-
-            <span>
-                Additional 5s Needed
-            </span>
-
-            <span
-                id="needed"
-                class="metricValue">
-                0
-            </span>
-
-        </div>
-
-        <div class="resultCard metric">
-
-            <span>
-                Projected Surveys in Total
-            </span>
-
-            <span
-                id="projected"
-                class="metricValue">
-                0
-            </span>
-
-        </div>
-
-        <div
-            id="feedback"
-            class="feedback">
-            <i>Enter survey data to begin</i>
-        </div>
-
-        
-        <!-- SECONDARY TOOL SETTINGS -->
-        <button
-            id="settingsButton"
-            class="settingsButton"
-            type="button"
-            aria-label="Open CSAT settings"
-            title="CSAT Settings">
-            ⚙
-        </button>
-
-        <div
-            id="projectionModal"
-            class="projectionModal"
-            aria-hidden="true">
-
-            <div
-                class="projectionOverlay"
-                id="projectionOverlay"></div>
-
-            <div
-                class="projectionDialog"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="projectionTitle">
-
-                <button
-                    id="closeProjection"
-                    class="closeProjection"
-                    type="button"
-                    aria-label="Close">
-                    ×
-                </button>
-
-                <div id="projectionTitle" class="sectionTitle">
-                    CSAT Recovery Projection
-                </div>
-
-                <div class="sectionHint">
-                    Set your passing score and optionally use the projection tool.
-                    The calculator updates instantly as you type.
-                </div>
-
-                <div class="settingsGrid">
-                    <div class="settingGroup">
-                        <label>Current Score</label>
-                        <input
-                            id="currentScore"
-                            type="number"
-                            min="0"
-                            max="5"
-                            step="0.01"
-                            placeholder="e.g. 4.32">
-                    </div>
-
-                    <div class="settingGroup">
-                        <label>Current Total Surveys</label>
-                        <input
-                            id="currentTotal"
-                            type="number"
-                            min="1"
-                            step="1"
-                            placeholder="e.g. 100">
-                    </div>
-                </div>
-
-                <div class="settingGroup" style="margin-top:10px;">
-                    <label>Passing Score (0.00–5.00)</label>
-                    <input
-                        id="customPassScore"
-                        type="number"
-                        min="0"
-                        max="5"
-                        step="0.01"
-                        value="4.60"
-                        placeholder="e.g. 4.60">
-                    <div style="display:flex;gap:7px;margin-top:6px;align-items:center;">
-                        <button id="defaultPassScore" type="button"
-                            style="border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#334155;color:#cbd5e1;padding:6px 9px;cursor:pointer;font-size:11px;">
-                            Restore 4.60
-                        </button>
-                        <span style="color:#94a3b8;font-size:10px;">Saved automatically on this device.</span>
-                    </div>
-                </div>
-
-                <div class="projectionResult">
-                    <div class="resultLabel">
-                        Additional 5-CSAT Surveys Needed
-                    </div>
-
-                    <div
-                        id="projectionNeeded"
-                        class="projectionNumber">
-                        —
-                    </div>
-
-                    <div
-                        id="projectionMeta"
-                        class="projectionMeta">
-                        Enter your current score and total surveys.
-                    </div>
-
-                    <div
-                        id="projectionStatus"
-                        class="projectionStatus">
-                        <i>Projection updates automatically as you type.</i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+      </div>
+      <div class="bar" aria-hidden="true"><i id="barFill" style="width:0"></i><b id="barMark"></b></div>
+      <div class="barl"><span>1.00</span><span>Passing <span id="passLbl">4.60</span></span><span>5.00</span></div>
+      <p class="msg" id="msg"></p>
     </div>
+    <div class="two">
+      <div class="card">
+        <h2>Room before you drop below passing</h2>
+        <table aria-label="Cushion"><tbody id="cushion"></tbody></table>
+        <p class="hint" style="margin:8px 0 0">How many more of each rating you can take and still pass.</p>
+      </div>
+      <div class="card">
+        <h2>5s needed by target</h2>
+        <table><thead><tr><th>Target</th><th>5s needed</th></tr></thead><tbody id="ladder"></tbody></table>
+      </div>
+    </div>
+  </section>
 
+  <!-- From current score -->
+  <section id="quick" hidden>
+    <div class="card">
+      <div class="two">
+        <div class="f"><label for="currentScore">Current score</label><input id="currentScore" type="number" min="0" max="5" step="0.01" placeholder="4.32"></div>
+        <div class="f"><label for="currentTotal">Current total surveys</label><input id="currentTotal" type="number" min="1" step="1" placeholder="100"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="score">
+        <div class="big"><span class="lbl">5s needed</span><span class="num" id="projectionNeeded">—</span></div>
+        <div class="kpis"><div class="kpi"><span>Score after</span><b id="projScore">—</b></div><div class="kpi"><span>Total surveys after</span><b id="projTotal">—</b></div></div>
+      </div>
+      <p class="msg" id="projectionStatus">Enter your current score and total surveys.</p>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="f"><label for="customPassScore">Passing score</label>
+      <div style="display:flex;gap:10px;align-items:center"><input id="customPassScore" type="number" min="0" max="5" step="0.01" value="4.60" style="max-width:120px">
+      <button class="lnk" id="defaultPassScore" type="button">Restore 4.60</button><small style="margin-left:auto">Saved on this computer</small></div>
+    </div>
+  </div>
 </div>
 
 <script>
+var DEFAULT_PASS=4.60, KEY="csatPassingScore", CKEY="csatCounts.v1";
+var PASS=DEFAULT_PASS;
+function $(id){return document.getElementById(id);}
+function getPass(){var v=parseFloat(localStorage.getItem(KEY));return isFinite(v)&&v>=0&&v<=5?v:DEFAULT_PASS;}
+function fivesNeeded(points,total,target){ if(total<=0||points/total>=target) return 0; if(target>=5) return Infinity; return Math.max(0,Math.ceil((target*total-points)/(5-target)-1e-12)); }
+function cushion(points,total,target,r){ if(r>=target) return Infinity; var k=Math.floor((points-target*total)/(target-r)+1e-12); return Math.max(0,k); }
 
-/* ==========================
-   CONFIG
-========================== */
+/* Rating inputs */
+var saved={}; try{saved=JSON.parse(localStorage.getItem(CKEY))||{};}catch(e){}
+var html="";
+[5,4,3,2,1].forEach(function(r){
+  html+='<div class="rt"><label for="rating'+r+'"><i>★</i> '+r+'s</label><div class="step"><button type="button" data-d="-1" data-r="'+r+'" aria-label="One fewer '+r+'">−</button>'+
+    '<input id="rating'+r+'" type="number" min="0" inputmode="numeric" value="'+(saved[r]||0)+'"><button type="button" data-d="1" data-r="'+r+'" aria-label="One more '+r+'">+</button></div></div>';
+});
+$("ratingInputs").innerHTML=html;
+$("ratingInputs").addEventListener("click",function(e){var b=e.target.closest("[data-d]");if(!b)return;var i=$("rating"+b.dataset.r);i.value=Math.max(0,(parseInt(i.value,10)||0)+(+b.dataset.d));calculate();});
+$("ratingInputs").addEventListener("input",calculate);
+$("reset").onclick=function(){[1,2,3,4,5].forEach(function(r){$("rating"+r).value=0;});calculate();};
 
-const DEFAULT_PASS_SCORE = 4.60;
-const PASS_SCORE_STORAGE_KEY = "csatPassingScore";
-let PASS_SCORE = DEFAULT_PASS_SCORE;
-
-function getSavedPassingScore(){
-    const saved = parseFloat(localStorage.getItem(PASS_SCORE_STORAGE_KEY));
-    return Number.isFinite(saved) && saved >= 0 && saved <= 5
-        ? saved
-        : DEFAULT_PASS_SCORE;
-}
-
-function updatePassingScoreDisplay(){
-    const display = document.getElementById("passScoreDisplay");
-    if(display){
-        display.textContent = PASS_SCORE.toFixed(2);
-    }
-
-    const targetEl = document.getElementById("customPassScore");
-    if(targetEl && document.activeElement !== targetEl){
-        targetEl.value = PASS_SCORE.toFixed(2);
-    }
-}
-
-/* ==========================
-   CALCULATOR
-========================== */
-
+function counts(){var c={};[1,2,3,4,5].forEach(function(r){c[r]=Math.max(0,parseInt($("rating"+r).value,10)||0);});return c;}
 function calculate(){
-    const r5 = parseInt(document.getElementById("rating5").value, 10) || 0;
-    const r4 = parseInt(document.getElementById("rating4").value, 10) || 0;
-    const r3 = parseInt(document.getElementById("rating3").value, 10) || 0;
-    const r2 = parseInt(document.getElementById("rating2").value, 10) || 0;
-    const r1 = parseInt(document.getElementById("rating1").value, 10) || 0;
-
-    const total = r5 + r4 + r3 + r2 + r1;
-    const currentPoints = (r5 * 5) + (r4 * 4) + (r3 * 3) + (r2 * 2) + r1;
-    const average = total > 0 ? currentPoints / total : 0;
-
-    updateAverage(average);
-    calculateRecovery(currentPoints, total, average);
-}
-/* ==========================
-   UPDATE SCORE
-========================== */
-
-function updateAverage(average){
-
-    document.getElementById(
-        "average"
-    ).textContent =
-        average.toFixed(2);
-}
-
-/* ==========================
-   RECOVERY
-========================== */
-
-function calculateRecovery(currentPoints, total, average){
-    let needed = 0;
-    if(total > 0 && average < PASS_SCORE && PASS_SCORE < 5){
-        needed = Math.max(
-            0,
-            Math.ceil(
-                (PASS_SCORE * total - currentPoints) / (5 - PASS_SCORE) - 1e-12
-            )
-        );
-    }
-    document.getElementById("needed").textContent = needed;
-    document.getElementById("projected").textContent = total + needed;
-    updateFeedback(average, total);
-}
-/* ==========================
-   FEEDBACK
-========================== */
-
-function updateFeedback(
-    average,
-    total
-){
-
-    const avg =
-        document.getElementById(
-            "average"
-        );
-
-    const feedback =
-        document.getElementById(
-            "feedback"
-        );
-
-    if(total === 0){
-
-        avg.className =
-            "mainNumber blue";
-
-        feedback.className =
-            "feedback";
-
-        feedback.innerHTML =
-            "Enter survey data to begin.";
-
-        return;
-    }
-
-    if(average >= 4.80){
-
-        avg.className =
-            "mainNumber green";
-
-        feedback.className =
-            "feedback pass";
-
-        feedback.innerHTML =
-            "🟢 Outstanding performance.";
-    }
-
-    else if(
-        average >= PASS_SCORE
-    ){
-
-        avg.className =
-            "mainNumber green";
-
-        feedback.className =
-            "feedback pass";
-
-        feedback.innerHTML =
-            "✅ Passing.";
-    }
-
-    else if(
-        average >= 4.40
-    ){
-
-        avg.className =
-            "mainNumber yellow";
-
-        feedback.className =
-            "feedback warn";
-
-        feedback.innerHTML =
-            "🟡 Recovery Zone.";
-    }
-
-    else{
-
-        avg.className =
-            "mainNumber red";
-
-        feedback.className =
-            "feedback fail";
-
-        feedback.innerHTML =
-            "🔴 Critical Risk.";
-    }
+  var c=counts(), total=c[1]+c[2]+c[3]+c[4]+c[5], pts=c[1]+2*c[2]+3*c[3]+4*c[4]+5*c[5], avg=total?pts/total:0;
+  try{localStorage.setItem(CKEY,JSON.stringify(c));}catch(e){}
+  $("totalLine").textContent=total+" survey"+(total===1?"":"s");
+  $("average").textContent=avg.toFixed(2);
+  var need=fivesNeeded(pts,total,PASS);
+  $("needed").textContent=need===Infinity?"∞":need;
+  $("projected").textContent=need===Infinity?"—":total+need;
+  var w=$("bigWrap"); w.className="big"+(total?(avg>=PASS?" pass":avg>=PASS-0.2?" warn":" fail"):"");
+  $("status").textContent=!total?"Enter ratings":avg>=4.8?"Outstanding":avg>=PASS?"Passing":avg>=PASS-0.2?"Recovery zone":"Critical risk";
+  $("barFill").style.width=(total?Math.max(0,(avg-1)/4*100):0)+"%";
+  $("barMark").style.left=((PASS-1)/4*100)+"%";
+  $("passLbl").textContent=PASS.toFixed(2);
+  var m="";
+  if(!total) m="Enter how many of each rating you have. Counts are kept on this computer until you reset them.";
+  else if(avg>=PASS){var k1=cushion(pts,total,PASS,1);m="You're above "+PASS.toFixed(2)+". "+(k1>0?"You can take "+k1+" more 1-rating"+(k1===1?"":"s")+" and still pass.":"One more 1-rating would drop you below; you'd then need "+fivesNeeded(pts+1,total+1,PASS)+" fives to recover.");}
+  else m="Get "+need+" more 5-rating"+(need===1?"":"s")+" in a row to reach "+PASS.toFixed(2)+". Each 4 or lower adds to that.";
+  $("msg").textContent=m;
+  var ch="";
+  [4,3,2,1].forEach(function(r){var k=total&&avg>=PASS?cushion(pts,total,PASS,r):0;ch+='<tr><td>'+r+'-rating'+(r===1?'':'s')+'</td><td>'+(k===Infinity?"no limit":k)+'</td></tr>';});
+  $("cushion").innerHTML=ch;
+  var lad="", targets=[4.40,4.50,4.60,4.70,4.80,4.90]; if(targets.indexOf(+PASS.toFixed(2))<0){targets.push(+PASS.toFixed(2));targets.sort();}
+  targets.forEach(function(t){var n=fivesNeeded(pts,total,t);lad+='<tr'+(Math.abs(t-PASS)<.001?' class="cur"':'')+'><td>'+t.toFixed(2)+(Math.abs(t-PASS)<.001?' (passing)':'')+'</td><td>'+(total?(n===Infinity?"∞":n):"—")+'</td></tr>';});
+  $("ladder").innerHTML=lad;
 }
 
-/* ==========================
-   QUICK PROJECTION
-   ========================== */
-
-function projectRecovery(){
-
-    const scoreEl = document.getElementById("currentScore");
-    const totalEl = document.getElementById("currentTotal");
-    const targetEl = document.getElementById("customPassScore");
-
-    const neededEl = document.getElementById("projectionNeeded");
-    const metaEl = document.getElementById("projectionMeta");
-    const statusEl = document.getElementById("projectionStatus");
-
-    const score = parseFloat(scoreEl.value);
-    const total = parseInt(totalEl.value, 10);
-    const target = parseFloat(targetEl.value);
-
-    /* Wait until all three values are valid. */
-    if(
-        !Number.isFinite(score) ||
-        !Number.isFinite(total) ||
-        !Number.isFinite(target) ||
-        total < 1 ||
-        score < 0 ||
-        score > 5 ||
-        target < 0 ||
-        target > 5
-    ){
-        neededEl.textContent = "—";
-        metaEl.textContent =
-            "Enter current score, total surveys, and passing score.";
-        statusEl.innerHTML =
-            "<i>Projection updates automatically as you type.</i>";
-        return;
-    }
-
-    if(score >= target){
-        neededEl.textContent = "0";
-        metaEl.innerHTML =
-            `Current <strong>${score.toFixed(2)}</strong> • ` +
-            `Target <strong class="targetDisplay">${target.toFixed(2)}</strong> • ` +
-            `${total.toLocaleString()} surveys`;
-        statusEl.innerHTML =
-            "✅ Already at or above the selected passing score.";
-        return;
-    }
-
-    if(target >= 5){
-        neededEl.textContent = "∞";
-        metaEl.innerHTML =
-            `Current <strong>${score.toFixed(2)}</strong> • ` +
-            `Target <strong class="targetDisplay">5.00</strong> • ` +
-            `${total.toLocaleString()} surveys`;
-        statusEl.innerHTML =
-            "⚠️ Exactly 5.00 cannot be reached from below 5.00 with a finite number of additional surveys.";
-        return;
-    }
-
-    /* Exact minimum x:
-       (score*N + 5x)/(N+x) >= target
-       x >= N(target-score)/(5-target)
-    */
-    const rawNeeded =
-        total * (target - score) /
-        (5 - target);
-
-    const needed =
-        Math.max(0, Math.ceil(rawNeeded - 1e-12));
-
-    const projectedTotal =
-        total + needed;
-
-    const projectedScore =
-        (score * total + needed * 5) /
-        projectedTotal;
-
-    neededEl.textContent =
-        needed.toLocaleString();
-
-    metaEl.innerHTML =
-        `Current <strong>${score.toFixed(2)}</strong> • ` +
-        `Target <strong class="targetDisplay">${target.toFixed(2)}</strong> • ` +
-        `${total.toLocaleString()} current surveys`;
-
-    statusEl.innerHTML =
-        `🎯 Add <strong>${needed.toLocaleString()}</strong> ` +
-        `5-CSAT survey${needed === 1 ? "" : "s"} → ` +
-        `<strong>${projectedScore.toFixed(4)}</strong> final score ` +
-        `(${projectedTotal.toLocaleString()} total).`;
+/* From current score */
+function project(){
+  var s=parseFloat($("currentScore").value), n=parseInt($("currentTotal").value,10), st=$("projectionStatus");
+  if(!isFinite(s)||!isFinite(n)||n<1||s<0||s>5){$("projectionNeeded").textContent="—";$("projScore").textContent="—";$("projTotal").textContent="—";st.textContent="Enter your current score and total surveys.";return;}
+  if(s>=PASS){$("projectionNeeded").textContent="0";$("projScore").textContent=s.toFixed(2);$("projTotal").textContent=n;st.textContent="Already at or above "+PASS.toFixed(2)+".";return;}
+  if(PASS>=5){$("projectionNeeded").textContent="∞";st.textContent="A perfect 5.00 can't be reached from below with a finite number of surveys.";return;}
+  var need=Math.max(0,Math.ceil(n*(PASS-s)/(5-PASS)-1e-12)), after=(s*n+5*need)/(n+need);
+  $("projectionNeeded").textContent=need.toLocaleString();$("projScore").textContent=after.toFixed(4);$("projTotal").textContent=(n+need).toLocaleString();
+  st.textContent="Add "+need+" five-rating survey"+(need===1?"":"s")+" to reach "+PASS.toFixed(2)+". Because the score you enter is rounded, treat this as an estimate.";
 }
+["currentScore","currentTotal"].forEach(function(id){$(id).addEventListener("input",project);});
 
-function updatePassingScore(){
-    const targetEl =
-        document.getElementById("customPassScore");
+/* Passing score */
+function setPass(v,save){PASS=v;if(save)try{localStorage.setItem(KEY,v.toFixed(2));}catch(e){}calculate();project();}
+$("customPassScore").addEventListener("input",function(){var v=parseFloat(this.value);if(isFinite(v)&&v>=0&&v<=5)setPass(v,true);});
+$("defaultPassScore").onclick=function(){$("customPassScore").value=DEFAULT_PASS.toFixed(2);setPass(DEFAULT_PASS,true);};
 
-    const target =
-        parseFloat(targetEl.value);
+/* Tabs */
+document.querySelector(".tabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(!b)return;
+  document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-selected",x===b);});
+  $("counts").hidden=b.dataset.tab!=="counts";$("quick").hidden=b.dataset.tab!=="quick";});
 
-    if(
-        Number.isFinite(target) &&
-        target >= 0 &&
-        target <= 5
-    ){
-        PASS_SCORE = target;
-        localStorage.setItem(
-            PASS_SCORE_STORAGE_KEY,
-            PASS_SCORE.toFixed(2)
-        );
-    }else{
-        PASS_SCORE = DEFAULT_PASS_SCORE;
-    }
+/* Follow MeiNote night mode */
+function syncTheme(){var d=false;try{d=window.parent!==window&&window.parent.document.documentElement.classList.contains("dark")}catch(e){}if(window.parent===window)d=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);}
+syncTheme();setInterval(syncTheme,1500);
+if(window.parent!==window) document.querySelector(".head h1").style.visibility="hidden";
 
-    updatePassingScoreDisplay();
-    calculate();
-    projectRecovery();
-}
-
-/* One handler for all projection inputs. */
-function refreshAllCalculations(){
-    updatePassingScore();
-}
-
-/* ==========================
-   REAL-TIME EVENTS
-   ========================== */
-
-
-/* ==========================
-   SECONDARY TOOL MODAL
-   ========================== */
-
-const settingsButton =
-    document.getElementById("settingsButton");
-
-const projectionModal =
-    document.getElementById("projectionModal");
-
-const projectionOverlay =
-    document.getElementById("projectionOverlay");
-
-const closeProjection =
-    document.getElementById("closeProjection");
-
-function openProjection(){
-    projectionModal.classList.add("open");
-    projectionModal.setAttribute("aria-hidden", "false");
-
-    /* Calculate immediately using the current values. */
-    projectRecovery();
-
-    setTimeout(() => {
-        document.getElementById("currentScore").focus();
-    }, 50);
-}
-
-function closeProjectionModal(){
-    projectionModal.classList.remove("open");
-    projectionModal.setAttribute("aria-hidden", "true");
-    settingsButton.focus();
-}
-
-settingsButton.addEventListener("click", openProjection);
-closeProjection.addEventListener("click", closeProjectionModal);
-projectionOverlay.addEventListener("click", closeProjectionModal);
-
-document.addEventListener("keydown", event => {
-    if(
-        event.key === "Escape" &&
-        projectionModal.classList.contains("open")
-    ){
-        closeProjectionModal();
-    }
-});
-
-["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
-    document.getElementById(id).addEventListener("input", refreshAllCalculations);
-});
-document.getElementById("currentScore").addEventListener("input", refreshAllCalculations);
-document.getElementById("currentTotal").addEventListener("input", refreshAllCalculations);
-document.getElementById("customPassScore").addEventListener("input", refreshAllCalculations);
-
-/* Also handle spinner controls, paste/autofill, and committed changes. */
-["rating5", "rating4", "rating3", "rating2", "rating1"].forEach(id => {
-    document.getElementById(id).addEventListener("change", refreshAllCalculations);
-});
-document.getElementById("currentScore").addEventListener("change", refreshAllCalculations);
-document.getElementById("currentTotal").addEventListener("change", refreshAllCalculations);
-document.getElementById("customPassScore").addEventListener("change", refreshAllCalculations);
-document.getElementById("defaultPassScore").addEventListener("click", () => {
-    const targetEl = document.getElementById("customPassScore");
-    targetEl.value = DEFAULT_PASS_SCORE.toFixed(2);
-    updatePassingScore();
-});
-
-const savedPassingScore = getSavedPassingScore();
-PASS_SCORE = savedPassingScore;
-document.getElementById("customPassScore").value = savedPassingScore.toFixed(2);
-updatePassingScoreDisplay();
-
-calculate();
-projectRecovery();
-
-/* ==========================
-   AUTO-FIT EMBED
-   ========================== */
-
-/*
-   If Meinote gives the iframe less vertical space than the calculator
-   naturally needs, scale the entire card down instead of forcing a
-   vertical scrollbar. This keeps every section visible.
-*/
-function fitCalculatorToEmbed(){
-
-    const card = document.querySelector(".card");
-    const body = document.body;
-
-    if(!card) return;
-
-    card.style.transform = "none";
-    body.style.overflow = "hidden";
-
-    requestAnimationFrame(() => {
-
-        const availableHeight =
-            Math.max(1, window.innerHeight - 8);
-
-        const availableWidth =
-            Math.max(1, window.innerWidth - 8);
-
-        const naturalHeight =
-            card.offsetHeight;
-
-        const naturalWidth =
-            card.offsetWidth;
-
-        const scale =
-            Math.min(
-                1,
-                availableHeight / naturalHeight,
-                availableWidth / naturalWidth
-            );
-
-        card.style.transform =
-            `scale(${scale})`;
-
-        card.style.transformOrigin =
-            "top center";
-
-        body.style.height =
-            window.innerHeight + "px";
-
-        body.style.overflow =
-            "hidden";
-    });
-}
-
-window.addEventListener("resize", fitCalculatorToEmbed);
-window.addEventListener("orientationchange", fitCalculatorToEmbed);
-
-if("ResizeObserver" in window){
-    const embedObserver =
-        new ResizeObserver(fitCalculatorToEmbed);
-
-    embedObserver.observe(document.documentElement);
-}
-
-setTimeout(fitCalculatorToEmbed, 0);
-setTimeout(fitCalculatorToEmbed, 100);
-
-
+PASS=getPass();$("customPassScore").value=PASS.toFixed(2);calculate();project();
 </script>
-
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7e470b9e69c94b5d89261b33e7603cc7","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
