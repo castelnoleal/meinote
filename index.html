@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeiNote — Custom offline tools for BPO teams</title>
+<meta name="description" content="MeiNote builds custom offline desk tools for BPO contact centers: note builders, script navigators, callback alarms, timers and calculators shaped around your process. Email instapped@gmail.com for a quote and a sample.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16223A;
+  --ink-2:#3B4860;
+  --muted:#5D6880;
+  --paper:#F6F7F9;
+  --white:#FFFFFF;
+  --line:#DCE1E9;
+  --blue:#2B57E8;
+  --blue-soft:#E7EDFF;
+  --green:#178A5C;
+  --green-soft:#E5F4EC;
+  --amber:#B86E00;
+  --amber-soft:#FFF3DC;
+  --maxw:1120px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Schibsted Grotesk",system-ui,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+@media (max-width:600px){.wrap{padding:0 16px}}
+
+/* Nav */
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;letter-spacing:-.01em}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:var(--ink);display:grid;place-items:center}
+.brand-mark span{width:14px;height:3px;background:#fff;border-radius:2px;box-shadow:0 -5px 0 #8FA8FF,0 5px 0 #fff}
+.nav-links{display:flex;gap:28px;align-items:center;font-size:15px}
+.nav-links a{text-decoration:none;color:var(--ink-2)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.btn-primary,.nav-links a.btn-primary:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 15px/1 "Schibsted Grotesk",sans-serif;padding:13px 20px;border-radius:10px;text-decoration:none;border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--ink);color:#fff}
+.btn-primary:hover{background:#22324F}
+.btn-ghost{border-color:var(--line);background:var(--white);color:var(--ink)}
+.btn-ghost:hover{border-color:#B9C2D1}
+@media (max-width:760px){.nav-links a:not(.btn){display:none}}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:56px 0 88px}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--green);background:var(--green-soft);padding:6px 12px;border-radius:99px;margin-bottom:22px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+h1{font-size:clamp(38px,5.2vw,58px);line-height:1.05;letter-spacing:-.03em;margin:0 0 22px;font-weight:700;max-width:14ch;text-wrap:balance}
+.lede{font-size:19px;color:var(--ink-2);max-width:34em;margin:0 0 32px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero-fine{margin-top:18px;font-size:14px;color:var(--muted)}
+
+/* Hero sample: one generic tool, clearly an example */
+.stage{position:relative}
+.mock{background:var(--white);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 60px -30px rgba(22,34,58,.35);overflow:hidden}
+.mock-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px}
+.mock-bar b{font-weight:600}
+.mock-bar span{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:2px 8px}
+.mock-body{padding:18px 18px 46px;display:grid;gap:12px}
+.field{display:grid;gap:4px}
+.field label{font-size:12px;color:var(--muted);font-weight:500}
+.field div{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 11px;font-size:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note-out{border:1px solid #C9D5FF;background:var(--blue-soft);border-radius:10px;padding:12px 14px;font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.65;color:#1B2B5C;white-space:pre-wrap;min-height:118px}
+.caret{display:inline-block;width:7px;height:14px;background:var(--blue);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.ring{position:absolute;right:-14px;bottom:-26px;width:min(280px,80%);background:var(--white);border:1px solid var(--line);border-left:4px solid #E8A300;border-radius:12px;box-shadow:0 18px 40px -14px rgba(22,34,58,.4);padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:center}
+.ring svg{flex:none;color:var(--amber)}
+.ring b{display:block;font-size:14px}
+.ring small{color:var(--muted);font-size:12.5px}
+@media (max-width:900px){.hero{grid-template-columns:1fr;gap:56px;padding-top:28px}.ring{right:8px}}
+
+/* Sections */
+section{padding:88px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(28px,3.4vw,38px);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;font-weight:700;max-width:22ch;text-wrap:balance}
+.sub{color:var(--ink-2);max-width:40em;margin:0 0 44px}
+
+/* Tool catalog */
+.catalog{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)}
+.tool{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:26px 28px 28px 0;border-bottom:1px solid var(--line)}
+.tool:nth-child(even){padding-left:28px;border-left:1px solid var(--line)}
+.tool .ic{width:44px;height:44px;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center}
+.tool h3{font-size:18px;margin:0 0 4px;font-weight:600}
+.tool p{margin:0;color:var(--ink-2);font-size:16px}
+.tool ul{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.tool li{font-size:13px;color:var(--muted);background:var(--white);border:1px solid var(--line);border-radius:6px;padding:1px 8px}
+@media (max-width:860px){.catalog{grid-template-columns:1fr}.tool,.tool:nth-child(even){padding:22px 0;border-left:0}}
+
+.next{margin-top:40px;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.next .tag{font-size:13px;font-weight:600;color:var(--amber);background:var(--amber-soft);border-radius:6px;padding:3px 9px;white-space:nowrap}
+.next h3{margin:0 0 4px;font-size:17px}
+.next p{margin:0;color:var(--ink-2);font-size:16px}
+@media (max-width:600px){.next{grid-template-columns:1fr;gap:10px}}
+
+/* Offline points */
+.split{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:22px}
+.points li{display:grid;grid-template-columns:28px 1fr;gap:14px}
+.points svg{margin-top:4px}
+.points b{display:block;font-weight:600;margin-bottom:2px}
+.points span{color:var(--ink-2);font-size:16px}
+@media (max-width:860px){.split{grid-template-columns:1fr;gap:20px}}
+
+/* Steps */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:28px;counter-reset:s}
+.steps li{counter-increment:s;border-top:2px solid var(--ink);padding-top:16px}
+.steps li::before{content:counter(s);font-family:"JetBrains Mono",monospace;font-size:14px;color:var(--muted);display:block;margin-bottom:8px}
+.steps h3{font-size:18px;margin:0 0 6px;font-weight:600}
+.steps p{margin:0;color:var(--ink-2);font-size:16px}
+@media (max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* Contact */
+.contact-box{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:48px;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+.mailrow{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.mail{font-size:clamp(22px,3.2vw,34px);font-weight:700;letter-spacing:-.02em;text-decoration:none;border-bottom:3px solid var(--blue);word-break:break-all}
+.mail:hover{color:var(--blue)}
+.copybtn{font:600 14px "Schibsted Grotesk",sans-serif;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer}
+.copybtn:hover{border-color:var(--blue);color:var(--blue)}
+.ask{margin:0;padding:0;list-style:none;color:var(--ink-2);font-size:16px;display:grid;gap:8px}
+.ask li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);margin-right:10px;vertical-align:3px}
+@media (max-width:760px){.contact-box{grid-template-columns:1fr;padding:28px 22px}}
+
+footer{padding:36px 0 48px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="wrap nav">
+  <a class="brand" href="#top" aria-label="MeiNote home"><span class="brand-mark" aria-hidden="true"><span></span></span>MeiNote</a>
+  <nav class="nav-links" aria-label="Main">
+    <a href="#tools">Tools we build</a>
+    <a href="#offline">Why offline</a>
+    <a href="#sample">Get a sample</a>
+    <a class="btn btn-primary" href="#contact">Request a quote</a>
+  </nav>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <div class="status"><i aria-hidden="true"></i>Now taking requests from BPO teams</div>
+      <h1>Desk tools built around how your floor works.</h1>
+      <p class="lede">We make lightweight offline tools for contact center agents: note builders, script navigators, callback alarms, timers and calculators. Each one is shaped to your account's process and runs on the workstation, with no server for your IT team to host.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="mailto:instapped@gmail.com?subject=Quote%20and%20sample%20request">Request a quote and sample</a>
+        <a class="btn btn-ghost" href="#tools">See what we can build</a>
+      </div>
+      <p class="hero-fine">Email <b>instapped@gmail.com</b> to request a quote and a sample.</p>
+    </div>
+
+    <div class="stage">
+      <figure class="mock" aria-label="Example of a note builder tool" style="margin:0">
+        <div class="mock-bar"><b>Note builder</b><span>Example</span></div>
+        <div class="mock-body">
+          <div class="row2">
+            <div class="field"><label>Interaction</label><div>Inbound call</div></div>
+            <div class="field"><label>Reason</label><div>Billing date change</div></div>
+          </div>
+          <div class="field"><label>Customer request</label><div>Move the due date to the 15th</div></div>
+          <div class="note-out" id="noteOut" aria-live="off"></div>
+        </div>
+      </figure>
+      <div class="ring" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+        <div><b>Callback in 5 minutes</b><small>2:30 PM customer's time</small></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="tools">
+    <div class="wrap">
+      <h2>Tools we can build for your team</h2>
+      <p class="sub">Pick one or combine several into a single desk app. Every tool is built from your own templates, scripts and rules, so agents see your process, not a generic one.</p>
+      <div class="catalog">
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
+          <div><h3>Note and request builders</h3><p>Agents fill a short form and get a complete, consistently worded case note, with the finished note shown live as they type.</p><ul><li>Your templates</li><li>Empty-field warnings</li><li>Note history</li></ul></div></div>
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg></div>
+          <div><h3>Script and knowledge base navigators</h3><p>Approved talk tracks, rebuttals and disclosures in one searchable place, with pinned favorites for the ones agents use most.</p><ul><li>Instant search</li><li>Pinned links</li><li>Your KB articles</li></ul></div></div>
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></div>
+          <div><h3>Callback alarms and reminders</h3><p>Alarms that ring and notify at the customer's local time, plus process reminders that appear next to the step they belong to.</p><ul><li>Sound and desktop alerts</li><li>Snooze</li><li>Time zone aware</li></ul></div></div>
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg></div>
+          <div><h3>Shift, hold and handle-time timers</h3><p>Countdowns for end of shift, hold time and breaks, set per shift so every team sees its own schedule.</p><ul><li>Per-shift builds</li><li>Audible alerts</li></ul></div></div>
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+          <div><h3>Time zone and calling window tools</h3><p>See every customer time zone at a glance, check whether a customer can be called right now, and convert times in one step.</p><ul><li>Live clocks</li><li>Callable status</li><li>Time converter</li></ul></div></div>
+        <div class="tool"><div class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2"/></svg></div>
+          <div><h3>Score and payment calculators</h3><p>CSAT and QA recovery math, payment schedule checks and other figures agents work out by hand today.</p><ul><li>Your targets</li><li>What-if scenarios</li></ul></div></div>
+      </div>
+
+      <div class="next">
+        <span class="tag">Coming next</span>
+        <div><h3>Follow-up trackers, shift handover notes and team lead dashboards</h3><p>Tell us what your floor needs most. Requests from teams shape what we build next.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="offline">
+    <div class="wrap split">
+      <div>
+        <h2>Why offline matters on a BPO floor</h2>
+        <p class="sub" style="margin-bottom:0">Most desk tools are another web service your IT and compliance teams have to approve, host and monitor. Ours are self-contained apps that live on the workstation.</p>
+      </div>
+      <ul class="points">
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#178A5C" stroke-width="2.2" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><div><b>Customer data stays on the machine</b><span>Notes are composed locally and nothing is sent to an outside server, which keeps your data handling simple.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#178A5C" stroke-width="2.2" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1.2" fill="#178A5C"/></svg><div><b>Keeps working during outages</b><span>Agents keep writing notes and reading scripts while the network or a vendor platform is down.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#178A5C" stroke-width="2.2" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><div><b>Fits locked-down workstations</b><span>No installer and no admin rights. Tools open in the browser your agents already use, including on VDI.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#178A5C" stroke-width="2.2" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></svg><div><b>Updates on your schedule</b><span>New templates and scripts arrive as a file you approve, not a forced cloud update.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="sample">
+    <div class="wrap">
+      <h2>From request to rollout</h2>
+      <p class="sub">Start with a sample built from one of your own processes, so you can judge the fit before you commit.</p>
+      <ol class="steps">
+        <li><h3>Email us</h3><p>Tell us about your account, your team and the tool you have in mind.</p></li>
+        <li><h3>Get a sample</h3><p>We build a working sample around one of your processes for your team leads to try.</p></li>
+        <li><h3>Receive a quote</h3><p>Once the scope is clear, we send a quote for the full build.</p></li>
+        <li><h3>Rollout and upkeep</h3><p>We deliver builds for each shift and update them when your process changes.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact-box">
+        <div>
+          <h2>Request a quote and sample</h2>
+          <p class="sub" style="margin-bottom:24px">Send us an email with a few details and we'll reply about your sample and quote.</p>
+          <div class="mailrow">
+            <a class="mail" href="mailto:instapped@gmail.com?subject=Quote%20and%20sample%20request">instapped@gmail.com</a>
+            <button class="copybtn" type="button" id="copyMail">Copy address</button>
+          </div>
+        </div>
+        <div>
+          <p style="margin:0 0 12px;font-weight:600">Helpful to include</p>
+          <ul class="ask">
+            <li>Your company and line of business</li>
+            <li>The tool or tools you're interested in</li>
+            <li>Number of agents and shifts</li>
+            <li>The CRM or platform your agents use</li>
+            <li>Any IT or compliance requirements</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>© <span id="yr">2026</span> MeiNote. Custom offline tools for BPO teams.</span>
+  <a href="mailto:instapped@gmail.com">instapped@gmail.com</a>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  var note = "Customer called to change billing date.\nVerified account holder: Y\nMoved due date to the 15th.\nAdvised of change in next statement.\nCallback set: 2:30 PM customer's time.";
+  var out = document.getElementById('noteOut');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ out.textContent = note; }
+  else{
+    var i = 0, caret = document.createElement('span'); caret.className='caret';
+    (function type(){
+      out.textContent = note.slice(0,i); out.appendChild(caret);
+      if(i++ < note.length) setTimeout(type, note[i-1]==='\n' ? 260 : 22);
+    })();
+  }
+
+  var btn = document.getElementById('copyMail');
+  btn.addEventListener('click', function(){
+    var done = function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy address'; }, 1600); };
+    if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText('instapped@gmail.com').then(done, function(){}); }
+    else{ var t=document.createElement('textarea'); t.value='instapped@gmail.com'; document.body.appendChild(t); t.select(); try{document.execCommand('copy'); done();}catch(e){} t.remove(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Team pack: fills in private names, emails and internal links from this browser only -->
+<script>
+/* =====================================================================
+   MeiNote · TEAM PACK (private details)
+   The public files only contain placeholders like {{mgr_manila_email:Manila manager's email}}
+   or {{link_07:#team-pack}}. The real names, emails and internal links are
+   in a private "team pack" file that each person loads once. It is kept in
+   that browser only (localStorage) and is never sent anywhere.
+
+   Placeholder:  {{key:shown when no team pack is loaded}}
+   ===================================================================== */
+(function(){
+"use strict";
+var KEY = "meinote.teampack.v1";
+var TOKEN = /\{\{([a-z0-9_]+)(?::([^{}]*))?\}\}/g;
+var HAS = /\{\{[a-z0-9_]+(?::[^{}]*)?\}\}/;
+var NEED = "#team-pack";
+
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } }
+var pack = load();
+var values = (pack && pack.values) || {};
+
+function fill(s){
+  if(s == null) return s;
+  return String(s).replace(TOKEN, function(m, k, fb){
+    if(Object.prototype.hasOwnProperty.call(values, k)) return values[k];
+    return fb != null ? fb : "[" + k + "]";
+  });
+}
+
+/* ---------- Fill placeholders in the page ---------- */
+var ATTRS = ["href", "src", "value", "title", "placeholder", "onclick", "data-link"];
+function fillNode(n){
+  if(n.nodeType === 3){ if(HAS.test(n.nodeValue)) n.nodeValue = fill(n.nodeValue); return; }
+  if(n.nodeType !== 1 || n.tagName === "SCRIPT" || n.tagName === "STYLE") return;
+  ATTRS.forEach(function(a){ var v = n.getAttribute(a); if(v && HAS.test(v)) n.setAttribute(a, fill(v)); });
+  if((n.tagName === "TEXTAREA" || n.tagName === "INPUT") && HAS.test(n.value)) n.value = fill(n.value);
+  for(var c = n.firstChild; c; c = c.nextSibling) fillNode(c);
+}
+new MutationObserver(function(list){
+  list.forEach(function(m){
+    if(m.type === "characterData") fillNode(m.target);
+    else if(m.type === "attributes") fillNode(m.target);
+    else m.addedNodes.forEach(fillNode);
+  });
+}).observe(document.documentElement, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
+document.addEventListener("DOMContentLoaded", function(){ fillNode(document.documentElement); });
+
+/* Links opened by code */
+var openWin = window.open;
+window.open = function(url){
+  var u = fill(url);
+  if(u === NEED || (typeof u === "string" && u.indexOf(NEED) === 0)){ needPack(); return null; }
+  var args = [].slice.call(arguments); args[0] = u;
+  return openWin.apply(window, args);
+};
+document.addEventListener("click", function(e){
+  var a = e.target.closest && e.target.closest("a[href]");
+  if(a && a.getAttribute("href").indexOf(NEED) === 0){ e.preventDefault(); needPack(); }
+}, true);
+
+/* ---------- Team pack window ---------- */
+function box(){
+  var old = document.getElementById("meiTeamPack"); if(old) old.remove();
+  var d = document.createElement("div");
+  d.id = "meiTeamPack";
+  d.setAttribute("style", "position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,'Segoe UI',system-ui,sans-serif");
+  d.addEventListener("click", function(e){ if(e.target === d) d.remove(); });
+  document.body.appendChild(d);
+  return d;
+}
+function card(inner){
+  return '<div style="background:#fff;color:#0f172a;border-radius:18px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 60px rgba(15,23,42,.35)">' +
+    '<div style="background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between">Team pack<button type="button" data-x style="background:none;border:0;color:#fca5a5;font-size:18px;cursor:pointer">✕</button></div>' +
+    '<div style="padding:16px;font-size:14px;line-height:1.5">' + inner + '</div></div>';
+}
+var BTN = "border-radius:12px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px;";
+function manager(note){
+  var d = box(), n = Object.keys(values).length;
+  d.innerHTML = card(
+    (note ? '<p style="margin:0 0 10px;color:#b45309;font-weight:600">' + note + '</p>' : "") +
+    '<p style="margin:0 0 10px">The team pack adds the private details MeiNote needs: coworker names and emails in request notes, and internal KB and form links. It stays in this browser on this computer and is never uploaded.</p>' +
+    '<p style="margin:0 0 14px;color:#475569">' + (n ? "Loaded: <b>" + n + " details</b>" + (pack && pack.updated ? ", updated " + String(pack.updated).slice(0, 10) : "") + "." : "No team pack loaded on this computer.") + '</p>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><label style="' + BTN + 'background:#1d4ed8;color:#fff">Load team pack file<input type="file" accept=".json,application/json" hidden></label>' +
+    (n ? '<button type="button" data-rm style="' + BTN + 'background:#fff;border:1px solid #cbd5e1;color:#dc2626">Remove from this computer</button>' : "") + '</div>' +
+    '<p data-msg style="margin:10px 0 0;font-size:13px"></p>');
+  d.querySelector("[data-x]").onclick = function(){ d.remove(); };
+  var rm = d.querySelector("[data-rm]");
+  if(rm) rm.onclick = function(){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
+  d.querySelector("input[type=file]").addEventListener("change", function(){
+    var f = this.files[0], msg = d.querySelector("[data-msg]"); if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var p = JSON.parse(r.result);
+        if(!p || !p.meinote_team_pack || typeof p.values !== "object") throw new Error();
+        localStorage.setItem(KEY, JSON.stringify(p));
+        msg.style.color = "#15803d"; msg.textContent = "Team pack loaded. Reloading...";
+        setTimeout(function(){ location.reload(); }, 600);
+      }catch(e){ msg.style.color = "#dc2626"; msg.textContent = "That file isn't a MeiNote team pack."; }
+    };
+    r.readAsText(f);
+  });
+}
+function needPack(){ manager(Object.keys(values).length ? "This link isn't in your team pack. Ask for the latest team pack." : "This link is private. Load the team pack to open it."); }
+
+window.MeiPrivate = {fill: fill, has: function(s){ return HAS.test(s || ""); }, loaded: function(){ return Object.keys(values).length > 0; }, open: function(){ manager(); }, key: KEY};
+})();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSAT Recovery Calculator</title>
+<style>
+:root{--canvas:#EEF2F8;--surface:#fff;--sunk:#F4F6FA;--ink:#0F1B33;--ink2:#43506A;--muted:#6B778F;--line:#D6DDE8;--line2:#E6EBF2;--accent:#2459E0;--accent-soft:#E6EDFF;--ok:#14804F;--ok-soft:#E3F4EA;--warn:#A86200;--warn-soft:#FFF3DC;--bad:#C2352B;--bad-soft:#FDE8E6}
+html.dark{--canvas:#0A101C;--surface:#121A2B;--sunk:#0E1524;--ink:#E7ECF5;--ink2:#B3BED2;--muted:#8591A8;--line:#26324A;--line2:#1D2840;--accent:#5B8BFF;--accent-soft:#17264A;--ok:#4CC38A;--ok-soft:#10301F;--warn:#F0B44C;--warn-soft:#33260C;--bad:#FF7A6E;--bad-soft:#3A1714}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 Inter,"Segoe UI",system-ui,sans-serif;background:var(--canvas);color:var(--ink);padding:14px}
+button,input{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:620px;margin:0 auto}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.head h1{font-size:18px;margin:0;flex:1}
+.tabs{display:flex;background:var(--sunk);border:1px solid var(--line2);border-radius:9px;padding:3px}
+.tabs button{border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:5px 11px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(15,27,51,.12)}
+.card{background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.ratings{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.rt label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.rt label i{font-style:normal;color:#E0A100}
+.step{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.step button{border:0;background:var(--sunk);color:var(--ink2);width:26px;cursor:pointer;font-weight:700}
+.step button:hover{color:var(--accent)}
+.step input{width:100%;min-width:0;border:0;background:none;color:var(--ink);text-align:center;font:600 15px ui-monospace,Consolas,monospace;padding:7px 0;-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none}
+.tot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.tot button{border:0;background:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px}
+.score{display:grid;grid-template-columns:1.15fr 1fr;gap:10px}
+.big{display:flex;flex-direction:column;justify-content:center}
+.big .lbl{font-size:12.5px;color:var(--muted);font-weight:600}
+.big .num{font:600 46px/1.05 ui-monospace,Consolas,monospace;letter-spacing:-.02em}
+.status{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;margin-top:6px;font-weight:700;font-size:13px;border-radius:6px;padding:2px 9px;background:var(--sunk);color:var(--muted)}
+.pass .num{color:var(--ok)}.pass .status{background:var(--ok-soft);color:var(--ok)}
+.warn .num{color:var(--warn)}.warn .status{background:var(--warn-soft);color:var(--warn)}
+.fail .num{color:var(--bad)}.fail .status{background:var(--bad-soft);color:var(--bad)}
+.bar{position:relative;height:8px;background:var(--sunk);border-radius:4px;margin:12px 0 4px;overflow:visible}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--accent);transition:width .25s}
+.bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.barl{display:flex;justify-content:space-between;font:500 11px ui-monospace,Consolas,monospace;color:var(--muted)}
+.kpis{display:grid;gap:8px}
+.kpi{background:var(--sunk);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.kpi span{font-size:12.5px;color:var(--ink2)}
+.kpi b{font:600 20px ui-monospace,Consolas,monospace}
+.msg{font-size:13.5px;color:var(--ink2);margin-top:2px}
+h2{font-size:13.5px;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:4px 6px;border-bottom:1px solid var(--line2)}
+td{padding:6px;border-bottom:1px solid var(--line2)}
+td:not(:first-child),th:not(:first-child){text-align:right;font-family:ui-monospace,Consolas,monospace}
+tr.cur td{background:var(--accent-soft);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
+.f input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 10px;font:600 15px ui-monospace,Consolas,monospace}
+.f small{color:var(--muted);font-size:11.5px}
+.hint{font-size:12px;color:var(--muted)}
+.lnk{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:12px;font-weight:600}
+[hidden]{display:none!important}
+@media (max-width:520px){.ratings{grid-template-columns:repeat(3,1fr)}.score,.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>CSAT Recovery</h1>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="counts">From ratings</button>
+      <button role="tab" aria-selected="false" data-tab="quick">From score</button>
+    </div>
+  </div>
+
+  <!-- From rating counts -->
+  <section id="counts">
+    <div class="card">
+      <div class="ratings" id="ratingInputs"></div>
+      <div class="tot"><span id="totalLine">0 surveys</span><button type="button" id="reset">Reset counts</button></div>
+    </div>
+    <div class="card">
+      <div class="score">
+        <div class="big" id="bigWrap"><span class="lbl">Current average</span><span class="num" id="average">0.00</span><span class="status" id="status">Enter ratings</span></div>
+        <div class="kpis">
+          <div class="kpi"><span>5s needed to pass</span><b id="needed">0</b></div>
+          <div class="kpi"><span>Total surveys after</span><b id="projected">0</b></div>
+        </div>
+      </div>
+      <div class="bar" aria-hidden="true"><i id="barFill" style="width:0"></i><b id="barMark"></b></div>
+      <div class="barl"><span>1.00</span><span>Passing <span id="passLbl">4.60</span></span><span>5.00</span></div>
+      <p class="msg" id="msg"></p>
+    </div>
+    <div class="two">
+      <div class="card">
+        <h2>Room before you drop below passing</h2>
+        <table aria-label="Cushion"><tbody id="cushion"></tbody></table>
+        <p class="hint" style="margin:8px 0 0">How many more of each rating you can take and still pass.</p>
+      </div>
+      <div class="card">
+        <h2>5s needed by target</h2>
+        <table><thead><tr><th>Target</th><th>5s needed</th></tr></thead><tbody id="ladder"></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- From current score -->
+  <section id="quick" hidden>
+    <div class="card">
+      <div class="two">
+        <div class="f"><label for="currentScore">Current score</label><input id="currentScore" type="number" min="0" max="5" step="0.01" placeholder="4.32"></div>
+        <div class="f"><label for="currentTotal">Current total surveys</label><input id="currentTotal" type="number" min="1" step="1" placeholder="100"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="score">
+        <div class="big"><span class="lbl">5s needed</span><span class="num" id="projectionNeeded">—</span></div>
+        <div class="kpis"><div class="kpi"><span>Score after</span><b id="projScore">—</b></div><div class="kpi"><span>Total surveys after</span><b id="projTotal">—</b></div></div>
+      </div>
+      <p class="msg" id="projectionStatus">Enter your current score and total surveys.</p>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="f"><label for="customPassScore">Passing score</label>
+      <div style="display:flex;gap:10px;align-items:center"><input id="customPassScore" type="number" min="0" max="5" step="0.01" value="4.60" style="max-width:120px">
+      <button class="lnk" id="defaultPassScore" type="button">Restore 4.60</button><small style="margin-left:auto">Saved on this computer</small></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DEFAULT_PASS=4.60, KEY="csatPassingScore", CKEY="csatCounts.v1";
+var PASS=DEFAULT_PASS;
+function $(id){return document.getElementById(id);}
+function getPass(){var v=parseFloat(localStorage.getItem(KEY));return isFinite(v)&&v>=0&&v<=5?v:DEFAULT_PASS;}
+function fivesNeeded(points,total,target){ if(total<=0||points/total>=target) return 0; if(target>=5) return Infinity; return Math.max(0,Math.ceil((target*total-points)/(5-target)-1e-12)); }
+function cushion(points,total,target,r){ if(r>=target) return Infinity; var k=Math.floor((points-target*total)/(target-r)+1e-12); return Math.max(0,k); }
+
+/* Rating inputs */
+var saved={}; try{saved=JSON.parse(localStorage.getItem(CKEY))||{};}catch(e){}
+var html="";
+[5,4,3,2,1].forEach(function(r){
+  html+='<div class="rt"><label for="rating'+r+'"><i>★</i> '+r+'s</label><div class="step"><button type="button" data-d="-1" data-r="'+r+'" aria-label="One fewer '+r+'">−</button>'+
+    '<input id="rating'+r+'" type="number" min="0" inputmode="numeric" value="'+(saved[r]||0)+'"><button type="button" data-d="1" data-r="'+r+'" aria-label="One more '+r+'">+</button></div></div>';
+});
+$("ratingInputs").innerHTML=html;
+$("ratingInputs").addEventListener("click",function(e){var b=e.target.closest("[data-d]");if(!b)return;var i=$("rating"+b.dataset.r);i.value=Math.max(0,(parseInt(i.value,10)||0)+(+b.dataset.d));calculate();});
+$("ratingInputs").addEventListener("input",calculate);
+$("reset").onclick=function(){[1,2,3,4,5].forEach(function(r){$("rating"+r).value=0;});calculate();};
+
+function counts(){var c={};[1,2,3,4,5].forEach(function(r){c[r]=Math.max(0,parseInt($("rating"+r).value,10)||0);});return c;}
+function calculate(){
+  var c=counts(), total=c[1]+c[2]+c[3]+c[4]+c[5], pts=c[1]+2*c[2]+3*c[3]+4*c[4]+5*c[5], avg=total?pts/total:0;
+  try{localStorage.setItem(CKEY,JSON.stringify(c));}catch(e){}
+  $("totalLine").textContent=total+" survey"+(total===1?"":"s");
+  $("average").textContent=avg.toFixed(2);
+  var need=fivesNeeded(pts,total,PASS);
+  $("needed").textContent=need===Infinity?"∞":need;
+  $("projected").textContent=need===Infinity?"—":total+need;
+  var w=$("bigWrap"); w.className="big"+(total?(avg>=PASS?" pass":avg>=PASS-0.2?" warn":" fail"):"");
+  $("status").textContent=!total?"Enter ratings":avg>=4.8?"Outstanding":avg>=PASS?"Passing":avg>=PASS-0.2?"Recovery zone":"Critical risk";
+  $("barFill").style.width=(total?Math.max(0,(avg-1)/4*100):0)+"%";
+  $("barMark").style.left=((PASS-1)/4*100)+"%";
+  $("passLbl").textContent=PASS.toFixed(2);
+  var m="";
+  if(!total) m="Enter how many of each rating you have. Counts are kept on this computer until you reset them.";
+  else if(avg>=PASS){var k1=cushion(pts,total,PASS,1);m="You're above "+PASS.toFixed(2)+". "+(k1>0?"You can take "+k1+" more 1-rating"+(k1===1?"":"s")+" and still pass.":"One more 1-rating would drop you below; you'd then need "+fivesNeeded(pts+1,total+1,PASS)+" fives to recover.");}
+  else m="Get "+need+" more 5-rating"+(need===1?"":"s")+" in a row to reach "+PASS.toFixed(2)+". Each 4 or lower adds to that.";
+  $("msg").textContent=m;
+  var ch="";
+  [4,3,2,1].forEach(function(r){var k=total&&avg>=PASS?cushion(pts,total,PASS,r):0;ch+='<tr><td>'+r+'-rating'+(r===1?'':'s')+'</td><td>'+(k===Infinity?"no limit":k)+'</td></tr>';});
+  $("cushion").innerHTML=ch;
+  var lad="", targets=[4.40,4.50,4.60,4.70,4.80,4.90]; if(targets.indexOf(+PASS.toFixed(2))<0){targets.push(+PASS.toFixed(2));targets.sort();}
+  targets.forEach(function(t){var n=fivesNeeded(pts,total,t);lad+='<tr'+(Math.abs(t-PASS)<.001?' class="cur"':'')+'><td>'+t.toFixed(2)+(Math.abs(t-PASS)<.001?' (passing)':'')+'</td><td>'+(total?(n===Infinity?"∞":n):"—")+'</td></tr>';});
+  $("ladder").innerHTML=lad;
+}
+
+/* From current score */
+function project(){
+  var s=parseFloat($("currentScore").value), n=parseInt($("currentTotal").value,10), st=$("projectionStatus");
+  if(!isFinite(s)||!isFinite(n)||n<1||s<0||s>5){$("projectionNeeded").textContent="—";$("projScore").textContent="—";$("projTotal").textContent="—";st.textContent="Enter your current score and total surveys.";return;}
+  if(s>=PASS){$("projectionNeeded").textContent="0";$("projScore").textContent=s.toFixed(2);$("projTotal").textContent=n;st.textContent="Already at or above "+PASS.toFixed(2)+".";return;}
+  if(PASS>=5){$("projectionNeeded").textContent="∞";st.textContent="A perfect 5.00 can't be reached from below with a finite number of surveys.";return;}
+  var need=Math.max(0,Math.ceil(n*(PASS-s)/(5-PASS)-1e-12)), after=(s*n+5*need)/(n+need);
+  $("projectionNeeded").textContent=need.toLocaleString();$("projScore").textContent=after.toFixed(4);$("projTotal").textContent=(n+need).toLocaleString();
+  st.textContent="Add "+need+" five-rating survey"+(need===1?"":"s")+" to reach "+PASS.toFixed(2)+". Because the score you enter is rounded, treat this as an estimate.";
+}
+["currentScore","currentTotal"].forEach(function(id){$(id).addEventListener("input",project);});
+
+/* Passing score */
+function setPass(v,save){PASS=v;if(save)try{localStorage.setItem(KEY,v.toFixed(2));}catch(e){}calculate();project();}
+$("customPassScore").addEventListener("input",function(){var v=parseFloat(this.value);if(isFinite(v)&&v>=0&&v<=5)setPass(v,true);});
+$("defaultPassScore").onclick=function(){$("customPassScore").value=DEFAULT_PASS.toFixed(2);setPass(DEFAULT_PASS,true);};
+
+/* Tabs */
+document.querySelector(".tabs").addEventListener("click",function(e){var b=e.target.closest("[data-tab]");if(!b)return;
+  document.querySelectorAll(".tabs button").forEach(function(x){x.setAttribute("aria-selected",x===b);});
+  $("counts").hidden=b.dataset.tab!=="counts";$("quick").hidden=b.dataset.tab!=="quick";});
+
+/* Follow MeiNote night mode */
+function syncTheme(){var d=false;try{d=window.parent!==window&&window.parent.document.documentElement.classList.contains("dark")}catch(e){}if(window.parent===window)d=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);}
+syncTheme();setInterval(syncTheme,1500);
+if(window.parent!==window) document.querySelector(".head h1").style.visibility="hidden";
+
+PASS=getPass();$("customPassScore").value=PASS.toFixed(2);calculate();project();
+</script>
+</body>
+</html>

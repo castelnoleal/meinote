@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Team pack: fills in private names, emails and internal links from this browser only -->
+<script>
+/* =====================================================================
+   MeiNote · TEAM PACK (private details)
+   The public files only contain placeholders like {{mgr_manila_email:Manila manager's email}}
+   or {{link_07:#team-pack}}. The real names, emails and internal links are
+   in a private "team pack" file that each person loads once. It is kept in
+   that browser only (localStorage) and is never sent anywhere.
+
+   Placeholder:  {{key:shown when no team pack is loaded}}
+   ===================================================================== */
+(function(){
+"use strict";
+var KEY = "meinote.teampack.v1";
+var TOKEN = /\{\{([a-z0-9_]+)(?::([^{}]*))?\}\}/g;
+var HAS = /\{\{[a-z0-9_]+(?::[^{}]*)?\}\}/;
+var NEED = "#team-pack";
+
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } }
+var pack = load();
+var values = (pack && pack.values) || {};
+
+function fill(s){
+  if(s == null) return s;
+  return String(s).replace(TOKEN, function(m, k, fb){
+    if(Object.prototype.hasOwnProperty.call(values, k)) return values[k];
+    return fb != null ? fb : "[" + k + "]";
+  });
+}
+
+/* ---------- Fill placeholders in the page ---------- */
+var ATTRS = ["href", "src", "value", "title", "placeholder", "onclick", "data-link"];
+function fillNode(n){
+  if(n.nodeType === 3){ if(HAS.test(n.nodeValue)) n.nodeValue = fill(n.nodeValue); return; }
+  if(n.nodeType !== 1 || n.tagName === "SCRIPT" || n.tagName === "STYLE") return;
+  ATTRS.forEach(function(a){ var v = n.getAttribute(a); if(v && HAS.test(v)) n.setAttribute(a, fill(v)); });
+  if((n.tagName === "TEXTAREA" || n.tagName === "INPUT") && HAS.test(n.value)) n.value = fill(n.value);
+  for(var c = n.firstChild; c; c = c.nextSibling) fillNode(c);
+}
+new MutationObserver(function(list){
+  list.forEach(function(m){
+    if(m.type === "characterData") fillNode(m.target);
+    else if(m.type === "attributes") fillNode(m.target);
+    else m.addedNodes.forEach(fillNode);
+  });
+}).observe(document.documentElement, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
+document.addEventListener("DOMContentLoaded", function(){ fillNode(document.documentElement); });
+
+/* Links opened by code */
+var openWin = window.open;
+window.open = function(url){
+  var u = fill(url);
+  if(u === NEED || (typeof u === "string" && u.indexOf(NEED) === 0)){ needPack(); return null; }
+  var args = [].slice.call(arguments); args[0] = u;
+  return openWin.apply(window, args);
+};
+document.addEventListener("click", function(e){
+  var a = e.target.closest && e.target.closest("a[href]");
+  if(a && a.getAttribute("href").indexOf(NEED) === 0){ e.preventDefault(); needPack(); }
+}, true);
+
+/* ---------- Team pack window ---------- */
+function box(){
+  var old = document.getElementById("meiTeamPack"); if(old) old.remove();
+  var d = document.createElement("div");
+  d.id = "meiTeamPack";
+  d.setAttribute("style", "position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,'Segoe UI',system-ui,sans-serif");
+  d.addEventListener("click", function(e){ if(e.target === d) d.remove(); });
+  document.body.appendChild(d);
+  return d;
+}
+function card(inner){
+  return '<div style="background:#fff;color:#0f172a;border-radius:18px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 60px rgba(15,23,42,.35)">' +
+    '<div style="background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between">Team pack<button type="button" data-x style="background:none;border:0;color:#fca5a5;font-size:18px;cursor:pointer">✕</button></div>' +
+    '<div style="padding:16px;font-size:14px;line-height:1.5">' + inner + '</div></div>';
+}
+var BTN = "border-radius:12px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px;";
+function manager(note){
+  var d = box(), n = Object.keys(values).length;
+  d.innerHTML = card(
+    (note ? '<p style="margin:0 0 10px;color:#b45309;font-weight:600">' + note + '</p>' : "") +
+    '<p style="margin:0 0 10px">The team pack adds the private details MeiNote needs: coworker names and emails in request notes, and internal KB and form links. It stays in this browser on this computer and is never uploaded.</p>' +
+    '<p style="margin:0 0 14px;color:#475569">' + (n ? "Loaded: <b>" + n + " details</b>" + (pack && pack.updated ? ", updated " + String(pack.updated).slice(0, 10) : "") + "." : "No team pack loaded on this computer.") + '</p>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><label style="' + BTN + 'background:#1d4ed8;color:#fff">Load team pack file<input type="file" accept=".json,application/json" hidden></label>' +
+    (n ? '<button type="button" data-rm style="' + BTN + 'background:#fff;border:1px solid #cbd5e1;color:#dc2626">Remove from this computer</button>' : "") + '</div>' +
+    '<p data-msg style="margin:10px 0 0;font-size:13px"></p>');
+  d.querySelector("[data-x]").onclick = function(){ d.remove(); };
+  var rm = d.querySelector("[data-rm]");
+  if(rm) rm.onclick = function(){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
+  d.querySelector("input[type=file]").addEventListener("change", function(){
+    var f = this.files[0], msg = d.querySelector("[data-msg]"); if(!f) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var p = JSON.parse(r.result);
+        if(!p || !p.meinote_team_pack || typeof p.values !== "object") throw new Error();
+        localStorage.setItem(KEY, JSON.stringify(p));
+        msg.style.color = "#15803d"; msg.textContent = "Team pack loaded. Reloading...";
+        setTimeout(function(){ location.reload(); }, 600);
+      }catch(e){ msg.style.color = "#dc2626"; msg.textContent = "That file isn't a MeiNote team pack."; }
+    };
+    r.readAsText(f);
+  });
+}
+function needPack(){ manager(Object.keys(values).length ? "This link isn't in your team pack. Ask for the latest team pack." : "This link is private. Load the team pack to open it."); }
+
+window.MeiPrivate = {fill: fill, has: function(s){ return HAS.test(s || ""); }, loaded: function(){ return Object.keys(values).length > 0; }, open: function(){ manager(); }, key: KEY};
+})();
+</script>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MeiNote US Time</title>
+<style>
+:root{--canvas:#EEF2F8;--surface:#fff;--sunk:#F4F6FA;--ink:#0F1B33;--ink2:#43506A;--muted:#6B778F;--line:#D6DDE8;--line2:#E6EBF2;--accent:#2459E0;--accent-soft:#E6EDFF;--ok:#14804F;--ok-soft:#E3F4EA;--bad:#C2352B;--bad-soft:#FDE8E6;--warn:#A86200;--warn-soft:#FFF3DC;--land:#DCE3EE;--stroke:#fff;
+--pt:#3E7BEA;--mt:#2E9E67;--ct:#D08A1E;--et:#D14B43;--ak:#8162D8;--hi:#A0613A}
+html.dark{--canvas:#0A101C;--surface:#121A2B;--sunk:#0E1524;--ink:#E7ECF5;--ink2:#B3BED2;--muted:#8591A8;--line:#26324A;--line2:#1D2840;--accent:#5B8BFF;--accent-soft:#17264A;--ok:#4CC38A;--ok-soft:#10301F;--bad:#FF7A6E;--bad-soft:#3A1714;--warn:#F0B44C;--warn-soft:#33260C;--land:#1B2539;--stroke:#0A101C}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 Inter,"Segoe UI",system-ui,sans-serif;background:var(--canvas);color:var(--ink);padding:16px}
+button,input,select{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.zones{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:14px}
+.zone{background:var(--surface);border:1px solid var(--line2);border-top:4px solid var(--c);border-radius:10px;padding:9px 11px;cursor:pointer;text-align:left;color:var(--ink)}
+.zone:hover{border-color:var(--line);border-top-color:var(--c)}
+.zone[aria-pressed="true"]{box-shadow:0 0 0 2px var(--c)}
+.zone .n{font-size:12px;font-weight:600;color:var(--ink2)}
+.zone .t{font:600 19px ui-monospace,Consolas,monospace;margin:1px 0}
+.zone .s{font-size:11.5px;font-weight:700;border-radius:5px;padding:0 6px;display:inline-block}
+.s.ok{background:var(--ok-soft);color:var(--ok)}.s.no{background:var(--bad-soft);color:var(--bad)}.s.soon{background:var(--warn-soft);color:var(--warn)}
+.grid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:14px 16px}
+.mapcard{padding:10px 10px 4px;position:relative}
+.search{display:flex;gap:8px;margin:2px 4px 6px}
+.search input{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px}
+svg{width:100%;height:auto;display:block}
+.state{stroke:var(--stroke);stroke-width:.7;cursor:pointer;transition:opacity .15s}
+.state:hover{opacity:.82}
+.state.sel{stroke:var(--ink);stroke-width:2.2}
+.label{font:700 11px Inter,"Segoe UI",sans-serif;text-anchor:middle;pointer-events:none;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:2px}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+.side h2{margin:0;font-size:22px}
+.side .ab{font:600 12px ui-monospace,Consolas,monospace;color:var(--muted);margin-left:6px}
+.side .tzn{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink2);margin-top:2px}
+.side .tzn i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.clock{font:600 44px/1.1 ui-monospace,Consolas,monospace;margin:10px 0 2px;letter-spacing:-.02em}
+.date{color:var(--muted);font-size:13px}
+.callable{margin:10px 0;font-weight:700;font-size:13.5px;border-radius:8px;padding:7px 10px}
+.split{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:7px 10px;margin-bottom:10px}
+.btn{width:100%;border:0;background:var(--accent);color:#fff;font-weight:600;border-radius:9px;padding:10px;cursor:pointer}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.hr{height:1px;background:var(--line2);margin:14px 0}
+h3{font-size:13.5px;margin:0 0 8px}
+.conv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.conv label{font-size:12px;font-weight:600;color:var(--ink2);display:block;margin-bottom:3px}
+.conv input,.conv select{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 9px}
+.convout{margin-top:8px;font-size:13.5px;background:var(--sunk);border-radius:8px;padding:8px 10px;color:var(--ink2)}
+.convout b{font-family:ui-monospace,Consolas,monospace;color:var(--ink)}
+.me{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted)}
+.me b{font:600 16px ui-monospace,Consolas,monospace;color:var(--ink)}
+.win{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.win input{width:96px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:3px 6px}
+.note{font-size:11.5px;color:var(--muted);margin:6px 4px 4px}
+@media (max-width:900px){.zones{grid-template-columns:repeat(4,1fr)}.grid{grid-template-columns:1fr}}
+@media (max-width:520px){.zones{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="zones" id="zones" aria-label="US time zones"></div>
+<div class="grid">
+  <div class="card mapcard">
+    <div class="search"><input id="find" list="stateList" placeholder="Find a state by name or abbreviation, e.g. TX" aria-label="Find a state"><datalist id="stateList"></datalist></div>
+    <div id="map"><div class="loading">Loading map…</div><svg viewBox="0 0 975 640" aria-label="Map of US states colored by time zone" hidden></svg></div>
+    <p class="note">Hover or tap a state. Colors show the zone most of the state uses.</p>
+  </div>
+  <div class="card side">
+    <div id="sel" style="--c:var(--et)">
+      <h2 id="stName">New York<span class="ab">NY</span></h2>
+      <div class="tzn"><i></i><span id="stZone">Eastern Time</span></div>
+      <div class="clock" id="stClock">--:--:--</div>
+      <div class="date" id="stDate"></div>
+      <div class="callable" id="stCall"></div>
+      <div class="split" id="stSplit" hidden></div>
+      <button class="btn" id="cb" type="button">Set a callback in this time zone</button>
+    </div>
+    <div class="hr"></div>
+    <h3>Convert a time</h3>
+    <div class="conv">
+      <div><label for="cvT">Client's time</label><input id="cvT" type="time"></div>
+      <div><label for="cvZ">Client's zone</label><select id="cvZ"></select></div>
+    </div>
+    <div class="convout" id="cvOut">Pick a time to see it in your time.</div>
+    <div class="hr"></div>
+    <div class="me"><span>My time · <span id="myZone"></span></span><b id="myClock">--:--</b></div>
+    <div class="win">Calling window <input id="w1" type="time" value="08:00"> to <input id="w2" type="time" value="21:00"> client's local time</div>
+  </div>
+</div>
+
+<script type="module">
+const Z=[
+ {id:"America/New_York",n:"Eastern",c:"--et"},
+ {id:"America/Chicago",n:"Central",c:"--ct"},
+ {id:"America/Denver",n:"Mountain",c:"--mt"},
+ {id:"America/Phoenix",n:"Arizona",c:"--mt"},
+ {id:"America/Los_Angeles",n:"Pacific",c:"--pt"},
+ {id:"America/Anchorage",n:"Alaska",c:"--ak"},
+ {id:"Pacific/Honolulu",n:"Hawaii",c:"--hi"}];
+const ZN=Object.fromEntries(Z.map(z=>[z.id,z]));
+const ST={"Alabama":["AL","America/Chicago"],"Alaska":["AK","America/Anchorage"],"Arizona":["AZ","America/Phoenix"],"Arkansas":["AR","America/Chicago"],"California":["CA","America/Los_Angeles"],"Colorado":["CO","America/Denver"],"Connecticut":["CT","America/New_York"],"Delaware":["DE","America/New_York"],"District of Columbia":["DC","America/New_York"],"Florida":["FL","America/New_York"],"Georgia":["GA","America/New_York"],"Hawaii":["HI","Pacific/Honolulu"],"Idaho":["ID","America/Denver"],"Illinois":["IL","America/Chicago"],"Indiana":["IN","America/New_York"],"Iowa":["IA","America/Chicago"],"Kansas":["KS","America/Chicago"],"Kentucky":["KY","America/New_York"],"Louisiana":["LA","America/Chicago"],"Maine":["ME","America/New_York"],"Maryland":["MD","America/New_York"],"Massachusetts":["MA","America/New_York"],"Michigan":["MI","America/New_York"],"Minnesota":["MN","America/Chicago"],"Mississippi":["MS","America/Chicago"],"Missouri":["MO","America/Chicago"],"Montana":["MT","America/Denver"],"Nebraska":["NE","America/Chicago"],"Nevada":["NV","America/Los_Angeles"],"New Hampshire":["NH","America/New_York"],"New Jersey":["NJ","America/New_York"],"New Mexico":["NM","America/Denver"],"New York":["NY","America/New_York"],"North Carolina":["NC","America/New_York"],"North Dakota":["ND","America/Chicago"],"Ohio":["OH","America/New_York"],"Oklahoma":["OK","America/Chicago"],"Oregon":["OR","America/Los_Angeles"],"Pennsylvania":["PA","America/New_York"],"Rhode Island":["RI","America/New_York"],"South Carolina":["SC","America/New_York"],"South Dakota":["SD","America/Chicago"],"Tennessee":["TN","America/Chicago"],"Texas":["TX","America/Chicago"],"Utah":["UT","America/Denver"],"Vermont":["VT","America/New_York"],"Virginia":["VA","America/New_York"],"Washington":["WA","America/Los_Angeles"],"West Virginia":["WV","America/New_York"],"Wisconsin":["WI","America/Chicago"],"Wyoming":["WY","America/Denver"]};
+const SPLIT={
+ "Florida":"The western Panhandle (Pensacola, Panama City) uses Central Time.",
+ "Indiana":"Northwest (near Chicago) and southwest corners use Central Time.",
+ "Kentucky":"Western Kentucky (Bowling Green, Paducah) uses Central Time.",
+ "Michigan":"Four Upper Peninsula counties bordering Wisconsin use Central Time.",
+ "Tennessee":"East Tennessee (Knoxville, Chattanooga) uses Eastern Time.",
+ "Texas":"El Paso and Hudspeth County use Mountain Time.",
+ "Kansas":"Four western counties bordering Colorado use Mountain Time.",
+ "Nebraska":"The western Panhandle uses Mountain Time.",
+ "North Dakota":"The southwest corner uses Mountain Time.",
+ "South Dakota":"The western half (Rapid City) uses Mountain Time.",
+ "Idaho":"The northern Panhandle (Coeur d'Alene) uses Pacific Time.",
+ "Oregon":"Most of Malheur County, in the east, uses Mountain Time.",
+ "Alaska":"The western Aleutian Islands use Hawaii-Aleutian Time.",
+ "Arizona":"Arizona doesn't observe daylight saving time, except the Navajo Nation."};
+const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const $=id=>document.getElementById(id);
+const win=LS.get("meitz.window",{a:"08:00",b:"21:00"}); $("w1").value=win.a; $("w2").value=win.b;
+["w1","w2"].forEach(id=>$(id).addEventListener("change",()=>{LS.set("meitz.window",{a:$("w1").value,b:$("w2").value});tick();}));
+let selName=LS.get("meitz.state","New York");
+
+function hm(tz,d=new Date()){const p={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",hour:"2-digit",minute:"2-digit"}).formatToParts(d).forEach(x=>p[x.type]=x.value);return (+p.hour%24)*60+(+p.minute);}
+function mins(s){const [h,m]=s.split(":").map(Number);return h*60+m;}
+function callState(tz){
+  const now=hm(tz), a=mins($("w1").value||"08:00"), b=mins($("w2").value||"21:00");
+  if(now>=a&&now<b){const left=b-now;return left<=30?{k:"soon",t:"Callable · window closes in "+left+" min"}:{k:"ok",t:"Callable now"};}
+  if(now<a){const w=a-now;return {k:"no",t:"Too early · opens in "+Math.floor(w/60)+"h "+String(w%60).padStart(2,"0")+"m"};}
+  const w=24*60-now+a;return {k:"no",t:"Too late · opens in "+Math.floor(w/60)+"h "+String(w%60).padStart(2,"0")+"m"};
+}
+const fmtT=(tz,s)=>new Date().toLocaleTimeString([], {timeZone:tz,hour:"numeric",minute:"2-digit",second:s?"2-digit":undefined});
+
+/* Zone strip */
+$("zones").innerHTML=Z.map(z=>`<button class="zone" type="button" data-z="${z.id}" style="--c:var(${z.c})"><div class="n">${z.n}</div><div class="t" data-t></div><span class="s" data-s></span></button>`).join("");
+$("zones").addEventListener("click",e=>{const b=e.target.closest("[data-z]");if(!b)return;$("cvZ").value=b.dataset.z;convert();});
+$("cvZ").innerHTML=Z.map(z=>`<option value="${z.id}">${z.n}</option>`).join("");
+$("stateList").innerHTML=Object.entries(ST).map(([n,[a]])=>`<option value="${n}">${a}</option>`).join("");
+const myTz=Intl.DateTimeFormat().resolvedOptions().timeZone; $("myZone").textContent=myTz.replace(/_/g," ");
+
+function select(name){
+  if(!ST[name]) return; selName=name; LS.set("meitz.state",name);
+  const [ab,tz]=ST[name], z=ZN[tz];
+  $("sel").style.setProperty("--c",`var(${z.c})`);
+  $("stName").innerHTML=`${name}<span class="ab">${ab}</span>`;
+  $("stZone").textContent=z.n+" Time";
+  $("stSplit").hidden=!SPLIT[name]; $("stSplit").textContent=SPLIT[name]||"";
+  $("cvZ").value=tz; convert();
+  document.querySelectorAll(".state").forEach(p=>p.classList.toggle("sel",p.__name===name));
+  tick();
+}
+function tick(){
+  document.querySelectorAll(".zone").forEach(b=>{const tz=b.dataset.z,c=callState(tz);b.querySelector("[data-t]").textContent=fmtT(tz);const s=b.querySelector("[data-s]");s.className="s "+c.k;s.textContent=c.k==="ok"?"Callable":c.k==="soon"?"Closing":"Closed";});
+  const tz=ST[selName][1], c=callState(tz);
+  $("stClock").textContent=fmtT(tz,true);
+  $("stDate").textContent=new Date().toLocaleDateString([], {timeZone:tz,weekday:"long",month:"long",day:"numeric"});
+  const el=$("stCall"); el.textContent=c.t; el.className="callable s "+c.k;
+  $("myClock").textContent=new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit",second:"2-digit"});
+}
+function convert(){
+  const t=$("cvT").value, tz=$("cvZ").value;
+  if(!t){$("cvOut").textContent="Pick a time to see it in your time.";return;}
+  const [h,m]=t.split(":").map(Number), now=new Date();
+  const p={};new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(now).forEach(x=>p[x.type]=x.value);
+  const guess=Date.UTC(+p.year,+p.month-1,+p.day,h,m);
+  const off=ts=>{const q={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(new Date(ts)).forEach(x=>q[x.type]=x.value);return Date.UTC(+q.year,+q.month-1,+q.day,+q.hour%24,+q.minute,+q.second)-ts;};
+  const ts=guess-off(guess-off(guess));
+  const mine=new Date(ts).toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"});
+  $("cvOut").innerHTML=`<b>${new Date(ts).toLocaleTimeString([], {timeZone:tz,hour:"numeric",minute:"2-digit"})}</b> ${ZN[tz].n} is <b>${mine}</b> your time.`;
+}
+$("cvT").addEventListener("input",convert);$("cvZ").addEventListener("change",convert);
+$("find").addEventListener("change",e=>{const v=e.target.value.trim().toLowerCase();if(!v)return;const hit=Object.entries(ST).find(([n,[a]])=>n.toLowerCase()===v||a.toLowerCase()===v)||Object.entries(ST).find(([n])=>n.toLowerCase().startsWith(v));if(hit){select(hit[0]);e.target.value="";}});
+const embedded=window.parent!==window;
+$("cb").disabled=!embedded; if(!embedded) $("cb").title="Open the map from MeiNote to set alarms";
+$("cb").onclick=()=>{window.parent.postMessage({type:"meinote:alarm",tz:ST[selName][1],label:selName+" callback"},"*");};
+function syncTheme(){let d=false;try{d=embedded&&window.parent.document.documentElement.classList.contains("dark")}catch(e){}if(!embedded)d=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);}
+syncTheme();setInterval(syncTheme,1500);
+setInterval(tick,1000);
+
+/* Map */
+try{
+  const d3=await import("https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm");
+  const {feature}=await import("https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm");
+  const us=(await import("https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-albers-10m.json/+esm")).default;
+  const svg=d3.select("svg"), path=d3.geoPath(), states=feature(us,us.objects.states);
+  svg.append("path").datum(feature(us,us.objects.nation)).attr("fill","var(--land)").attr("d",path);
+  svg.selectAll("path.state").data(states.features).enter().append("path").attr("class","state").attr("d",path)
+    .each(function(d){this.__name=d.properties.name;})
+    .style("fill",d=>{const s=ST[d.properties.name];return s?`var(${ZN[s[1]].c})`:"#9AA5B9";})
+    .on("mouseenter",(e,d)=>{if(ST[d.properties.name]) select(d.properties.name);})
+    .on("click",(e,d)=>{if(ST[d.properties.name]) select(d.properties.name);})
+    .append("title").text(d=>d.properties.name);
+  svg.selectAll("text.label").data(states.features).enter().append("text").attr("class","label")
+    .attr("transform",d=>{const c=path.centroid(d);return `translate(${c[0]},${c[1]+4})`;})
+    .style("font-size",d=>{const a=path.area(d);return a<80?"7px":a<180?"9px":a<500?"10px":"12px";})
+    .text(d=>(ST[d.properties.name]||[""])[0]);
+  document.querySelector("#map .loading").remove(); svg.attr("hidden",null);
+}catch(e){
+  document.querySelector("#map .loading").textContent="The map needs an internet connection to load. Clocks, search and the converter still work.";
+}
+select(selName);
+</script>
+</body>
+</html>
