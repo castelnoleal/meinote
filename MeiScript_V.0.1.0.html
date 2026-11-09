@@ -2,116 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Team pack: fills in private names, emails and internal links from this browser only -->
-<script>
-/* =====================================================================
-   MeiNote · TEAM PACK (private details)
-   The public files only contain placeholders like {{mgr_manila_email:Manila manager's email}}
-   or {{link_07:#team-pack}}. The real names, emails and internal links are
-   in a private "team pack" file that each person loads once. It is kept in
-   that browser only (localStorage) and is never sent anywhere.
-
-   Placeholder:  {{key:shown when no team pack is loaded}}
-   ===================================================================== */
-(function(){
-"use strict";
-var KEY = "meinote.teampack.v1";
-var TOKEN = /\{\{([a-z0-9_]+)(?::([^{}]*))?\}\}/g;
-var HAS = /\{\{[a-z0-9_]+(?::[^{}]*)?\}\}/;
-var NEED = "#team-pack";
-
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } }
-var pack = load();
-var values = (pack && pack.values) || {};
-
-function fill(s){
-  if(s == null) return s;
-  return String(s).replace(TOKEN, function(m, k, fb){
-    if(Object.prototype.hasOwnProperty.call(values, k)) return values[k];
-    return fb != null ? fb : "[" + k + "]";
-  });
-}
-
-/* ---------- Fill placeholders in the page ---------- */
-var ATTRS = ["href", "src", "value", "title", "placeholder", "onclick", "data-link"];
-function fillNode(n){
-  if(n.nodeType === 3){ if(HAS.test(n.nodeValue)) n.nodeValue = fill(n.nodeValue); return; }
-  if(n.nodeType !== 1 || n.tagName === "SCRIPT" || n.tagName === "STYLE") return;
-  ATTRS.forEach(function(a){ var v = n.getAttribute(a); if(v && HAS.test(v)) n.setAttribute(a, fill(v)); });
-  if((n.tagName === "TEXTAREA" || n.tagName === "INPUT") && HAS.test(n.value)) n.value = fill(n.value);
-  for(var c = n.firstChild; c; c = c.nextSibling) fillNode(c);
-}
-new MutationObserver(function(list){
-  list.forEach(function(m){
-    if(m.type === "characterData") fillNode(m.target);
-    else if(m.type === "attributes") fillNode(m.target);
-    else m.addedNodes.forEach(fillNode);
-  });
-}).observe(document.documentElement, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
-document.addEventListener("DOMContentLoaded", function(){ fillNode(document.documentElement); });
-
-/* Links opened by code */
-var openWin = window.open;
-window.open = function(url){
-  var u = fill(url);
-  if(u === NEED || (typeof u === "string" && u.indexOf(NEED) === 0)){ needPack(); return null; }
-  var args = [].slice.call(arguments); args[0] = u;
-  return openWin.apply(window, args);
-};
-document.addEventListener("click", function(e){
-  var a = e.target.closest && e.target.closest("a[href]");
-  if(a && a.getAttribute("href").indexOf(NEED) === 0){ e.preventDefault(); needPack(); }
-}, true);
-
-/* ---------- Team pack window ---------- */
-function box(){
-  var old = document.getElementById("meiTeamPack"); if(old) old.remove();
-  var d = document.createElement("div");
-  d.id = "meiTeamPack";
-  d.setAttribute("style", "position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,'Segoe UI',system-ui,sans-serif");
-  d.addEventListener("click", function(e){ if(e.target === d) d.remove(); });
-  document.body.appendChild(d);
-  return d;
-}
-function card(inner){
-  return '<div style="background:#fff;color:#0f172a;border-radius:18px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 60px rgba(15,23,42,.35)">' +
-    '<div style="background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between">Team pack<button type="button" data-x style="background:none;border:0;color:#fca5a5;font-size:18px;cursor:pointer">✕</button></div>' +
-    '<div style="padding:16px;font-size:14px;line-height:1.5">' + inner + '</div></div>';
-}
-var BTN = "border-radius:12px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px;";
-function manager(note){
-  var d = box(), n = Object.keys(values).length;
-  d.innerHTML = card(
-    (note ? '<p style="margin:0 0 10px;color:#b45309;font-weight:600">' + note + '</p>' : "") +
-    '<p style="margin:0 0 10px">The team pack adds the private details MeiNote needs: coworker names and emails in request notes, and internal KB and form links. It stays in this browser on this computer and is never uploaded.</p>' +
-    '<p style="margin:0 0 14px;color:#475569">' + (n ? "Loaded: <b>" + n + " details</b>" + (pack && pack.updated ? ", updated " + String(pack.updated).slice(0, 10) : "") + "." : "No team pack loaded on this computer.") + '</p>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap"><label style="' + BTN + 'background:#1d4ed8;color:#fff">Load team pack file<input type="file" accept=".json,application/json" hidden></label>' +
-    (n ? '<button type="button" data-rm style="' + BTN + 'background:#fff;border:1px solid #cbd5e1;color:#dc2626">Remove from this computer</button>' : "") + '</div>' +
-    '<p data-msg style="margin:10px 0 0;font-size:13px"></p>');
-  d.querySelector("[data-x]").onclick = function(){ d.remove(); };
-  var rm = d.querySelector("[data-rm]");
-  if(rm) rm.onclick = function(){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
-  d.querySelector("input[type=file]").addEventListener("change", function(){
-    var f = this.files[0], msg = d.querySelector("[data-msg]"); if(!f) return;
-    var r = new FileReader();
-    r.onload = function(){
-      try{
-        var p = JSON.parse(r.result);
-        if(!p || !p.meinote_team_pack || typeof p.values !== "object") throw new Error();
-        localStorage.setItem(KEY, JSON.stringify(p));
-        msg.style.color = "#15803d"; msg.textContent = "Team pack loaded. Reloading...";
-        setTimeout(function(){ location.reload(); }, 600);
-      }catch(e){ msg.style.color = "#dc2626"; msg.textContent = "That file isn't a MeiNote team pack."; }
-    };
-    r.readAsText(f);
-  });
-}
-function needPack(){ manager(Object.keys(values).length ? "This link isn't in your team pack. Ask for the latest team pack." : "This link is private. Load the team pack to open it."); }
-
-window.MeiPrivate = {fill: fill, has: function(s){ return HAS.test(s || ""); }, loaded: function(){ return Object.keys(values).length > 0; }, open: function(){ manager(); }, key: KEY};
-})();
-</script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MeiScript KB Navigator</title>
 <style>
@@ -196,55 +86,55 @@ var DATA = {
     "Contact Informations": [
       {
         label: "<b>NDR</b>",
-        link: "{{link_01:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=National%20Debt%20Relief,York%2C%20NY%2010038"
       },
       {
         label: "<b>LORG</b>",
-        link: "{{link_02:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=Law%20Offices%20of,York%2C%20NY%2010038"
       },
       {
         label: "<b>Global Holdings</b>",
-        link: "{{link_03:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=Global%20Holdings,myaccount.ghllc.com/"
       },
       {
         label: "<b>BetrLink</b>",
-        link: "{{link_04:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm#:~:text=BetrLink,EST%2C%20Monday%20%2D%C2%A0Friday"
       },
       {
         label: "<b>Creditor Hotline [NDR]</b>",
-        link: "{{link_05:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CAppendix%7C_____12#:~:text=Creditor%20Hotline%3A%20347%2D394%2D2675"
       },
       {
         label: "<b>Creditor Hotline [LORG]</b>",
-        link: "{{link_06:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Appendix/CS%20Contact%20Information.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CAppendix%7C_____12#:~:text=Creditor%20Hotline%3A%20646%2D480%2D0909"
       }
     ],
 
     "In-Depth Instructions/Walkthroughs/Procedures": [
       {
         label: "Online Notarization [KB]",
-        link: "{{link_07:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/CE%20CS/Notary%20Process.htm#Walkthrough"
       },
 {
         label: "Not Enrolled in GLS",
-        link: "{{link_08:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm#for-gls-clients:~:text=Disclosure%20Statements,a%20later%20time.%22"
       },
 {
 	label: "ATD Signing/Walkthrough [KB]",
-        link: "{{link_09:#team-pack}}).htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CDeposits%7C_____18"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Maintenance/Signing%20an%20ATD%20(Client%20Walkthrough).htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CDeposits%7C_____18"
       },
 {
 	label: "GLS Signing Walkthrough [KB]",
-        link: "{{link_10:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/CS%20Specialist/Legal%20Account%20Processes/GLS%20Agreement%20Procedure.htm#Overview"
       },
 {
 	label: "GLS Exemptions/Extension Signing Walkthrough [KB]",
-        link: "{{link_11:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Preapprovals/Post%20Enrollment%20Verifications%20Tasks/GLS%20Agreements%20and%20Exceptions.htm#GLSAgreementsandExceptionsProcedure"
       },
 
 {
 	label: "Paid in Full (PIF) Letter Request/Walkthrough [KB]",
-        link: "{{link_12:#team-pack}}).htm#ClientRequestedPIFLetterProcedure"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/General/Required%20Items/CC%20Level/Client%20Requested%20PIF%20Letter%20Procedure%20(CS).htm#ClientRequestedPIFLetterProcedure"
       }
 
     ]
@@ -256,22 +146,22 @@ var DATA = {
     "Deposit Change Disclosures": [
       {
         label: "<b>DCID</b> (Formerly 90DD)",
-        link: "{{link_13:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm?Highlight=deposit%20waterfall#:~:text=Deposit%20Change%20Impact%20Disclosure%0A(If,the%20program%20back%20on%20track.%E2%80%9D"
       },
       {
         label: "<b>ISD</b>",
-        link: "{{link_14:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm?Highlight=deposit%20waterfall#:~:text=Impacted%20Settlement%20Disclosure,settlement%20in%20place%3F%22"
       }
     ],
 
     "Account/Creditor Removal": [
       {
         label: "Enrolled in GLS",
-        link: "{{link_15:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CClient%20Requests%7C_____6#:~:text=Disclosure%20Statements,under%20GLS%20.%22"
       },
 {
         label: "Not Enrolled in GLS",
-        link: "{{link_08:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Requests/CS%20Account%20Removal%20Policy.htm#for-gls-clients:~:text=Disclosure%20Statements,a%20later%20time.%22"
       }
     ]
   },
@@ -281,33 +171,33 @@ var DATA = {
     "Deposit Scripts": [
       {
         label: "Deposit Waterfall [KB]",
-        link: "{{link_16:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Deposits/Deposit%20Modification%20Waterfall.htm#DepositWaterfall"
       },
       {
         label: "NSF Waterfall [KB]",
-        link: "{{link_17:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Maintenance/Non-Sufficient%20Funds.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CDeposits%7CNon%20Sufficient%20Funds%7C_____1#:~:text=If%20the%20NSF%20status%20is%20%E2%80%9CInsufficient%20Funds%E2%80%9D%20or%20%E2%80%9CUncollected%E2%80%9D"
       }
     ],
 
     "Settlement Scripts (SIF)": [
       {
         label: "Settlements (SIF) [KB]",
-        link: "{{link_18:#team-pack}})%20Script.htm#1AddressAnyExistingClientNeeds"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Settlements%20in%20Full/Settlement%20(SIF)%20Script.htm#1AddressAnyExistingClientNeeds"
       },
       {
         label: "SIF Adjustment Waterfall [KB]",
-        link: "{{link_19:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/SIF%20Adjustment%20Procedure/SIF%20Adjustment%20Procedure%20Waterfall.htm#1Askclienttoaddfullamount"
       }
     ],
 
     "Voicemail Scripts": [
       {
         label: "NDR Clients [KB]",
-        link: "{{link_20:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/Voicemail%20Scripts%20for%20NDR%20Clients.htm#VoicemailScriptsforNDRClients"
       },
       {
         label: "LORG Clients [KB]",
-        link: "{{link_21:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/Voicemail%20Scripts%20for%20LORG%20Clients.htm#VoicemailScriptsforLORGClients"
       }
     ],
 
@@ -323,58 +213,58 @@ var DATA = {
     "General Rebuttals": [
       {
         label: "General CS Rebuttals [KB]",
-        link: "{{link_22:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Talking%20Points%20and%20Scripts/General%20CS%20Rebuttals.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CClient%20Success%20Common%20Talking%20Points%20and%20Suggested%20Responses%7C_____1"
       },
 {
         label: "Bad Reviews [KB]",
-        link: "{{link_23:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Bad%20Reviews%20Rebuttals.htm#Purpose"
       },
 {
         label: "Can't Wait [KB]",
-        link: "{{link_24:#team-pack}}."
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20cannot%20wait%204%2D6%20months."
       },
 {
         label: "Maybe I Can't Afford [KB]",
-        link: "{{link_25:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=What%20happens%20if%20I%20can%27t%20afford%20a%20payment%20while%20in%20your%20program%3F"
       }
     ],
 
     "Creditor Calls": [
       {
         label: "Creditor Harassing [KB]",
-        link: "{{link_26:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Creditor%20Calls.htm?Highlight=rebuttals#:~:text=State%20the%20following,to%20avoid%20bankruptcy.%22"
       },
 
       {
         label: "Creditor Harassing (2) [KB]",
-        link: "{{link_27:#team-pack}}."
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20don%27t%20want%20creditors%20harassing%20me."
       },
 
       {
         label: "Threat of Suing [KB]",
-        link: "{{link_28:#team-pack}}."
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%27m%20afraid%20of%20getting%20sued."
       },
 {
         label: "When We Will Contact Creditors [KB]",
-        link: "{{link_29:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=When%20will%20you%20contact%20my%20creditors%3F"
       }
      ],
 
 "Credit Score - Related": [
       {
         label: "Credit Score Ruination [KB]",
-        link: "{{link_30:#team-pack}}."
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=I%20don%27t%20want%20to%20ruin%20my%20credit."
       },
 {
         label: "Credit Repair/Recovery Tips (Graduated Clients) [KB]",
-        link: "{{link_31:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Credit%20Repair%20for%20Graduated%20Clients/Credit%20Repair%20Resources%20and%20Tips%20for%20Graduated%20Clients.htm#CreditRepairResourcesandTipsforGraduatedClients"
       }
      ],
 
 "Settlement (SIF) - Related": [
       {
         label: "Additional Funds Needed [KB]",
-        link: "{{link_18:#team-pack}})%20Script.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CSettlements%20in%20Full%7C_____3#:~:text=Add%20Fund%20item.-,If%20additional%20funds%20are%20needed,-If%20no%20additional"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Settlements%20in%20Full/Settlement%20(SIF)%20Script.htm?TocPath=Client%20Success%20Home%7CClient%20Success%20Home%7CSettlements%20in%20Full%7C_____3#:~:text=Add%20Fund%20item.-,If%20additional%20funds%20are%20needed,-If%20no%20additional"
       }
      ],
 
@@ -382,35 +272,35 @@ var DATA = {
 "Situation Specific": [
      {
         label: "Bankrupty [KB]",
-        link: "{{link_32:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Bankruptcy%20Rebuttals.htm#Procedure"
       },
 {
         label: "Situation-Based [KB]",
-        link: "{{link_33:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm#CancellationRebuttals"
       },
 {
         label: "Can't Afford [KB]",
-        link: "{{link_34:#team-pack}}'t%20Afford%20Rebuttal.htm#CantAffordRebuttal"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Can't%20Afford%20Rebuttal.htm#CantAffordRebuttal"
       },
 {
         label: "Credit Counseling [KB]",
-        link: "{{link_35:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Credit%20Counseling%20Rebuttal.htm#CreditCounselingRebuttal"
       },
 {
         label: "Wants to Settle Specific Creditor [KB]",
-        link: "{{link_36:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Client%20Wants%20to%20Settle%20a%20Specific%20Account%20First%20Rebuttal.htm#ClientWantstoSettleaSpecificAccountFirstRebuttal"
       },
 {
         label: "Credit Score (Deep) [KB]",
-        link: "{{link_37:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/Credit%20Score%20Rebuttals.htm#Procedure"
       },
 {
         label: "C will Negotiate Herself [KB]",
-        link: "{{link_38:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/OneNote%20Transition/Rebuttals/DIY%20Negotiating%20Without%20Creditors.htm#DIYNegotiatingWithCreditorsRebuttal"
       },
 {
         label: "There is Money, Why not Pay Creditors [KB]",
-        link: "{{link_39:#team-pack}}"
+        link: "https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Loyalty/Retention/Retention%20Calls/Cancellation%20Rebuttals.htm?TocPath=Client%20Loyalty%20Home%7CRetention%7CRebuttals%7C_____3#:~:text=There%20is%20enough%20money%20to%20pay%20off%20others%2C%20why%20not%20pay%20off%20the%20smaller%20ones%3F"
       }    ]
 },
 
@@ -491,7 +381,7 @@ document.getElementById("content").addEventListener("click",function(e){
   var pb=e.target.closest("[data-pin]");
   if(pb){var k=pb.dataset.pin,i=pins.indexOf(k);if(i>=0)pins.splice(i,1);else pins.unshift(k);LS.set("meiscript.pins",pins);toast(i>=0?"Unpinned":"Pinned to top");render();return;}
   var cb=e.target.closest("[data-copy]");
-  if(cb){var it=byKey(cb.dataset.copy);navigator.clipboard&&navigator.clipboard.writeText(window.MeiPrivate?MeiPrivate.fill(it.link):it.link).then(function(){toast("Link copied")},function(){toast("Copy blocked by the browser")});return;}
+  if(cb){var it=byKey(cb.dataset.copy);navigator.clipboard&&navigator.clipboard.writeText(it.link).then(function(){toast("Link copied")},function(){toast("Copy blocked by the browser")});return;}
   var a=e.target.closest("a[data-k]");
   if(a&&a.getAttribute("aria-disabled")!=="true"){var key=a.dataset.k;recent=[key].concat(recent.filter(function(x){return x!==key})).slice(0,10);LS.set("meiscript.recent",recent);setTimeout(renderNav,50);}
 });

@@ -2,115 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Team pack: fills in private names, emails and internal links from this browser only -->
-<script>
-/* =====================================================================
-   MeiNote · TEAM PACK (private details)
-   The public files only contain placeholders like {{mgr_manila_email:Manila manager's email}}
-   or {{link_07:#team-pack}}. The real names, emails and internal links are
-   in a private "team pack" file that each person loads once. It is kept in
-   that browser only (localStorage) and is never sent anywhere.
-
-   Placeholder:  {{key:shown when no team pack is loaded}}
-   ===================================================================== */
-(function(){
-"use strict";
-var KEY = "meinote.teampack.v1";
-var TOKEN = /\{\{([a-z0-9_]+)(?::([^{}]*))?\}\}/g;
-var HAS = /\{\{[a-z0-9_]+(?::[^{}]*)?\}\}/;
-var NEED = "#team-pack";
-
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || null; }catch(e){ return null; } }
-var pack = load();
-var values = (pack && pack.values) || {};
-
-function fill(s){
-  if(s == null) return s;
-  return String(s).replace(TOKEN, function(m, k, fb){
-    if(Object.prototype.hasOwnProperty.call(values, k)) return values[k];
-    return fb != null ? fb : "[" + k + "]";
-  });
-}
-
-/* ---------- Fill placeholders in the page ---------- */
-var ATTRS = ["href", "src", "value", "title", "placeholder", "onclick", "data-link"];
-function fillNode(n){
-  if(n.nodeType === 3){ if(HAS.test(n.nodeValue)) n.nodeValue = fill(n.nodeValue); return; }
-  if(n.nodeType !== 1 || n.tagName === "SCRIPT" || n.tagName === "STYLE") return;
-  ATTRS.forEach(function(a){ var v = n.getAttribute(a); if(v && HAS.test(v)) n.setAttribute(a, fill(v)); });
-  if((n.tagName === "TEXTAREA" || n.tagName === "INPUT") && HAS.test(n.value)) n.value = fill(n.value);
-  for(var c = n.firstChild; c; c = c.nextSibling) fillNode(c);
-}
-new MutationObserver(function(list){
-  list.forEach(function(m){
-    if(m.type === "characterData") fillNode(m.target);
-    else if(m.type === "attributes") fillNode(m.target);
-    else m.addedNodes.forEach(fillNode);
-  });
-}).observe(document.documentElement, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
-document.addEventListener("DOMContentLoaded", function(){ fillNode(document.documentElement); });
-
-/* Links opened by code */
-var openWin = window.open;
-window.open = function(url){
-  var u = fill(url);
-  if(u === NEED || (typeof u === "string" && u.indexOf(NEED) === 0)){ needPack(); return null; }
-  var args = [].slice.call(arguments); args[0] = u;
-  return openWin.apply(window, args);
-};
-document.addEventListener("click", function(e){
-  var a = e.target.closest && e.target.closest("a[href]");
-  if(a && a.getAttribute("href").indexOf(NEED) === 0){ e.preventDefault(); needPack(); }
-}, true);
-
-/* ---------- Team pack window ---------- */
-function box(){
-  var old = document.getElementById("meiTeamPack"); if(old) old.remove();
-  var d = document.createElement("div");
-  d.id = "meiTeamPack";
-  d.setAttribute("style", "position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,'Segoe UI',system-ui,sans-serif");
-  d.addEventListener("click", function(e){ if(e.target === d) d.remove(); });
-  document.body.appendChild(d);
-  return d;
-}
-function card(inner){
-  return '<div style="background:#fff;color:#0f172a;border-radius:18px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 60px rgba(15,23,42,.35)">' +
-    '<div style="background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;padding:12px 16px;font-weight:600;display:flex;justify-content:space-between">Team pack<button type="button" data-x style="background:none;border:0;color:#fca5a5;font-size:18px;cursor:pointer">✕</button></div>' +
-    '<div style="padding:16px;font-size:14px;line-height:1.5">' + inner + '</div></div>';
-}
-var BTN = "border-radius:12px;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px;";
-function manager(note){
-  var d = box(), n = Object.keys(values).length;
-  d.innerHTML = card(
-    (note ? '<p style="margin:0 0 10px;color:#b45309;font-weight:600">' + note + '</p>' : "") +
-    '<p style="margin:0 0 10px">The team pack adds the private details MeiNote needs: coworker names and emails in request notes, and internal KB and form links. It stays in this browser on this computer and is never uploaded.</p>' +
-    '<p style="margin:0 0 14px;color:#475569">' + (n ? "Loaded: <b>" + n + " details</b>" + (pack && pack.updated ? ", updated " + String(pack.updated).slice(0, 10) : "") + "." : "No team pack loaded on this computer.") + '</p>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap"><label style="' + BTN + 'background:#1d4ed8;color:#fff">Load team pack file<input type="file" accept=".json,application/json" hidden></label>' +
-    (n ? '<button type="button" data-rm style="' + BTN + 'background:#fff;border:1px solid #cbd5e1;color:#dc2626">Remove from this computer</button>' : "") + '</div>' +
-    '<p data-msg style="margin:10px 0 0;font-size:13px"></p>');
-  d.querySelector("[data-x]").onclick = function(){ d.remove(); };
-  var rm = d.querySelector("[data-rm]");
-  if(rm) rm.onclick = function(){ try{ localStorage.removeItem(KEY); }catch(e){} location.reload(); };
-  d.querySelector("input[type=file]").addEventListener("change", function(){
-    var f = this.files[0], msg = d.querySelector("[data-msg]"); if(!f) return;
-    var r = new FileReader();
-    r.onload = function(){
-      try{
-        var p = JSON.parse(r.result);
-        if(!p || !p.meinote_team_pack || typeof p.values !== "object") throw new Error();
-        localStorage.setItem(KEY, JSON.stringify(p));
-        msg.style.color = "#15803d"; msg.textContent = "Team pack loaded. Reloading...";
-        setTimeout(function(){ location.reload(); }, 600);
-      }catch(e){ msg.style.color = "#dc2626"; msg.textContent = "That file isn't a MeiNote team pack."; }
-    };
-    r.readAsText(f);
-  });
-}
-function needPack(){ manager(Object.keys(values).length ? "This link isn't in your team pack. Ask for the latest team pack." : "This link is private. Load the team pack to open it."); }
-
-window.MeiPrivate = {fill: fill, has: function(s){ return HAS.test(s || ""); }, loaded: function(){ return Object.keys(values).length > 0; }, open: function(){ manager(); }, key: KEY};
-})();
-</script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MeiNote V.5.0</title>
@@ -1649,7 +1540,7 @@ const selected = document.getElementById("template").value;
 //If CS Operations selected → open link
 if(selected === "CS Operations Request"){
 
-window.open("{{link_40:#team-pack}}", "_blank");
+window.open("https://forms.office.com/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBWhscJSZQatNsdBOl5ePLPVUMUdTTFY5TUUyVVVJNFZHVzJSTVVQODNaUi4u", "_blank");
 
 // Reset dropdown
 document.getElementById("template").selectedIndex = 0;
@@ -1660,7 +1551,7 @@ return; // Stop function here
 //If Report an Agent selected → open link
 if(selected === "Report an Agent"){
 
-window.open("{{link_41:#team-pack}}", "_blank");
+window.open("https://forms.cloud.microsoft/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBRWXofvZlc5BpyaW5MbsVqhUQjFMNFZRMFVPTlkxRlkzOUtGNlpCT0JRWi4u&route=shorturl", "_blank");
 
 // Reset dropdown
 document.getElementById("template").selectedIndex = 0;
@@ -1671,7 +1562,7 @@ return; // Stop function here
 //If File Salary Dispute selected → open link
 if(selected === "File Salary Dispute"){
 
-window.open("{{link_42:#team-pack}}", "_blank");
+window.open("https://forms.cloud.microsoft/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBatITmSR0eZIggAn14YvX7VUOUNQTkxRTlYxVjlBQkpMQjFTTVRBVTAzUy4u&route=shorturl", "_blank");
 
 // Reset dropdown
 document.getElementById("template").selectedIndex = 0;
@@ -1682,7 +1573,7 @@ return; // Stop function here
 //CS Correspondence
 if(selected === "CS Correspondence"){
 
-window.open("{{link_43:#team-pack}}", "_blank");
+window.open("https://forms.office.com/pages/responsepage.aspx?id=YzvnuFr0hEm5fvk7hG6uBVQfHGMOnGVDsKJc-hKTjx9UM0ZaMkpXNDBCUU9LRlpNRUNBNDhTRUFIQy4u&web=1&wdLOR=c07DA3D6B-D2B7-4852-B124-9ADB1B1EE8AA.com", "_blank");
 document.getElementById("template").selectedIndex = 0;
 return;
 }
@@ -4054,7 +3945,7 @@ When the following RI's are on the account, the client needs to be transferred t
 <div id="promoArticle">
 <h2>Reminders - Promotional Emails</h2>
 <br>
-<p>When a client calls asking to be opted out of receiving promotional emails, CS Voice agents should encourage the client to send a request to {{optout_inbox:Opt-out inbox}}. <br><br>(As of August 28, 2024, Product will introduce a new case type, “Opt Out,” to handle opting existing customers out of promotional emails. These cases will be routed through Omni-Channel. Agents should follow their departments procedure based on this change.)
+<p>When a client calls asking to be opted out of receiving promotional emails, CS Voice agents should encourage the client to send a request to optoutrequest@nationaldebtrelief.com. <br><br>(As of August 28, 2024, Product will introduce a new case type, “Opt Out,” to handle opting existing customers out of promotional emails. These cases will be routed through Omni-Channel. Agents should follow their departments procedure based on this change.)
 </p>
 </div>
 
@@ -4096,7 +3987,7 @@ Meanwhile, if the client verbalizes that they are hard of hearing, deaf, and/or 
 Examples of ADA Alerts:
  <br>
 KB Article for reference 
-{{link_44:#team-pack}}
+https://ndr.mcoutput.com/ndr/Content/Topics/Articles/Client%20Success/Client%20Maintenance/Enrolled%20Clients%20with%20Disabilities.htm?Highlight=ADA
 </p>
 </div>
 
