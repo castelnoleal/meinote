@@ -13,6 +13,7 @@ Note templates and tools for call center agents. Served at castelmei.com.
 | `legacy/` | Classic V.5 pages, opened from the V.6 header |
 | `MeiScript_V.0.1.0.html`, `ccast-calculator.html`, `ccast-us-tz.html`, `missed-interaction-tracker.html` | Tools opened from MeiNote |
 | `assets/` | Styles and icons for the classic pages and tools |
+| `orbit/` | Orbit Workspace (headset accountability). Encrypted — it only opens through the Orbit portal file given to the team |
 
 Each shift page is one self-contained file. It works offline, and everything an agent types stays in their own browser (localStorage). Nothing is sent to a server.
 
