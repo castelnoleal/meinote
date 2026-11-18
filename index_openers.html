@@ -22,6 +22,7 @@
      8. LIBRARY ................... requests, call notes, disclosures, scripts, guidelines
      9. ENGINE (rarely edited) .... turns library text into forms and notes
     10. V.6 FEATURES .............. live output, note history, callback alarms
+    11. BROADCAST ................. admin announcements and live screen share
    
    Sections marked DO NOT EDIT are generated (Tailwind and icons).
    Template names must be spelled the same in PAGE LAYOUT, TEMPLATE FORMS and NOTE TEXT.
@@ -6409,6 +6410,321 @@ document.addEventListener("keydown",function(e){
 });
 
 renderLive(false);
+})();
+</script>
+
+
+
+<script>
+/* ==========================================================================
+   11. BROADCAST
+   An admin can pop an announcement on every open MeiNote and share their
+   screen into it, through ntfy.sh. Type the trigger phrase into the search
+   box to log in, or open meibroadcast.html from the CSatS admin side.
+   The channel, trigger phrase and password are set at the top of this section.
+   ========================================================================== */
+
+/* =====================================================================
+   MeiNote · BROADCAST  (announcements + live screen share)
+
+   An admin can pop a notification on every MeiNote that is open, and
+   share their screen live into it. Messages travel through ntfy.sh, a
+   free public relay (the same service the Missed Interaction Tracker
+   uses). The notes agents type are NEVER sent through it - only the
+   announcement text and, during a share, the screen video.
+
+   HOW AN ADMIN STARTS IT
+     - From the CSatS admin side: open meibroadcast.html (link it there).
+     - From any MeiNote: type the TRIGGER phrase below into the
+       "Search Articles..." box, enter the password, and the console opens.
+
+   CHANGE THESE BEFORE YOU RELY ON IT (all are visible in this public file):
+     - TOPIC    : the shared channel. Random by default. Anyone who reads
+                  this file could send to it, so the password only guards
+                  the console, not the channel. For a private channel,
+                  run your own ntfy server and put its URL in NTFY_BASE.
+     - TRIGGER  : the phrase that opens the login from the search box.
+     - PASS_SHA256 : SHA-256 of the admin password. Default password is
+                  "MeiCast-62f56c". To set your own, run in any browser
+                  console:  crypto.subtle.digest("SHA-256",
+                  new TextEncoder().encode("yourpassword")).then(b=>
+                  console.log([...new Uint8Array(b)].map(x=>
+                  x.toString(16).padStart(2,"0")).join("")))
+   ===================================================================== */
+(function(){
+"use strict";
+if(window.MEINOTE_NOFEATURES || /[?&]nobroadcast\b/.test(location.search)) return;  // hidden copy inside the Editor
+
+/* ---------- Settings you may want to change ---------- */
+var NTFY_BASE   = "https://ntfy.sh";                       // your own ntfy server keeps the channel private
+var TOPIC       = "meinote-cast-6a7d28295c9a267b";         // the shared channel (keep it hard to guess)
+var TRIGGER     = "meicast!";                               // type this in the search box to open the login
+var PASS_SHA256 = "e5e0df68ecfa5e133dc4cb46713a5948363923f6ca80faa9b8f0b0e3b664cfb2";  // default password: MeiCast-62f56c
+var STUN        = [{urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun1.l.google.com:19302"}];
+var APP_TAG     = "meinote-cast-1";                        // marks our messages on the shared topic
+var IS_ADMIN_PAGE = !!window.MEICAST_ADMIN_PAGE;           // set by meibroadcast.html
+
+/* ---------- Small helpers ---------- */
+var me = Math.random().toString(36).slice(2, 10);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function byId(id){ return document.getElementById(id); }
+async function sha256(s){
+  var b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [].map.call(new Uint8Array(b), function(x){ return x.toString(16).padStart(2,"0"); }).join("");
+}
+function pub(obj){
+  obj.app = APP_TAG; obj.from = me;
+  try{ fetch(NTFY_BASE + "/" + encodeURIComponent(TOPIC), {method:"POST", body: JSON.stringify(obj)}); }catch(e){}
+}
+function waitIce(pc){
+  return new Promise(function(res){
+    if(pc.iceGatheringState === "complete") return res();
+    var t = setTimeout(done, 2500);                       // don't hang if a candidate is slow
+    function done(){ clearTimeout(t); pc.removeEventListener("icegatheringstatechange", chk); res(); }
+    function chk(){ if(pc.iceGatheringState === "complete") done(); }
+    pc.addEventListener("icegatheringstatechange", chk);
+  });
+}
+
+/* ---------- Styles (injected once) ---------- */
+(function(){
+  var css = ""
+  + ".mc-over{position:fixed;inset:0;z-index:2147483100;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,'Segoe UI',system-ui,sans-serif}"
+  + ".mc-card{background:#fff;color:#0f172a;border-radius:18px;max-width:560px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 25px 60px rgba(15,23,42,.4)}"
+  + ".mc-card.wide{max-width:900px}"
+  + ".mc-head{background:linear-gradient(135deg,#0f172a,#2563eb);color:#fff;padding:12px 16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}"
+  + ".mc-head .x{background:none;border:0;color:#fca5a5;font-size:18px;cursor:pointer;line-height:1}"
+  + ".mc-body{padding:16px;font-size:14px;line-height:1.55}"
+  + ".mc-body label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin:10px 0 3px}"
+  + ".mc-inp{width:100%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:8px 11px;font:inherit;color:inherit}"
+  + ".mc-inp:focus{outline:none;box-shadow:0 0 0 4px rgba(59,130,246,.18)}"
+  + "textarea.mc-inp{resize:vertical;min-height:70px}"
+  + ".mc-btn{border:0;border-radius:12px;padding:9px 15px;font-weight:600;cursor:pointer;font-size:14px}"
+  + ".mc-btn.p{background:#1d4ed8;color:#fff}.mc-btn.p:hover{background:#1e40af}"
+  + ".mc-btn.g{background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1}.mc-btn.g:hover{background:#e2e8f0}"
+  + ".mc-btn.d{background:#dc2626;color:#fff}.mc-btn.d:hover{background:#b91c1c}"
+  + ".mc-btn:disabled{opacity:.5;cursor:default}"
+  + ".mc-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}"
+  + ".mc-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px;background:#eff6ff;color:#1d4ed8}"
+  + ".mc-log{font:12px ui-monospace,Consolas,monospace;background:#0f172a;color:#cbd5e1;border-radius:12px;padding:10px;max-height:150px;overflow:auto;white-space:pre-wrap;margin-top:12px}"
+  + ".mc-video{width:100%;background:#000;border-radius:12px;max-height:68vh}"
+  + ".mc-note{font-size:12.5px;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-top:12px}"
+  + ".mc-toast{position:fixed;right:16px;bottom:16px;z-index:2147483200;max-width:360px;background:#fff;color:#0f172a;border-left:5px solid #1d4ed8;border-radius:14px;box-shadow:0 18px 45px rgba(15,23,42,.3);padding:13px 15px 13px 14px;font-family:Inter,'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.5;animation:mcIn .25s ease}"
+  + ".mc-toast b{display:block;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:#1d4ed8;margin-bottom:3px}"
+  + ".mc-toast .x{position:absolute;top:6px;right:9px;background:none;border:0;color:#94a3b8;font-size:16px;cursor:pointer}"
+  + "@keyframes mcIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}"
+  + "@media (prefers-color-scheme:dark){.mc-toast{background:#1e293b;color:#e2e8f0}}";
+  var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+})();
+
+function overlay(){
+  var o = document.createElement("div"); o.className = "mc-over";
+  o.addEventListener("click", function(e){ if(e.target === o) o.remove(); });
+  document.body.appendChild(o); return o;
+}
+
+/* ---------- Sound + desktop notification ---------- */
+function ping(){
+  try{
+    var ac = new (window.AudioContext||window.webkitAudioContext)();
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination); o.type = "sine"; o.frequency.value = 880;
+    g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.exponentialRampToValueAtTime(.4, ac.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime+.6); o.start(); o.stop(ac.currentTime+.62);
+  }catch(e){}
+}
+function notify(title, body){
+  try{
+    if(window.Notification && Notification.permission === "granted") new Notification(title, {body: body});
+    else if(window.Notification && Notification.permission !== "denied") Notification.requestPermission();
+  }catch(e){}
+}
+
+/* =====================================================================
+   VIEWER  - every MeiNote listens and shows what the admin sends
+   ===================================================================== */
+var viewerPC = null, shareOverlay = null;
+
+function showAnnouncement(text, who){
+  ping(); notify("MeiNote announcement", text);
+  var t = document.createElement("div"); t.className = "mc-toast";
+  t.innerHTML = '<button class="x" aria-label="Dismiss">&times;</button><b>Announcement</b>' + esc(text)
+    + (who ? '<div style="margin-top:6px;color:#94a3b8;font-size:12px">' + esc(who) + '</div>' : "");
+  t.querySelector(".x").onclick = function(){ t.remove(); };
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.remove(); }, 30000);
+}
+
+function openShareView(){
+  if(shareOverlay) return shareOverlay.querySelector("video");
+  ping();
+  shareOverlay = overlay();
+  shareOverlay.innerHTML = '<div class="mc-card wide"><div class="mc-head"><span>🔴 Live screen share</span>'
+    + '<span><button class="fs mc-btn g" style="padding:4px 10px;font-size:12px">Fullscreen</button> '
+    + '<button class="x" aria-label="Close">&times;</button></span></div>'
+    + '<div class="mc-body" style="padding:12px"><video class="mc-video" autoplay playsinline></video>'
+    + '<div class="cap" style="margin-top:8px;color:#475569"></div></div></div>';
+  shareOverlay.querySelector(".x").onclick = closeShareView;
+  shareOverlay.querySelector(".fs").onclick = function(){ var v = shareOverlay.querySelector("video"); (v.requestFullscreen||v.webkitRequestFullscreen||function(){}).call(v); };
+  return shareOverlay.querySelector("video");
+}
+function closeShareView(){
+  if(viewerPC){ try{ viewerPC.close(); }catch(e){} viewerPC = null; }
+  if(shareOverlay){ shareOverlay.remove(); shareOverlay = null; }
+}
+function viewerJoin(adminId){
+  closeShareView();
+  var video = openShareView();
+  var cap = shareOverlay.querySelector(".cap"); cap.textContent = "Connecting…";
+  var pc = new RTCPeerConnection({iceServers: STUN}); viewerPC = pc;
+  pc.ontrack = function(e){ video.srcObject = e.streams[0]; cap.textContent = "Live"; };
+  pc.onconnectionstatechange = function(){
+    if(pc.connectionState === "failed" || pc.connectionState === "disconnected") cap.textContent = "Connection lost";
+  };
+  pc._admin = adminId;
+  pub({type:"join", to: adminId});
+}
+async function viewerOnOffer(m){
+  var pc = viewerPC; if(!pc || m.from !== pc._admin) return;
+  await pc.setRemoteDescription({type:"offer", sdp: m.sdp});
+  await pc.setLocalDescription(await pc.createAnswer());
+  await waitIce(pc);
+  pub({type:"answer", to: m.from, sdp: pc.localDescription.sdp});
+}
+
+/* =====================================================================
+   ADMIN  - send announcements and share the screen
+   ===================================================================== */
+var shareStream = null, peers = {}, logEl = null, countEl = null;
+
+function log(s){ if(logEl){ logEl.textContent += s + "\n"; logEl.scrollTop = logEl.scrollHeight; } }
+function refreshCount(){
+  if(!countEl) return;
+  var n = Object.keys(peers).filter(function(id){ return peers[id].connectionState === "connected"; }).length;
+  countEl.textContent = n + " viewer" + (n===1?"":"s") + " connected";
+}
+async function adminOnJoin(m){
+  if(!shareStream) return;
+  var pc = new RTCPeerConnection({iceServers: STUN}); peers[m.from] = pc;
+  shareStream.getTracks().forEach(function(tr){ pc.addTrack(tr, shareStream); });
+  pc.onconnectionstatechange = function(){ refreshCount(); log("viewer " + m.from + ": " + pc.connectionState); };
+  await pc.setLocalDescription(await pc.createOffer());
+  await waitIce(pc);
+  pub({type:"offer", to: m.from, sdp: pc.localDescription.sdp});
+  log("offered to " + m.from);
+}
+async function adminOnAnswer(m){
+  var pc = peers[m.from]; if(!pc) return;
+  try{ await pc.setRemoteDescription({type:"answer", sdp: m.sdp}); }catch(e){}
+}
+async function startShare(){
+  try{
+    shareStream = await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15}, audio:true});
+  }catch(e){ log("screen share cancelled"); return false; }
+  shareStream.getVideoTracks()[0].addEventListener("ended", stopShare);  // the browser's "Stop sharing" bar
+  pub({type:"share-on"});                                                 // tell viewers to join
+  log("sharing started — waiting for viewers…");
+  return true;
+}
+function stopShare(){
+  if(shareStream){ shareStream.getTracks().forEach(function(t){ t.stop(); }); shareStream = null; }
+  Object.keys(peers).forEach(function(id){ try{ peers[id].close(); }catch(e){} });
+  peers = {}; refreshCount();
+  pub({type:"share-off"});
+  log("sharing stopped");
+  var b = byId("mcShareBtn"); if(b){ b.textContent = "Share my screen"; b.className = "mc-btn p"; }
+}
+
+function openConsole(){
+  var o = overlay();
+  o.innerHTML = '<div class="mc-card"><div class="mc-head"><span>📣 Broadcast console</span><button class="x">&times;</button></div>'
+    + '<div class="mc-body">'
+    + '<span class="mc-pill">On air to everyone with MeiNote open</span>'
+    + '<label>Announcement</label><textarea class="mc-inp" id="mcMsg" placeholder="Type a message everyone will see…"></textarea>'
+    + '<div class="mc-row"><button class="mc-btn p" id="mcSend">Send announcement</button>'
+    + '<button class="mc-btn g" id="mcShareBtn">Share my screen</button>'
+    + '<span id="mcCount" style="align-self:center;color:#475569;font-size:13px"></span></div>'
+    + '<div class="mc-note">Screen share goes straight between browsers, so it suits a team-sized group. Keep this console open while you share. Close it or click “Stop” to end.</div>'
+    + '<div class="mc-log" id="mcLog">ready.</div>'
+    + '</div></div>';
+  o.querySelector(".x").onclick = function(){ o.remove(); };
+  logEl = byId("mcLog"); countEl = byId("mcCount");
+  byId("mcSend").onclick = function(){
+    var v = byId("mcMsg").value.trim(); if(!v) return;
+    pub({type:"announce", text: v});
+    showAnnouncement(v, "You (sent to everyone)");        // the admin sees it too
+    byId("mcMsg").value = ""; log("announcement sent");
+  };
+  var sb = byId("mcShareBtn");
+  sb.onclick = async function(){
+    if(shareStream){ stopShare(); return; }
+    sb.disabled = true;
+    var ok = await startShare();
+    sb.disabled = false;
+    if(ok){ sb.textContent = "Stop sharing"; sb.className = "mc-btn d"; }
+  };
+  refreshCount();
+}
+
+/* ---------- Login (password) ---------- */
+function openLogin(){
+  var o = overlay();
+  o.innerHTML = '<div class="mc-card" style="max-width:380px"><div class="mc-head"><span>🔒 Broadcast login</span><button class="x">&times;</button></div>'
+    + '<div class="mc-body"><label>Password</label><input class="mc-inp" id="mcPw" type="password" autocomplete="off">'
+    + '<div class="mc-row"><button class="mc-btn p" id="mcGo">Open console</button></div>'
+    + '<p id="mcErr" style="color:#dc2626;min-height:18px;margin:8px 0 0;font-size:13px"></p></div></div>';
+  o.querySelector(".x").onclick = function(){ o.remove(); };
+  var pw = byId("mcPw"); pw.focus();
+  async function go(){
+    var h = await sha256(pw.value);
+    if(h === PASS_SHA256){ o.remove(); openConsole(); }
+    else{ byId("mcErr").textContent = "Wrong password."; pw.value = ""; pw.focus(); }
+  }
+  byId("mcGo").onclick = go;
+  pw.addEventListener("keydown", function(e){ if(e.key === "Enter") go(); });
+}
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+function onMsg(m){
+  if(m.app !== APP_TAG || m.from === me) return;           // ignore other traffic and our own echo
+  if(m.to && m.to !== me) return;                          // addressed to someone else
+  switch(m.type){
+    case "announce":   showAnnouncement(m.text, "From the admin"); break;
+    case "share-on":   if(!IS_ADMIN_PAGE) viewerJoin(m.from); break;
+    case "share-off":  closeShareView(); break;
+    case "offer":      viewerOnOffer(m); break;             // I'm a viewer
+    case "join":       adminOnJoin(m); break;               // I'm the admin
+    case "answer":     adminOnAnswer(m); break;             // I'm the admin
+    case "hello":      if(shareStream) pub({type:"share-on", to: m.from}); break;  // a page opened mid-share: let it in
+  }
+}
+function connect(){
+  var es;
+  try{ es = new EventSource(NTFY_BASE + "/" + encodeURIComponent(TOPIC) + "/sse"); }catch(e){ return; }
+  es.onmessage = function(e){
+    var d; try{ d = JSON.parse(e.data); }catch(_){ return; }
+    if(d.event !== "message" || !d.message) return;
+    var m; try{ m = JSON.parse(d.message); }catch(_){ return; }
+    onMsg(m);
+  };
+  es.onopen = function(){ if(!IS_ADMIN_PAGE) pub({type:"hello"}); };  // ask whether a share is already running
+  es.onerror = function(){};                                // EventSource auto-reconnects
+}
+connect();
+
+/* Hidden access from the search box (only when MeiNote's search is present) */
+var box = byId("kbSearch");
+if(box) box.addEventListener("input", function(){
+  if(box.value.trim().toLowerCase() === TRIGGER.toLowerCase()){
+    box.value = ""; try{ if(typeof searchKB === "function") searchKB(); }catch(e){}
+    openLogin();
+  }
+});
+
+/* Let the admin page open the login/console */
+window.MeiCast = {login: openLogin, console: openConsole, startShare: startShare, stopShare: stopShare, id: me};
 })();
 </script>
 
