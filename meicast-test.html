@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeiCast Relay Test</title>
+<style>
+body{margin:0;padding:22px;font:15px/1.6 Inter,"Segoe UI",system-ui,sans-serif;background:#0f172a;color:#e2e8f0}
+.card{max-width:620px;margin:0 auto;background:#1e293b;border-radius:18px;padding:20px 22px;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+h1{margin:0 0 4px;font-size:20px}
+.sub{color:#94a3b8;font-size:13px;margin-bottom:16px}
+.status{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;padding:12px 14px;border-radius:12px;background:#0f172a;margin-bottom:14px}
+.dot{width:12px;height:12px;border-radius:50%;background:#64748b}
+.dot.ok{background:#22c55e}.dot.bad{background:#ef4444}.dot.wait{background:#f59e0b}
+input,button{font:inherit}
+.row{display:flex;gap:8px;margin-bottom:14px}
+input{flex:1;background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:12px;padding:10px 12px}
+button{background:#2563eb;color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
+button:hover{background:#1d4ed8}
+.log{background:#0f172a;border-radius:12px;padding:12px;font:12.5px ui-monospace,Consolas,monospace;height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.log .me{color:#60a5fa}.log .rx{color:#4ade80}.log .err{color:#f87171}.log .sys{color:#94a3b8}
+.hint{color:#94a3b8;font-size:12.5px;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>MeiCast relay test</h1>
+  <div class="sub">Checks whether this computer can reach the broadcast relay (ntfy.sh). Open this page in two tabs, or on two computers, and send a test from one — it should appear in the other within a second.</div>
+  <div class="status"><span class="dot wait" id="dot"></span><span id="stat">Connecting to relay…</span></div>
+  <div class="row"><input id="msg" placeholder="Type a test message" value="hello from a test"><button id="send">Send test</button></div>
+  <div class="log" id="log"></div>
+  <div class="hint">Channel: <b>meinote-cast-6a7d28295c9a267b</b> · Relay: <b>ntfy.sh</b><br>If the dot stays orange/red or sends never arrive, your network is blocking ntfy.sh.</div>
+</div>
+<script>
+(function(){
+var NTFY = "https://ntfy.sh", TOPIC = "meinote-cast-6a7d28295c9a267b";
+var me = Math.random().toString(36).slice(2,8);
+var logEl = document.getElementById("log");
+function log(s, cls){ var d=document.createElement("div"); if(cls)d.className=cls; d.textContent="["+new Date().toLocaleTimeString()+"] "+s; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
+function setStat(t, kind){ document.getElementById("stat").textContent=t; document.getElementById("dot").className="dot "+(kind||""); }
+
+log("my id: "+me, "sys");
+var es;
+try{ es = new EventSource(NTFY+"/"+TOPIC+"/sse"); }
+catch(e){ setStat("Could not start a connection", "bad"); log("EventSource threw: "+e.message,"err"); }
+if(es){
+  es.onopen = function(){ setStat("Connected to relay ✓  (waiting for messages)", "ok"); log("connected (subscribed)","sys"); };
+  es.onerror = function(){ setStat("Connection problem — retrying… (network may be blocking ntfy.sh)", "bad"); log("connection error / retrying","err"); };
+  es.onmessage = function(e){
+    var d; try{ d=JSON.parse(e.data); }catch(_){ return; }
+    if(d.event==="open"){ return; }
+    if(d.event==="keepalive"){ log("· keepalive","sys"); return; }
+    if(d.event==="message"){
+      var who="", txt=d.message;
+      try{ var m=JSON.parse(d.message); who=m.from===me?"(me) ":"(other) "; txt=m.text||d.message; }catch(_){}
+      log("RECEIVED "+who+txt, who.indexOf("me")>-1?"me":"rx");
+    }
+  };
+}
+document.getElementById("send").onclick = function(){
+  var v = document.getElementById("msg").value || "test";
+  var body = JSON.stringify({app:"meicast-test", from:me, type:"announce", text:v});
+  log("sending…","sys");
+  fetch(NTFY+"/"+encodeURIComponent(TOPIC), {method:"POST", body:body})
+    .then(function(r){ log(r.ok?"send accepted by relay (HTTP "+r.status+")":"relay refused (HTTP "+r.status+")", r.ok?"sys":"err"); })
+    .catch(function(e){ log("SEND FAILED: "+e.message+"  (network blocking the relay, or opened as a local file)","err"); });
+};
+})();
+</script>
+</body>
+</html>
